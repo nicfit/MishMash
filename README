@@ -1,0 +1,13 @@
+
+::
+
+  $ alias mishmash='eyeD3 -P mishmash -T postgres'
+
+postgresql
+----------
+::
+  
+  $ su - postgres
+  $ createuser -s travis
+  $ exit
+  $ createdb -U travis -T template0 -E UTF8 mishmash.db 
