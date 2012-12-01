@@ -74,12 +74,21 @@ class Meta(Base, OrmObject):
         session.add(Meta(version=VERSION))
 
 
+def _getSortName(context):
+    from . import util
+    name, prefix = util.splitNameByPrefix(context.current_parameters["name"])
+    return u"%s, %s" % (name, prefix) if prefix else name
+
 class Artist(Base, OrmObject):
     __tablename__ = "artists"
 
     # Columns
     id = sql.Column(sql.Integer, primary_key=True)
     name = sql.Column(sql.Unicode(128), nullable=False, index=True)
+    # FIXME: orig
+    #sort_name = sql.Column(sql.Unicode(128), nullable=False, index=True)
+    sort_name = sql.Column(sql.Unicode(128), nullable=False,
+                           default=_getSortName, onupdate=_getSortName)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.datetime.now)
 
@@ -90,6 +99,12 @@ class Artist(Base, OrmObject):
     '''all tracks by the artist'''
     labels = orm.relation("Label", secondary=artist_labels)
     '''one-to-many (artist->label) and many-to-one (label->artist)'''
+
+    def __init__(self, **kwargs):
+        super(Artist, self).__init__(**kwargs)
+        # XXX: I'd like these to occur by default and onupdate
+        #s, p = util.splitNameByPrefix(self.name)
+        #self.sort_name = "%s, %s" % (s, p) if p else s
 
 
 class Album(Base, OrmObject):

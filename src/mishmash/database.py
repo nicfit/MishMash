@@ -24,7 +24,7 @@ from .orm import Track, Artist, Album
 from . import log
 
 
-_SUPORTED_DB_TYPES = ["sqlite", "postgres", "oracle"]
+SUPPORTED_DB_TYPES = ["sqlite", "postgres", "oracle"]
 
 class Database(object):
     DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
@@ -101,7 +101,7 @@ def makeDbUri(db_type, name, host=None, port=None,
             uri = "%s://%s:%s@%s" % (db_type, username, password, name)
         else:
             raise ValueError("Unsupported DB type '%s'. Options are %s" %
-                             (str(db_type), str(_SUPORTED_DB_TYPES)))
+                             (str(db_type), str(SUPPORTED_DB_TYPES)))
 
         return uri
 
