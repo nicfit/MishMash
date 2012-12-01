@@ -32,7 +32,8 @@ from eyed3.utils.cli import printError, printMsg, printWarning
 
 import mishmash
 mishmash.log.setLevel(logging.INFO)
-from mishmash.database import Database, MissingSchemaException
+from mishmash.database import (Database, MissingSchemaException,
+                               SUPPORTED_DB_TYPES)
 from mishmash.orm import Track, Artist, Album
 
 
@@ -60,7 +61,8 @@ class MishMashPlugin(LoaderPlugin):
                        help="Drops all database tables.")
 
         g.add_argument("--db-type", dest="db_type", default="sqlite",
-                       help="Database type. FIXME")
+                       help="Database type. Supported types: %s" %
+                            ', '.join(SUPPORTED_DB_TYPES))
         g.add_argument("--database", dest="db_name",
                        default="mishmash.db",
                        help="The name of the datbase (path for sqlite).")
@@ -93,7 +95,7 @@ class MishMashPlugin(LoaderPlugin):
                 self.db.dropAllTables()
                 printWarning("Database tables dropped")
                 if not args.do_create:
-                    sys.exit(1)
+                    sys.exit(0)
                 self.db = makeDatabase(True)
 
         except MissingSchemaException as ex:
@@ -160,8 +162,9 @@ class MishMashPlugin(LoaderPlugin):
                 session.add(track)
                 printWarning("Added file %s" % path)
 
-        for audio_file in modified_files:
-            print("FIXME -- modified: ", audio_file.path)
+            # Modified files
+            for audio_file in modified_files:
+                print("FIXME -- modified: ", audio_file.path)
 
         self._num_added += len(added_files)
         self._num_modified += len(modified_files)
