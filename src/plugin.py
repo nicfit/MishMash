@@ -34,7 +34,7 @@ import mishmash
 mishmash.log.setLevel(logging.INFO)
 from mishmash.database import (Database, MissingSchemaException,
                                SUPPORTED_DB_TYPES)
-from mishmash.orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME
+from mishmash.orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Meta
 
 
 class MishMashPlugin(LoaderPlugin):
@@ -154,6 +154,7 @@ class MishMashPlugin(LoaderPlugin):
                     session.add(artist)
                     session.flush()
 
+                album = None
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album).all()
                 if album_rows:
@@ -166,12 +167,13 @@ class MishMashPlugin(LoaderPlugin):
                     session.flush()
 
                 # Check for a compilation, and update artist_id if necessary
-                if album.artist_id != artist.id:
+                if album and album.artist_id != artist.id:
                     album.compilation = True
                     album.artist_id = self._comp_artist_id
                     session.add(album)
 
-                track = Track(audio_file=audio_file)
+                track = Track(audio_file=audio_file,
+                              album_id=album.id if album else None)
                 track.artist_id = artist.id
                 session.add(track)
                 printWarning("Added file %s" % path)
@@ -192,6 +194,11 @@ class MishMashPlugin(LoaderPlugin):
 
         session = self.db.Session()
         with session.begin():
+            print("\nDatabase:")
+            meta = session.query(Meta).one()
+            print("Version:", meta.version)
+            print("Last Sync:", meta.last_sync)
+            meta.last_sync = datetime.now()
             print("%d tracks" % session.query(Track).count())
             print("%d artists" % session.query(Artist).count())
             print("%d albums" % session.query(Album).count())
