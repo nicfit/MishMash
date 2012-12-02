@@ -161,21 +161,22 @@ class Track(Base, OrmObject):
         for this class to use for initialization.'''
 
         if "audio_file" in kwargs:
-            audio_file = kwargs["audio_file"]
-            path = audio_file.path
-            tag = audio_file.tag
-
-            self.path = path
-            self.size_bytes = audio_file.info.size_bytes
-            self.ctime = datetime.datetime.fromtimestamp(os.path.getctime(path))
-            self.mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
-            self.time_secs = audio_file.info.time_secs
-            self.title = tag.title
-            self.track_num, self.track_total = tag.track_num
+            self.set(kwargs["audio_file"])
             del kwargs["audio_file"]
 
         super(Track, self).__init__(**kwargs)
 
+    def set(self, audio_file):
+        path = audio_file.path
+        tag = audio_file.tag
+
+        self.path = path
+        self.size_bytes = audio_file.info.size_bytes
+        self.ctime = datetime.datetime.fromtimestamp(os.path.getctime(path))
+        self.mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+        self.time_secs = audio_file.info.time_secs
+        self.title = tag.title
+        self.track_num, self.track_total = tag.track_num
 
 
 class Label(Base, OrmObject):
