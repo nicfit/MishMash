@@ -26,6 +26,7 @@ from . import log
 
 SUPPORTED_DB_TYPES = ["sqlite", "postgres", "oracle"]
 
+
 class Database(object):
     DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                            "encoding": "utf8",
@@ -80,6 +81,12 @@ class Database(object):
         tables.reverse()
         for table in tables:
             table.drop()
+
+    def getArtist(self, session, one=False, **kwargs):
+        query = session.query(Artist).filter_by(**kwargs)
+        return query.all() if not one else query.one()
+
+
 
 
 def makeDbUri(db_type, name, host=None, port=None,
