@@ -25,6 +25,8 @@ import logging
 from os.path import getmtime, getctime
 from datetime import datetime
 
+from sqlalchemy.orm.exc import NoResultFound
+
 import eyed3
 eyed3.require("0.7")
 from eyed3.plugins import Plugin, LoaderPlugin
@@ -34,7 +36,7 @@ import mishmash
 mishmash.log.setLevel(logging.INFO)
 from mishmash.database import (Database, MissingSchemaException,
                                SUPPORTED_DB_TYPES)
-from mishmash.orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Meta
+from mishmash.orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Meta, Label
 
 
 class MishMashPlugin(LoaderPlugin):
@@ -173,12 +175,25 @@ class MishMashPlugin(LoaderPlugin):
                     self._num_added += 1
                     printWarning("Adding file %s" % path)
                 else:
-                    track.set(audio_file)
+                    track.update(audio_file)
                     self._num_modified += 1
                     printWarning("Updating file %s" % path)
 
+                genre = tag.genre
+                label = None
+                if genre:
+                    try:
+                        label = \
+                          session.query(Label).filter_by(name=genre.name).one()
+                    except NoResultFound:
+                        label = Label(name=genre.name)
+                        session.add(label)
+                        session.flush()
+
                 track.artist_id = artist.id
                 track.album_id = album.id if album else None
+                if label:
+                    track.labels.append(label)
                 session.add(track)
 
     def handleDone(self):
@@ -194,6 +209,7 @@ class MishMashPlugin(LoaderPlugin):
             print("%d tracks" % session.query(Track).count())
             print("%d artists" % session.query(Artist).count())
             print("%d albums" % session.query(Album).count())
+            print("%d labels" % session.query(Label).count())
 
             for track in session.query(Track).all():
                 if not os.path.exists(track.path):

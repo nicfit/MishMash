@@ -161,12 +161,12 @@ class Track(Base, OrmObject):
         for this class to use for initialization.'''
 
         if "audio_file" in kwargs:
-            self.set(kwargs["audio_file"])
+            self.update(kwargs["audio_file"])
             del kwargs["audio_file"]
 
         super(Track, self).__init__(**kwargs)
 
-    def set(self, audio_file):
+    def update(self, audio_file):
         path = audio_file.path
         tag = audio_file.tag
 
