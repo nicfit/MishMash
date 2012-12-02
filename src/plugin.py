@@ -34,7 +34,7 @@ import mishmash
 mishmash.log.setLevel(logging.INFO)
 from mishmash.database import (Database, MissingSchemaException,
                                SUPPORTED_DB_TYPES)
-from mishmash.orm import Track, Artist, Album
+from mishmash.orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME
 
 
 class MishMashPlugin(LoaderPlugin):
@@ -94,9 +94,10 @@ class MishMashPlugin(LoaderPlugin):
             if args.do_drop:
                 self.db.dropAllTables()
                 printWarning("Database tables dropped")
-                if not args.do_create:
+                if args.do_create:
+                    self.db = makeDatabase(True)
+                else:
                     sys.exit(0)
-                self.db = makeDatabase(True)
 
         except MissingSchemaException as ex:
             printError("Schema error:")
@@ -105,6 +106,13 @@ class MishMashPlugin(LoaderPlugin):
                       ", ".join(ex.tables),
                       "are" if len(ex.tables) > 1 else "is"))
             sys.exit(1)
+
+        session = self.db.Session()
+        with session.begin():
+            # Get the compilation artist, its ID will be used for compilations
+            self._comp_artist_id = self.db.getArtist(session,
+                                                     name=VARIOUS_ARTISTS_NAME,
+                                                     one=True).id
 
     def handleDirectory(self, d, _):
         audio_files = list(self._file_cache)
@@ -156,6 +164,12 @@ class MishMashPlugin(LoaderPlugin):
                     album = Album(title=tag.album, artist_id=artist.id)
                     session.add(album)
                     session.flush()
+
+                # Check for a compilation, and update artist_id if necessary
+                if album.artist_id != artist.id:
+                    album.compilation = True
+                    album.artist_id = self._comp_artist_id
+                    session.add(album)
 
                 track = Track(audio_file=audio_file)
                 track.artist_id = artist.id

@@ -24,6 +24,10 @@ from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
 from .info import VERSION
 
+
+VARIOUS_ARTISTS_NAME = u"Various Artists"
+
+
 Base = declarative_base()
 
 artist_labels = sql.Table("artist_labels", Base.metadata,
@@ -97,6 +101,10 @@ class Artist(Base, OrmObject):
     '''all tracks by the artist'''
     labels = orm.relation("Label", secondary=artist_labels)
     '''one-to-many (artist->label) and many-to-one (label->artist)'''
+
+    @staticmethod
+    def initTable(session):
+        session.add(Artist(name=VARIOUS_ARTISTS_NAME))
 
 
 class Album(Base, OrmObject):
