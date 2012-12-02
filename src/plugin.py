@@ -50,6 +50,7 @@ class MishMashPlugin(LoaderPlugin):
 
         self._num_added = 0
         self._num_modified = 0
+        self._num_deleted = 0
 
     def _initCmdLineArgs(self):
         g = self.arg_group
@@ -121,30 +122,24 @@ class MishMashPlugin(LoaderPlugin):
         if not audio_files:
             return
 
-        added_files = []
-        modified_files = []
-
         session = self.db.Session()
         with session.begin():
             for audio_file in audio_files:
                 path = audio_file.path
+                info = audio_file.info
+                tag = audio_file.tag
 
                 track = session.query(Track).filter_by(path=path).all()
                 if track:
                     track = track[0]
-                    if datetime.fromtimestamp(getctime(path)) > track.ctime:
-                        modified_files.append(audio_file)
-                else:
-                    added_files.append(audio_file)
+                    if datetime.fromtimestamp(getctime(path)) <= track.ctime:
+                        # Have the track and the file is not modified
+                        continue
 
-            # Added files
-            for audio_file in added_files:
-                path = audio_file.path
-                info = audio_file.info
-                tag = audio_file.tag
+                # Either adding the track (track == None)
+                # or modifying (track != None)
 
-                artist_rows = session.query(Artist)\
-                                     .filter_by(name=tag.artist).all()
+                artist_rows = self.db.getArtist(session, name=tag.artist)
                 if artist_rows:
                     if len(artist_rows) > 1:
                         raise NotImplementedError("FIXME")
@@ -156,7 +151,8 @@ class MishMashPlugin(LoaderPlugin):
 
                 album = None
                 album_rows = session.query(Album)\
-                                    .filter_by(title=tag.album).all()
+                                    .filter_by(title=tag.album,
+                                               artist_id=artist.id).all()
                 if album_rows:
                     if len(album_rows) > 1:
                         raise NotImplementedError("FIXME")
@@ -172,25 +168,21 @@ class MishMashPlugin(LoaderPlugin):
                     album.artist_id = self._comp_artist_id
                     session.add(album)
 
-                track = Track(audio_file=audio_file,
-                              album_id=album.id if album else None)
+                if not track:
+                    track = Track(audio_file=audio_file)
+                    self._num_added += 1
+                    printWarning("Adding file %s" % path)
+                else:
+                    track.set(audio_file)
+                    self._num_modified += 1
+                    printWarning("Updating file %s" % path)
+
                 track.artist_id = artist.id
+                track.album_id = album.id if album else None
                 session.add(track)
-                printWarning("Added file %s" % path)
-
-            # Modified files
-            for audio_file in modified_files:
-                print("FIXME -- modified: ", audio_file.path)
-
-        self._num_added += len(added_files)
-        self._num_modified += len(modified_files)
 
     def handleDone(self):
         t = time.time() - self.start_time
-        print("%d new files" % self._num_added)
-        print("%d modified files" % self._num_modified)
-        print("%d total files" % self._num_loaded)
-        print("%fs time (%f/s)" % (t, self._num_loaded / t))
 
         session = self.db.Session()
         with session.begin():
@@ -205,8 +197,15 @@ class MishMashPlugin(LoaderPlugin):
 
             for track in session.query(Track).all():
                 if not os.path.exists(track.path):
-                    print("FIXME -- deleted: ", audio_file.path)
-                    raise NotImplementedError("Handle file deletes")
+                    printWarning("Deleting track %s" % track.path)
+                    session.delete(track)
+                    self._num_deleted += 1
 
+        print("")
+        print("%d new files" % self._num_added)
+        print("%d modified files" % self._num_modified)
+        print("%d deleted files" % self._num_deleted)
+        print("%d total files" % self._num_loaded)
+        print("%fs time (%f/s)" % (t, self._num_loaded / t))
 
 
