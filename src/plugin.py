@@ -26,9 +26,11 @@ from os.path import getmtime, getctime
 from datetime import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import func
 
 import eyed3
 eyed3.require("0.7")
+from eyed3 import LOCAL_ENCODING as ENCODING
 from eyed3.plugins import Plugin, LoaderPlugin
 from eyed3.utils.cli import printError, printMsg, printWarning
 
@@ -45,7 +47,6 @@ class MishMashPlugin(LoaderPlugin):
     DESCRIPTION = u"""
 **Requires SQLAlchemy**
 """
-
     def __init__(self, arg_parser):
         super(MishMashPlugin, self).__init__(arg_parser, cache_files=True)
         self._initCmdLineArgs()
@@ -78,8 +79,16 @@ class MishMashPlugin(LoaderPlugin):
         g.add_argument("--host", dest="host", default="localhost",
                        help="Hostname for database. Not used for 'sqlite'. "
                             "The default is 'localhost'")
-        g.add_argument("--port", dest="port", default=None,
+        g.add_argument("--port", dest="port", default=5432,
                        help="Port for database. Not used for 'sqlite'.")
+
+        g.add_argument("-s", "--search", dest="search", action="store",
+                       type=unicode,
+                       help="FIXME")
+        g.add_argument("--artists", dest="show_artists", action="store_true",
+                       help="FIXME")
+        g.add_argument("--random", dest="random", action="store", type=int,
+                       default=None, help="FIXME")
 
     def start(self, args, config):
         super(MishMashPlugin, self).start(args, config)
@@ -124,6 +133,15 @@ class MishMashPlugin(LoaderPlugin):
         if not audio_files:
             return
 
+        # This directory of files can be
+        # 1) an album by a single artist (tag.artist and tag.album all equal)
+        # 2) a comp (tag.album equal, tag.artist differ)
+        # 3) not associated with a collection (tag.artist and tag.album differ)
+        artists = set([f.tag.artist for f in audio_files if f.tag])
+        albums = set([f.tag.album for f in audio_files if f.tag])
+        is_album = len(artists) == 1 and len(albums) == 1
+        is_comp = len(artists) > 1 and len(albums) == 1
+
         session = self.db.Session()
         with session.begin():
             for audio_file in audio_files:
@@ -151,24 +169,26 @@ class MishMashPlugin(LoaderPlugin):
                     session.add(artist)
                     session.flush()
 
+                album_artist_id = artist.id if not is_comp \
+                                            else self._comp_artist_id
                 album = None
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
-                                               artist_id=artist.id).all()
+                                               artist_id=album_artist_id).all()
                 if album_rows:
                     if len(album_rows) > 1:
                         raise NotImplementedError("FIXME")
                     album = album_rows[0]
                 elif tag.album:
-                    album = Album(title=tag.album, artist_id=artist.id)
+                    release_date = tag.best_release_date
+                    album = Album(title=tag.album, artist_id=album_artist_id,
+                                  compilation=is_comp,
+                                  release_date=str(release_date)
+                                                 if release_date else None)
                     session.add(album)
                     session.flush()
 
-                # Check for a compilation, and update artist_id if necessary
-                if album and album.artist_id != artist.id:
-                    album.compilation = True
-                    album.artist_id = self._comp_artist_id
-                    session.add(album)
+                # FIXME: Handle upates to release date
 
                 if not track:
                     track = Track(audio_file=audio_file)
@@ -200,6 +220,49 @@ class MishMashPlugin(LoaderPlugin):
         t = time.time() - self.start_time
 
         session = self.db.Session()
+
+        if self.args.show_artists:
+            banner = None
+            for artist in session.query(Artist)\
+                                 .order_by(Artist.sort_name).all():
+                if banner != artist.sort_name[0]:
+                    banner = artist.sort_name[0]
+                    printMsg(u"\n== %s ==" % banner)
+                printMsg(u"\t%s" % artist.sort_name)
+
+        elif self.args.search:
+            print("\nSearch:")
+            s = self.args.search
+
+            print("Artists:")
+            for artist in session.query(Artist).filter(
+                    Artist.name.ilike(u"%%%s%%" % s)).all():
+                print(u"\t%s (id: %d)" % (artist.name, artist.id))
+
+            print("Albums:")
+            for album in session.query(Album).filter(
+                    Album.title.ilike(u"%%%s%%" % s)).all():
+                print(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
+                                                       album.artist.name))
+
+            print("Tracks:")
+            for track in session.query(Track).filter(
+                    Track.title.ilike(u"%%%s%%" % s)).all():
+                print(u"\t%s (id: %d) (artist: %s) (album: %s)" %
+                        (track.title, track.id,
+                         track.artist.name,
+                         track.album.title if track.album else None))
+        elif self.args.random:
+            for track in session.query(Track)\
+                                .order_by(func.random())\
+                                .limit(self.args.random).all():
+                print(track.path)
+
+
+        if self.args.shell:
+            # FIXME
+            import pdb; pdb.set_trace()
+
         with session.begin():
             print("\nDatabase:")
             meta = session.query(Meta).one()

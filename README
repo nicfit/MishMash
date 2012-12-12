@@ -1,7 +1,15 @@
 
 ::
 
-  $ alias mishmash='eyeD3 -P mishmash -T postgres'
+  $ alias mishmash='eyeD3 -P mishmash --db-type postgres'
+
+config.ini::
+
+  [mishmash]
+  # this does not yet work (is not passed), currently have in an alias
+  options = --db-type=postgres --database=mishmash --password=travis
+
+  $ alias mishmash='eyeD3 --plugin=mishmash'
 
 postgresql
 ----------
