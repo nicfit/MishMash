@@ -145,6 +145,8 @@ class Track(Base, OrmObject):
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     track_num = sql.Column(sql.SmallInteger)
     track_total = sql.Column(sql.SmallInteger)
+    media_num = sql.Column(sql.SmallInteger)
+    media_total = sql.Column(sql.SmallInteger)
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
@@ -177,6 +179,7 @@ class Track(Base, OrmObject):
         self.time_secs = audio_file.info.time_secs
         self.title = tag.title
         self.track_num, self.track_total = tag.track_num
+        self.media_num, self.media_total = tag.disc_num
 
 
 class Label(Base, OrmObject):
