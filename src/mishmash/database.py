@@ -24,7 +24,7 @@ from .orm import Track, Artist, Album
 from . import log
 
 
-SUPPORTED_DB_TYPES = ["sqlite", "postgres", "oracle"]
+SUPPORTED_DB_TYPES = ["sqlite", "postgresql", "oracle"]
 
 
 class Database(object):
@@ -94,7 +94,7 @@ def makeDbUri(db_type, name, host=None, port=None,
         assert(db_type and name)
 
         uri = None
-        if db_type == "postgres":
+        if db_type == "postgresql":
             port = 5432 if not port else port
             assert(host and port and username and password)
             uri = "%s://%s:%s@%s:%d/%s" % (db_type, username, password,
