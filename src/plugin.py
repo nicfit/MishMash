@@ -18,7 +18,8 @@
 #
 ################################################################################
 from __future__ import print_function
-import sys, os
+import os
+import sys
 import time
 import getpass
 import logging
@@ -31,7 +32,7 @@ from sqlalchemy.sql.expression import func
 import eyed3
 eyed3.require("0.7")
 from eyed3 import LOCAL_ENCODING as ENCODING
-from eyed3.plugins import Plugin, LoaderPlugin
+from eyed3.plugins import LoaderPlugin
 from eyed3.utils.cli import printError, printMsg, printWarning
 
 import mishmash
@@ -47,6 +48,7 @@ class MishMashPlugin(LoaderPlugin):
     DESCRIPTION = u"""
 **Requires SQLAlchemy**
 """
+
     def __init__(self, arg_parser):
         super(MishMashPlugin, self).__init__(arg_parser, cache_files=True)
         self._initCmdLineArgs()
@@ -170,7 +172,7 @@ class MishMashPlugin(LoaderPlugin):
                     session.flush()
 
                 album_artist_id = artist.id if not is_comp \
-                                            else self._comp_artist_id
+                    else self._comp_artist_id
                 album = None
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
@@ -180,11 +182,12 @@ class MishMashPlugin(LoaderPlugin):
                         raise NotImplementedError("FIXME")
                     album = album_rows[0]
                 elif tag.album:
+                    # FIXME: really, the dates need to be separate
                     release_date = tag.best_release_date
                     album = Album(title=tag.album, artist_id=album_artist_id,
                                   compilation=is_comp,
                                   release_date=str(release_date)
-                                                 if release_date else None)
+                                  if release_date else None)
                     session.add(album)
                     session.flush()
 
@@ -204,7 +207,8 @@ class MishMashPlugin(LoaderPlugin):
                 if genre:
                     try:
                         label = \
-                          session.query(Label).filter_by(name=genre.name).one()
+                            session.query(
+                                Label).filter_by(name=genre.name).one()
                     except NoResultFound:
                         label = Label(name=genre.name)
                         session.add(label)
@@ -249,19 +253,14 @@ class MishMashPlugin(LoaderPlugin):
             for track in session.query(Track).filter(
                     Track.title.ilike(u"%%%s%%" % s)).all():
                 print(u"\t%s (id: %d) (artist: %s) (album: %s)" %
-                        (track.title, track.id,
-                         track.artist.name,
-                         track.album.title if track.album else None))
+                      (track.title, track.id,
+                       track.artist.name,
+                       track.album.title if track.album else None))
         elif self.args.random:
             for track in session.query(Track)\
                                 .order_by(func.random())\
                                 .limit(self.args.random).all():
                 print(track.path)
-
-
-        if self.args.shell:
-            # FIXME
-            import pdb; pdb.set_trace()
 
         with session.begin():
             print("\nDatabase:")
@@ -286,5 +285,3 @@ class MishMashPlugin(LoaderPlugin):
         print("%d deleted files" % self._num_deleted)
         print("%d total files" % self._num_loaded)
         print("%fs time (%f/s)" % (t, self._num_loaded / t))
-
-
