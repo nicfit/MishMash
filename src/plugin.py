@@ -279,7 +279,7 @@ class MishMashPlugin(LoaderPlugin):
                     if not os.path.exists(track.path):
                         printWarning("Deleting track %s" % track.path)
                         session.delete(track)
-                    self._num_deleted += 1
+                        self._num_deleted += 1
 
         if self._num_loaded:
             print("")
