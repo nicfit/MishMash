@@ -85,12 +85,14 @@ class MishMashPlugin(LoaderPlugin):
                        help="Port for database. Not used for 'sqlite'.")
 
         g.add_argument("-s", "--search", dest="search", action="store",
-                       type=unicode,
-                       help="FIXME")
+                       type=unicode, metavar="STRING",
+                       help="Search all tables for STRING.")
         g.add_argument("--artists", dest="show_artists", action="store_true",
-                       help="FIXME")
+                       help="Output all artists in a formatted and sorted "
+                            "list.")
         g.add_argument("--random", dest="random", action="store", type=int,
-                       default=None, help="FIXME")
+                       default=None, metavar="N",
+                       help="Output N random tracks (by path).")
 
     def start(self, args, config):
         super(MishMashPlugin, self).start(args, config)
@@ -261,27 +263,28 @@ class MishMashPlugin(LoaderPlugin):
                                 .order_by(func.random())\
                                 .limit(self.args.random).all():
                 print(track.path)
+        else:
+            with session.begin():
+                print("\nDatabase:")
+                meta = session.query(Meta).one()
+                print("Version:", meta.version)
+                print("Last Sync:", meta.last_sync)
+                meta.last_sync = datetime.now()
+                print("%d tracks" % session.query(Track).count())
+                print("%d artists" % session.query(Artist).count())
+                print("%d albums" % session.query(Album).count())
+                print("%d labels" % session.query(Label).count())
 
-        with session.begin():
-            print("\nDatabase:")
-            meta = session.query(Meta).one()
-            print("Version:", meta.version)
-            print("Last Sync:", meta.last_sync)
-            meta.last_sync = datetime.now()
-            print("%d tracks" % session.query(Track).count())
-            print("%d artists" % session.query(Artist).count())
-            print("%d albums" % session.query(Album).count())
-            print("%d labels" % session.query(Label).count())
-
-            for track in session.query(Track).all():
-                if not os.path.exists(track.path):
-                    printWarning("Deleting track %s" % track.path)
-                    session.delete(track)
+                for track in session.query(Track).all():
+                    if not os.path.exists(track.path):
+                        printWarning("Deleting track %s" % track.path)
+                        session.delete(track)
                     self._num_deleted += 1
 
-        print("")
-        print("%d new files" % self._num_added)
-        print("%d modified files" % self._num_modified)
-        print("%d deleted files" % self._num_deleted)
-        print("%d total files" % self._num_loaded)
-        print("%fs time (%f/s)" % (t, self._num_loaded / t))
+        if self._num_loaded:
+            print("")
+            print("%d new files" % self._num_added)
+            print("%d modified files" % self._num_modified)
+            print("%d deleted files" % self._num_deleted)
+            print("%d total files" % self._num_loaded)
+            print("%fs time (%f/s)" % (t, self._num_loaded / t))
