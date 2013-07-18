@@ -1,0 +1,13 @@
+
+- All dates need columns. Best date algo needs to come from what's avail in DB
+    - Release, orginal release, etc. dates added to Album / Track ORM
+- country, city, state info
+x multi disc sets.. present separately 
+- prune artists, albums, etc. that are orphaned
+- Add bitrate to Track orm
+- Handle duplicate Artist names
+- Handle duplicate Album names (by the same artist)
+- Smarter moves.. Right now if a file name changes a new track is add/delete
+x Read genres from tag and set up labels
+- Live flag (Track?)
+- Original artist extraction from tags and col on Track (i.e. cover songs)

@@ -1,0 +1,41 @@
+
+Requirements
+------------
+::
+
+  $ pip install eyeD3
+  $ pip install SQLAlchemy
+  $ pip install psycopg2
+
+
+eyeD3
+-----
+
+Currently the mishmash sync tool is implemented as a plugin for eyeD3_, so it
+would be invoked as::
+  
+  $ eyeD3 --plugin=mishmash
+
+FIXME
+
+
+::
+
+  $ alias mishmash='eyeD3 -P mishmash --db-type postgresql'
+
+config.ini::
+
+  [mishmash]
+  options = --db-type=postgresql --database=mishmash --password=travis
+
+  $ alias mishmash='eyeD3 --plugin=mishmash'
+
+postgresql
+----------
+::
+
+  $ su - postgres
+  $ createuser -d -P <USER>
+  $ exit
+  $ createdb -U <USER> -T template0 -E UTF8 mishmash
+
