@@ -132,6 +132,19 @@ def _list(args):
                 banner = artist.sort_name[0]
                 printMsg(u"\n== %s ==" % banner)
             printMsg(u"\t%s" % artist.sort_name)
+    elif args.what == "albums":
+        def albumSortKey(alb):
+            return alb.release_date
+
+        session = db.Session()
+        for artist in session.query(Artist)\
+                             .order_by(Artist.sort_name).all():
+            printMsg(artist.sort_name)
+
+            albums = sorted(artist.albums, key=albumSortKey)
+            for alb in albums:
+                printMsg(u"\t%s (released: %s)" % (alb.title,
+                                                   alb.release_date))
     else:
         # This should not happen if ArgumentParser is doing its job
         assert(not "unsupported list value")
@@ -195,7 +208,7 @@ def main():
                                help="Search string.")
 
     # list subcommand
-    list_choices = ("artists",)
+    list_choices = ("artists", "albums")
     list_parser = mkSubParser("list", "Listings from music database.", _list)
     list_parser.add_argument("what", metavar="WHAT", choices=list_choices,
                              help="What to list. Valid values are %s." %
