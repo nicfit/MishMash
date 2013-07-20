@@ -8,8 +8,8 @@ Requirements
 A virtual environment (especially useful for development) can be created with
 the provided helper script.::
 
-  $ ./mkenv.sh 
-  $ workon mishmash-2.7
+  $ ./mkenv.sh mishmash
+  $ workon mishmash
 
 
 Usage
