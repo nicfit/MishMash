@@ -33,6 +33,7 @@ from eyed3.utils.cli import printError, printMsg, printWarning
 
 from .database import SUPPORTED_DB_TYPES, Database, MissingSchemaException
 from .orm import Track, Artist, Album, Meta, Label
+from .log import log
 
 
 def _makeDatabase(args, do_create=False):
@@ -227,6 +228,7 @@ def main():
                   "are" if len(ex.tables) > 1 else "is"))
         retval = 1
     except Exception as ex:
+        log.exception(ex)
         printError("%s: %s" % (ex.__class__.__name__, str(ex)))
         retval = 2
 

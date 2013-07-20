@@ -4,7 +4,7 @@
     - Release, orginal release, etc. dates added to Album / Track ORM
 - country, city, state info
 x multi disc sets.. present separately 
-- prune artists, albums, etc. that are orphaned
+x prune artists, albums, etc. that are orphaned
 - Add bitrate to Track orm
 - Handle duplicate Artist names (e.g. Death)
 - Handle duplicate Album names (by the same artist)
