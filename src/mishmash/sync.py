@@ -164,11 +164,35 @@ class SyncPlugin(LoaderPlugin):
                 printWarning("Deleting track %s" % track.path)
                 session.delete(track)
                 self._num_deleted += 1
+        if self._num_deleted:
+            session.flush()
+        printMsg("All files sync'd")
+
+        # Look for orphans
+        num_orphaned_artists = 0
+        num_orphaned_albums = 0
+        printMsg("Purging orphan artist names...")
+        for artist in session.query(Artist).all():
+            any_track = session.query(Track).filter(Track.artist_id==artist.id)\
+                                            .first()
+            if not any_track:
+                session.delete(artist)
+                num_orphaned_artists += 1
+        printMsg("Purging orphan album names...")
+        for album in session.query(Album).all():
+            any_track = session.query(Track).filter(Track.album_id==album.id)\
+                                            .first()
+            if not any_track:
+                session.delete(album)
+                num_orphaned_albums += 1
+        session.flush()
 
         if self._num_loaded or self._num_deleted:
             print("")
             print("%d files sync'd" % self._num_loaded)
-            print("%d files added" % self._num_added)
-            print("%d files modified" % self._num_modified)
-            print("%d files deleted (from database)" % self._num_deleted)
+            print("%d tracks added" % self._num_added)
+            print("%d tracks modified" % self._num_modified)
+            print("%d orphaned tracks deleted" % self._num_deleted)
+            print("%d orphaned artists deleted" % num_orphaned_artists)
+            print("%d orphaned albums deleted" % num_orphaned_albums)
             print("%fs time (%f/s)" % (t, self._num_loaded / t))
