@@ -3,32 +3,35 @@ Requirements
 ------------
 ::
 
-  $ pip install eyeD3
-  $ pip install SQLAlchemy
-  $ pip install psycopg2
+  $ pip install -r requirements.txt
+
+A virtual environment (especially useful for development) can be created with
+the provided helper script.::
+
+  $ ./mkenv.sh 
+  $ workon mishmash-2.7
 
 
-eyeD3
+Usage
 -----
-
-Currently the mishmash sync tool is implemented as a plugin for eyeD3_, so it
-would be invoked as::
+Making an alias called ``mishmash`` is suggested since it saves having to
+type redundant information, like calling the Python interpretor or specifying
+the same database options over and over again. To invoke without an alias
+use the ``-m`` option provided by Python.::
   
-  $ eyeD3 --plugin=mishmash
+  $ python -m mishmash --help
 
-FIXME
+Once you decide on a database you can make an alias. For example, it is easiest
+to start with ``sqlite``.::
 
+  $ alias mishmash="python -m mishmash --db-type=sqlite --database=${HOME}/mishmash.db"
 
-::
+Inialize the database tables with the ``init`` command.::
 
-  $ alias mishmash='eyeD3 -P mishmash --db-type postgresql'
+  $ mishmash init --help
+  $ mishmash init
+  $ mishmash init --drop-all
 
-config.ini::
-
-  [mishmash]
-  options = --db-type=postgresql --database=mishmash --password=travis
-
-  $ alias mishmash='eyeD3 --plugin=mishmash'
 
 postgresql
 ----------
