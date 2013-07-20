@@ -66,8 +66,8 @@ def _sync(args):
 
 def _info(args):
     db = _makeDatabase(args)
-    session = db.Session()
 
+    session = db.Session()
     with session.begin():
         print("\nDatabase:")
         meta = session.query(Meta).one()
@@ -80,7 +80,64 @@ def _info(args):
         print("%d labels" % session.query(Label).count())
 
 
+def _random(args):
+    from sqlalchemy.sql.expression import func
+
+    db = _makeDatabase(args)
+
+    session = db.Session()
+    for track in session.query(Track).order_by(func.random())\
+                                     .limit(args.count).all():
+        printMsg(track.path)
+
+
+def _search(args):
+    db = _makeDatabase(args)
+    session = db.Session()
+
+    s = args.search_pattern
+    printMsg("\nSearching for '%s'" % s)
+
+    print("Artists:")
+    for artist in session.query(Artist).filter(
+            Artist.name.ilike(u"%%%s%%" % s)).all():
+        printMsg(u"\t%s (id: %d)" % (artist.name, artist.id))
+
+    print("Albums:")
+    for album in session.query(Album).filter(
+            Album.title.ilike(u"%%%s%%" % s)).all():
+        printMsg(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
+                                                  album.artist.name))
+
+    print("Tracks:")
+    for track in session.query(Track).filter(
+            Track.title.ilike(u"%%%s%%" % s)).all():
+        printMsg(u"\t%s (id: %d) (artist: %s) (album: %s)" %
+                 (track.title, track.id,
+                  track.artist.name,
+                  track.album.title if track.album else None))
+
+
+def _list(args):
+    db = _makeDatabase(args)
+
+    if args.what == "artists":
+        banner = None
+
+        session = db.Session()
+        for artist in session.query(Artist)\
+                             .order_by(Artist.sort_name).all():
+            if banner != artist.sort_name[0]:
+                banner = artist.sort_name[0]
+                printMsg(u"\n== %s ==" % banner)
+            printMsg(u"\t%s" % artist.sort_name)
+    else:
+        # This should not happen if ArgumentParser is doing its job
+        assert(not "unsupported list value")
+
+
 def main():
+
     parser = ArgumentParser(prog="mishmash")
 
     db_group = parser.add_argument_group(title="Database settings and options")
@@ -103,28 +160,45 @@ def main():
     db_group.add_argument("--port", dest="port", default=5432,
                           help="Port for database. Not used for sqlite.")
 
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(
+            title="Sub commands",
+            description="Database command line options are required by most "
+                        "sub commands.")
+    def mkSubParser(name, help, func):
+        p = subparsers.add_parser(name, help=help)
+        p.set_defaults(func=func)
+        return p
 
     # init subcommand
-    init_parser = subparsers.add_parser("init",
-                                        help="Initialize music database.")
+    init_parser = mkSubParser("init", "Initialize music database.", _init)
     init_parser.add_argument("--drop-all", action="store_true",
                              help="Drop all tables and re-init")
-    init_parser.set_defaults(func=_init)
 
     # sync subcommand
     from . import sync
-    sync_parser = subparsers.add_parser("sync",
-                                        help="Syncronize music and database.")
-    sync_parser = eyed3.main.makeCmdLineParser(sync_parser)
-    sync_parser.set_defaults(func=_sync)
+    sync_parser = eyed3.main.makeCmdLineParser(
+            mkSubParser("sync", "Syncronize music and database.", _sync))
     plugin = sync.SyncPlugin(sync_parser)
 
     # info subcommand
-    info_parser = subparsers.add_parser("info",
-                                        help="Show information about music "
-                                             "database.")
-    info_parser.set_defaults(func=_info)
+    info_parser = mkSubParser("info","Show information about music database.",
+                               _info)
+
+    # random subcommand
+    random_parser = mkSubParser("random", "Retrieve random tracks.", _random)
+    random_parser.add_argument("count", type=int, metavar="COUNT")
+
+    # search subcommand
+    search_parser = mkSubParser("search", "Search music database.", _search)
+    search_parser.add_argument("search_pattern", type=unicode, metavar="SEARCH",
+                               help="Search string.")
+
+    # list subcommand
+    list_choices = ("artists",)
+    list_parser = mkSubParser("list", "Listings from music database.", _list)
+    list_parser.add_argument("what", metavar="WHAT", choices=list_choices,
+                             help="What to list. Valid values are %s." %
+                                  ','.join(["'%s'" % c for c in list_choices]))
 
     # Run command
     args = parser.parse_args()
