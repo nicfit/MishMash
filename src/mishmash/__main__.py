@@ -65,6 +65,7 @@ def _sync(args):
 
 
 def _info(args):
+    # FIXME: show database parameters
     db = _makeDatabase(args)
 
     session = db.Session()
