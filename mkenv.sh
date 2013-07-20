@@ -18,10 +18,11 @@ pip install $PKG_OPTS -r requirements.txt
 
 cat /dev/null >| $VIRTUAL_ENV/bin/postactivate
 echo "alias cd-top=\"cd $PWD\"" >> $VIRTUAL_ENV/bin/postactivate
-echo "alias mishmash=\"eyeD3 --plugin=mishmash\"
+echo "alias mishmash=\"python -m mishmash\"" >> $VIRTUAL_ENV/bin/postactivate
 echo "export PATH=\"$PWD/bin:$PATH\"" >> $VIRTUAL_ENV/bin/postactivate
 echo "export PYTHONPATH=\"$PWD/src\"" >> $VIRTUAL_ENV/bin/postactivate
 
 cat /dev/null >| $VIRTUAL_ENV/bin/postdeactivate
 echo "unalias cd-top" >> $VIRTUAL_ENV/bin/postdeactivate
+echo "unalias mishmash" >> $VIRTUAL_ENV/bin/postdeactivate
 echo "unset PYTHONPATH" >> $VIRTUAL_ENV/bin/postdeactivate
