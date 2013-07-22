@@ -19,6 +19,7 @@
 ################################################################################
 from __future__ import print_function
 
+import os
 import sys
 import getpass
 from datetime import datetime
@@ -161,7 +162,7 @@ def main():
                           help="Database type. Supported types: %s" %
                                ', '.join(SUPPORTED_DB_TYPES))
     db_group.add_argument("--database", dest="db_name",
-                          default="mishmash.db",
+                          default=os.path.expandvars("${HOME}/mishmash.db"),
                           help="The name of the datbase (path for sqlite).")
     db_group.add_argument("--username", dest="username",
                           default=getpass.getuser(),
