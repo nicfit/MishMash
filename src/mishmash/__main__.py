@@ -51,12 +51,15 @@ def _init(args):
     except MissingSchemaException as ex:
         db = None
 
+    dropped = False
     if db and args.drop_all:
         printWarning("Dropping all database tables.")
         db.dropAllTables()
+        dropped = True
 
-    db = _makeDatabase(args, True)
-    printMsg("Database initialized")
+    if not db or dropped:
+        printMsg("Initializing...")
+        db = _makeDatabase(args, True)
 
 
 def _sync(args):
@@ -67,16 +70,15 @@ def _sync(args):
 
 
 def _info(args):
-    # FIXME: show database parameters
     db = _makeDatabase(args)
 
     session = db.Session()
     with session.begin():
         print("\nDatabase:")
+        print("URI: %s" % db._db_uri)
         meta = session.query(Meta).one()
         print("Version:", meta.version)
         print("Last Sync:", meta.last_sync)
-        meta.last_sync = datetime.now()
         print("%d tracks" % session.query(Track).count())
         print("%d artists" % session.query(Artist).count())
         print("%d albums" % session.query(Album).count())
@@ -88,6 +90,7 @@ def _random(args):
 
     db = _makeDatabase(args)
 
+    import ipdb; ipdb.set_trace()
     session = db.Session()
     for track in session.query(Track).order_by(func.random())\
                                      .limit(args.count).all():
@@ -152,6 +155,28 @@ def _list(args):
         assert(not "unsupported list value")
 
 
+def _relocate(args):
+    db = _makeDatabase(args)
+    session = db.Session()
+
+    old, new = args.oldroot, args.newroot
+    if old[-1] != os.sep:
+        old += os.sep
+    if new[-1] != os.sep:
+        new += os.sep
+
+    num_relocates = 0
+    with session.begin():
+
+        for track in session.query(Track).filter(
+                Track.path.like(u"%s%%" % old)).all():
+            track.path = track.path.replace(old, new)
+            num_relocates += 1
+
+        session.flush()
+    print("%d files relocated from '%s' to '%s'" % (num_relocates, old, new))
+
+
 def main():
 
     parser = ArgumentParser(prog="mishmash")
@@ -185,6 +210,16 @@ def main():
         p.set_defaults(func=func)
         return p
 
+    # help subcommand; turns it into the less intuitive --help format.
+    def _help(args):
+        if args.command:
+            parser.parse_args([args.command, "--help"])
+        else:
+            parser.print_help()
+        parser.exit(0)
+    help_parser = mkSubParser("help", "Show help.", _help)
+    help_parser.add_argument("command", nargs='?', default=None)
+
     # init subcommand
     init_parser = mkSubParser("init", "Initialize music database.", _init)
     init_parser.add_argument("--drop-all", action="store_true",
@@ -215,6 +250,14 @@ def main():
     list_parser.add_argument("what", metavar="WHAT", choices=list_choices,
                              help="What to list. Valid values are %s." %
                                   ','.join(["'%s'" % c for c in list_choices]))
+
+    # relocate subcommand
+    relo_parser = mkSubParser("relocate",
+                              "Relocate file paths from one root prefix to "
+                              "another",
+                              _relocate)
+    relo_parser.add_argument("oldroot", help="The path to replace.")
+    relo_parser.add_argument("newroot", help="The substitute path.")
 
     # Run command
     args = parser.parse_args()
