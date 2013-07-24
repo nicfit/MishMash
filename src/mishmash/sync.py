@@ -33,6 +33,7 @@ from eyed3.utils.cli import printError, printMsg, printWarning
 
 from .database import Database
 from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label
+from .log import log
 
 
 class SyncPlugin(LoaderPlugin):
@@ -84,15 +85,24 @@ class SyncPlugin(LoaderPlugin):
                 info = audio_file.info
                 tag = audio_file.tag
 
+                if not tag:
+                    log.warn("File missing tag/metadata, skipping: %s" % path)
+                    continue
+
                 track = session.query(Track).filter_by(path=path).all()
                 if track:
                     track = track[0]
                     if datetime.fromtimestamp(getctime(path)) <= track.ctime:
-                        # Have the track and the file is not modified
+                        # track is in DB and the file is not modified
                         continue
 
                 # Either adding the track (track == None)
                 # or modifying (track != None)
+
+                if not tag.artist:
+                    log.warn("File missing required artist metadata, "
+                             "skipping: %s" % path)
+                    continue
 
                 artist_rows = self.db.getArtist(session, name=tag.artist)
                 if artist_rows:
@@ -156,8 +166,6 @@ class SyncPlugin(LoaderPlugin):
     def handleDone(self):
         t = time.time() - self.start_time
 
-        # FIXME: logging
-
         session = self.db.Session()
         for track in session.query(Track).all():
             if not os.path.exists(track.path):
@@ -173,6 +181,9 @@ class SyncPlugin(LoaderPlugin):
         num_orphaned_albums = 0
         printMsg("Purging orphan artist names...")
         for artist in session.query(Artist).all():
+            if artist.name == VARIOUS_ARTISTS_NAME:
+                continue
+
             any_track = session.query(Track).filter(Track.artist_id==artist.id)\
                                             .first()
             if not any_track:
