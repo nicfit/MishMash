@@ -90,7 +90,6 @@ def _random(args):
 
     db = _makeDatabase(args)
 
-    import ipdb; ipdb.set_trace()
     session = db.Session()
     for track in session.query(Track).order_by(func.random())\
                                      .limit(args.count).all():

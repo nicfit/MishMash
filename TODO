@@ -1,3 +1,11 @@
+First release - 0.3.0
+---------------------
+- setup.py 
+- pavement.py
+
+
+After
+----
 
 - Logging options not honored. Use eyed3.logging 
 - All dates need columns. Best date algo needs to come from what's avail in DB
