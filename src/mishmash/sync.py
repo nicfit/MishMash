@@ -38,9 +38,7 @@ from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label
 class SyncPlugin(LoaderPlugin):
     NAMES = ['mishmash-sync']
     SUMMARY = u"Synchronize files/direcotries with a Mishmash database."
-    DESCRIPTION = u"""
-**Requires SQLAlchemy**
-"""
+    DESCRIPTION = u""
 
     def __init__(self, arg_parser):
         super(SyncPlugin, self).__init__(arg_parser, cache_files=True)
@@ -157,6 +155,8 @@ class SyncPlugin(LoaderPlugin):
 
     def handleDone(self):
         t = time.time() - self.start_time
+
+        # FIXME: logging
 
         session = self.db.Session()
         for track in session.query(Track).all():
