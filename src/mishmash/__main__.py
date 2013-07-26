@@ -265,10 +265,6 @@ def main():
             title="Sub commands",
             description="Database command line options are required by most "
                         "sub commands.")
-    def mkSubParser(name, help, func):
-        p = subparsers.add_parser(name, help=help)
-        p.set_defaults(func=func)
-        return p
 
     # help subcommand; turns it into the less intuitive --help format.
     def _help(args):
@@ -277,7 +273,8 @@ def main():
         else:
             parser.print_help()
         parser.exit(0)
-    help_parser = mkSubParser("help", "Show help.", _help)
+    help_parser = subparsers.add_parser("help", help="Show help.")
+    help_parser.set_defaults(func=_help)
     help_parser.add_argument("command", nargs='?', default=None)
 
     init = Init(subparsers)
