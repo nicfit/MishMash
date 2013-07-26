@@ -37,144 +37,205 @@ from .orm import Track, Artist, Album, Meta, Label
 from .log import log
 
 
-def _makeDatabase(args, do_create=False):
-    return Database(args.db_type, args.db_name,
-                    username=args.username, password=args.password,
-                    host=args.host, port=args.port,
-                    do_create=do_create)
+class Command(object):
+    def __init__(self, subparsers, name, help):
+        self.subparsers = subparsers
+        self.parser = self.subparsers.add_parser(name, help=help)
+        self.parser.set_defaults(func=self.run)
+
+    def makeDatabase(self, args, do_create=False):
+        return Database(args.db_type, args.db_name,
+                        username=args.username, password=args.password,
+                        host=args.host, port=args.port,
+                        do_create=do_create)
+    
+    def run(self, args):
+        raise Exception("Must implement the run() function")
 
 
-def _init(args):
+# init subcommand
+class Init(Command):
+    def __init__(self, subparsers):
+        super(Init, self).__init__(subparsers, "init",
+                                   "Initialize music database.")
+        self.parser.add_argument("--drop-all", action="store_true",
+                                 help="Drop all tables and re-init")
 
-    try:
-        db = _makeDatabase(args, False)
-    except MissingSchemaException as ex:
-        db = None
+    def run(self, args):
+        try:
+            db = self.makeDatabase(args, False)
+        except MissingSchemaException as ex:
+            db = None
 
-    dropped = False
-    if db and args.drop_all:
-        printWarning("Dropping all database tables.")
-        db.dropAllTables()
-        dropped = True
+        dropped = False
+        if db and args.drop_all:
+            printWarning("Dropping all database tables.")
+            db.dropAllTables()
+            dropped = True
 
-    if not db or dropped:
-        printMsg("Initializing...")
-        db = _makeDatabase(args, True)
+        if not db or dropped:
+            printMsg("Initializing...")
+            db = self.makeDatabase(args, True)
+    
 
+# sync subcommand
+class Sync(Command):
+    def __init__(self, subparsers):
+        super(Sync, self).__init__(subparsers, "sync",
+                                   "Syncronize music and database.")
+        from . import sync
+        self.parser = eyed3.main.makeCmdLineParser(self.parser)
+        self.plugin = sync.SyncPlugin(self.parser)
 
-def _sync(args):
-    db = _makeDatabase(args)
-    args.db = db
+    def run(self, args):
+        db = self.makeDatabase(args)
+        args.db = db
 
-    return eyed3_main(args, None)
-
-
-def _info(args):
-    db = _makeDatabase(args)
-
-    session = db.Session()
-    with session.begin():
-        print("\nDatabase:")
-        print("URI: %s" % db._db_uri)
-        meta = session.query(Meta).one()
-        print("Version:", meta.version)
-        print("Last Sync:", meta.last_sync)
-        print("%d tracks" % session.query(Track).count())
-        print("%d artists" % session.query(Artist).count())
-        print("%d albums" % session.query(Album).count())
-        print("%d labels" % session.query(Label).count())
-
-
-def _random(args):
-    from sqlalchemy.sql.expression import func
-
-    db = _makeDatabase(args)
-
-    session = db.Session()
-    for track in session.query(Track).order_by(func.random())\
-                                     .limit(args.count).all():
-        printMsg(track.path)
+        return eyed3_main(args, None)
 
 
-def _search(args):
-    db = _makeDatabase(args)
-    session = db.Session()
+# info subcommand
+class Info(Command):
+    def __init__(self, subparsers):
+        super(Info, self).__init__(subparsers, "info",
+                                   "Show information about music database.")
 
-    s = args.search_pattern
-    printMsg("\nSearching for '%s'" % s)
-
-    print("Artists:")
-    for artist in session.query(Artist).filter(
-            Artist.name.ilike(u"%%%s%%" % s)).all():
-        printMsg(u"\t%s (id: %d)" % (artist.name, artist.id))
-
-    print("Albums:")
-    for album in session.query(Album).filter(
-            Album.title.ilike(u"%%%s%%" % s)).all():
-        printMsg(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
-                                                  album.artist.name))
-
-    print("Tracks:")
-    for track in session.query(Track).filter(
-            Track.title.ilike(u"%%%s%%" % s)).all():
-        printMsg(u"\t%s (id: %d) (artist: %s) (album: %s)" %
-                 (track.title, track.id,
-                  track.artist.name,
-                  track.album.title if track.album else None))
-
-
-def _list(args):
-    db = _makeDatabase(args)
-
-    if args.what == "artists":
-        banner = None
-
+    def run(self, args):
+        db = self.makeDatabase(args)
+            
         session = db.Session()
-        for artist in session.query(Artist)\
-                             .order_by(Artist.sort_name).all():
-            if banner != artist.sort_name[0]:
-                banner = artist.sort_name[0]
-                printMsg(u"\n== %s ==" % banner)
-            printMsg(u"\t%s" % artist.sort_name)
-    elif args.what == "albums":
-        def albumSortKey(alb):
-            return alb.release_date
+        with session.begin():
+            print("\nDatabase:")
+            print("URI: %s" % db._db_uri)
+            meta = session.query(Meta).one()
+            print("Version:", meta.version)
+            print("Last Sync:", meta.last_sync)
+            print("%d tracks" % session.query(Track).count())
+            print("%d artists" % session.query(Artist).count())
+            print("%d albums" % session.query(Album).count())
+            print("%d labels" % session.query(Label).count())
+    
 
+# random subcommand
+class Random(Command):
+    def __init__(self, subparsers):
+        super(Random, self).__init__(subparsers, "random",
+                                     "Retrieve random tracks.")
+        self.parser.add_argument("count", type=int, metavar="COUNT")
+
+    def run(self, args):
+        from sqlalchemy.sql.expression import func
+            
+        db = self.makeDatabase(args)
+            
         session = db.Session()
-        for artist in session.query(Artist)\
-                             .order_by(Artist.sort_name).all():
-            printMsg(artist.sort_name)
-
-            albums = sorted(artist.albums, key=albumSortKey)
-            for alb in albums:
-                printMsg(u"\t%s (released: %s)" % (alb.title,
-                                                   alb.release_date))
-    else:
-        # This should not happen if ArgumentParser is doing its job
-        assert(not "unsupported list value")
+        for track in session.query(Track).order_by(func.random())\
+                                         .limit(args.count).all():
+            printMsg(track.path)
 
 
-def _relocate(args):
-    db = _makeDatabase(args)
-    session = db.Session()
+class Search(Command):
+    def __init__(self, subparsers):
+        super(Search, self).__init__(subparsers, "search",
+                                     "Search music database.")
+        self.parser.add_argument("search_pattern", type=unicode,
+                                 metavar="SEARCH", help="Search string.")
 
-    old, new = args.oldroot, args.newroot
-    if old[-1] != os.sep:
-        old += os.sep
-    if new[-1] != os.sep:
-        new += os.sep
-
-    num_relocates = 0
-    with session.begin():
-
+    def run(self, args):
+        db = self.makeDatabase(args)
+        session = db.Session()
+            
+        s = args.search_pattern
+        printMsg("\nSearching for '%s'" % s)
+            
+        print("Artists:")
+        for artist in session.query(Artist).filter(
+                Artist.name.ilike(u"%%%s%%" % s)).all():
+            printMsg(u"\t%s (id: %d)" % (artist.name, artist.id))
+                
+        print("Albums:")
+        for album in session.query(Album).filter(
+                Album.title.ilike(u"%%%s%%" % s)).all():
+            printMsg(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
+                                                      album.artist.name))
+                    
+        print("Tracks:")
         for track in session.query(Track).filter(
-                Track.path.like(u"%s%%" % old)).all():
-            track.path = track.path.replace(old, new)
-            num_relocates += 1
+                Track.title.ilike(u"%%%s%%" % s)).all():
+            printMsg(u"\t%s (id: %d) (artist: %s) (album: %s)" %
+                     (track.title, track.id,
+                      track.artist.name,
+                      track.album.title if track.album else None))
 
-        session.flush()
-    print("%d files relocated from '%s' to '%s'" % (num_relocates, old, new))
+class List(Command):
+    def __init__(self, subparsers):
+        super(List, self).__init__(subparsers, "list",
+                                   "Listings from music database.")
+        list_choices = ("artists", "albums")
+        self.parser.add_argument(
+            "what", metavar="WHAT", choices=list_choices,
+            help="What to list. Valid values are %s." %
+                 ','.join(["'%s'" % c for c in list_choices]))
 
+    def run(self, args):
+        db = self.makeDatabase(args)
+    
+        if args.what == "artists":
+            banner = None
+    
+            session = db.Session()
+            for artist in session.query(Artist)\
+                                 .order_by(Artist.sort_name).all():
+                if banner != artist.sort_name[0]:
+                    banner = artist.sort_name[0]
+                    printMsg(u"\n== %s ==" % banner)
+                printMsg(u"\t%s" % artist.sort_name)
+        elif args.what == "albums":
+            def albumSortKey(alb):
+                return alb.release_date
+    
+            session = db.Session()
+            for artist in session.query(Artist)\
+                                 .order_by(Artist.sort_name).all():
+                printMsg(artist.sort_name)
+    
+                albums = sorted(artist.albums, key=albumSortKey)
+                for alb in albums:
+                    printMsg(u"\t%s (released: %s)" % (alb.title,
+                                                       alb.release_date))
+        else:
+            # This should not happen if ArgumentParser is doing its job
+            assert(not "unsupported list value")
+
+class Relocate(Command):
+    def __init__(self, subparsers):
+        super(Relocate, self).__init__(
+            subparsers,"relocate",
+            "Relocate file paths from one root prefix to another")
+        self.parser.add_argument("oldroot", help="The path to replace.")
+        self.parser.add_argument("newroot", help="The substitute path.")
+
+    def run(self, args):
+        db = self.makeDatabase(args)
+        session = db.Session()
+    
+        old, new = args.oldroot, args.newroot
+        if old[-1] != os.sep:
+            old += os.sep
+        if new[-1] != os.sep:
+            new += os.sep
+    
+        num_relocates = 0
+        with session.begin():
+    
+            for track in session.query(Track).filter(
+                    Track.path.like(u"%s%%" % old)).all():
+                track.path = track.path.replace(old, new)
+                num_relocates += 1
+    
+            session.flush()
+        print("%d files relocated from '%s' to '%s'" % (num_relocates, old, new))
+                                       
 
 def main():
 
@@ -219,48 +280,17 @@ def main():
     help_parser = mkSubParser("help", "Show help.", _help)
     help_parser.add_argument("command", nargs='?', default=None)
 
-    # init subcommand
-    init_parser = mkSubParser("init", "Initialize music database.", _init)
-    init_parser.add_argument("--drop-all", action="store_true",
-                             help="Drop all tables and re-init")
-
-    # sync subcommand
-    from . import sync
-    sync_parser = eyed3.main.makeCmdLineParser(
-            mkSubParser("sync", "Syncronize music and database.", _sync))
-    plugin = sync.SyncPlugin(sync_parser)
-
-    # info subcommand
-    info_parser = mkSubParser("info","Show information about music database.",
-                               _info)
-
-    # random subcommand
-    random_parser = mkSubParser("random", "Retrieve random tracks.", _random)
-    random_parser.add_argument("count", type=int, metavar="COUNT")
-
-    # search subcommand
-    search_parser = mkSubParser("search", "Search music database.", _search)
-    search_parser.add_argument("search_pattern", type=unicode, metavar="SEARCH",
-                               help="Search string.")
-
-    # list subcommand
-    list_choices = ("artists", "albums")
-    list_parser = mkSubParser("list", "Listings from music database.", _list)
-    list_parser.add_argument("what", metavar="WHAT", choices=list_choices,
-                             help="What to list. Valid values are %s." %
-                                  ','.join(["'%s'" % c for c in list_choices]))
-
-    # relocate subcommand
-    relo_parser = mkSubParser("relocate",
-                              "Relocate file paths from one root prefix to "
-                              "another",
-                              _relocate)
-    relo_parser.add_argument("oldroot", help="The path to replace.")
-    relo_parser.add_argument("newroot", help="The substitute path.")
-
+    init = Init(subparsers)
+    sync = Sync(subparsers)
+    info = Info(subparsers)
+    random = Random(subparsers)
+    search = Search(subparsers)
+    list = List(subparsers)
+    relocate = Relocate(subparsers)
+    
     # Run command
     args = parser.parse_args()
-    args.plugin = plugin
+    args.plugin = sync.plugin
     try:
         retval = args.func(args) or 0
     except MissingSchemaException as ex:
