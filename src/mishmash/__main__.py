@@ -28,61 +28,18 @@ import eyed3
 eyed3.require("0.7.4")
 
 import eyed3.main
-from eyed3.main import main as eyed3_main
-from eyed3.utils.cli import ArgumentParser
 from eyed3.utils.cli import printError, printMsg, printWarning
 
-from .database import SUPPORTED_DB_TYPES, Database, MissingSchemaException
-from .orm import Track, Artist, Album, Meta, Label
+from .database import MissingSchemaException
 from .log import log
-from .commands import Command
+from .commands import makeCmdLineParser
 
 
 def main():
-
-    parser = ArgumentParser(prog="mishmash")
-
-    db_group = parser.add_argument_group(title="Database settings and options")
-
-    db_group.add_argument("--db-type", dest="db_type", default="sqlite",
-                          help="Database type. Supported types: %s" %
-                               ', '.join(SUPPORTED_DB_TYPES))
-    db_group.add_argument("--database", dest="db_name",
-                          default=os.path.expandvars("${HOME}/mishmash.db"),
-                          help="The name of the datbase (path for sqlite).")
-    db_group.add_argument("--username", dest="username",
-                          default=getpass.getuser(),
-                          help="Login name for database. Not used for sqlite. "
-                               "Default is the user login name.")
-    db_group.add_argument("--password", dest="password", default=None,
-                          help="Password for database. Not used for sqlite. ")
-    db_group.add_argument("--host", dest="host", default="localhost",
-                          help="Hostname for database. Not used for sqlite. "
-                               "The default is 'localhost'")
-    db_group.add_argument("--port", dest="port", default=5432,
-                          help="Port for database. Not used for sqlite.")
-
-    subparsers = parser.add_subparsers(
-            title="Sub commands",
-            description="Database command line options are required by most "
-                        "sub commands.")
-
-    # help subcommand; turns it into the less intuitive --help format.
-    def _help(args):
-        if args.command:
-            parser.parse_args([args.command, "--help"])
-        else:
-            parser.print_help()
-        parser.exit(0)
-    help_parser = subparsers.add_parser("help", help="Show help.")
-    help_parser.set_defaults(func=_help)
-    help_parser.add_argument("command", nargs='?', default=None)
-
-    Command.initAll(subparsers)
+    parser = makeCmdLineParser()
 
     # Run command
     args = parser.parse_args()
-    args.plugin = Command.cmds["sync"].plugin
     try:
         retval = args.func(args) or 0
     except MissingSchemaException as ex:
