@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import os
 import getpass
+from argparse import Namespace
 
 import eyed3
 eyed3.require("0.7.4")
@@ -89,29 +90,6 @@ class Init(Command):
         if not db or dropped:
             printMsg("Initializing...")
             db = Database(dbinfo, do_create=True)
-    
-
-# 'args' like object for feeding to eyed3 when being run as an API and not
-# through main with argparse.
-class Args(object):
-    def __init__(self, dbinfo, paths, config, backup, excludes, fs_encoding,
-                 quiet):
-        self.db_type = dbinfo.db_type
-        self.name = dbinfo.name
-        self.username = dbinfo.username
-        self.password = dbinfo.password
-        self.host = dbinfo.host
-        self.port = dbinfo.port
-        self.paths = paths
-        self.config = config
-        self.backup = backup
-        self.excludes = excludes
-        self.fs_encoding = fs_encoding
-        self.quiet = quiet
-        self.list_plugins = False
-
-    def __setattr__(self, name, value):
-        self.__dict__[name] = value
 
 
 # sync subcommand
@@ -126,20 +104,28 @@ class Sync(Command):
 
     def _handleArgs(self, args):
         self.args = args
-        self.args.plugin = self.plugin
         dbinfo = super(Sync, self)._handleArgs(self.args)
         self.run(dbinfo)
 
     def run(self, dbinfo, paths=[], config=None, backup=False, excludes=None,
             fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False):
         db = Database(dbinfo)
-        if not self.args:
-            self.args = Args(dbinfo, paths, config, backup, excludes,
-                             fs_encoding, quiet)
-            self.args.plugin = self.plugin
-        self.args.db = db
+        if self.args:
+            args = self.args
+        else:
+            # Running as an API, make an args object with the right info
+            args = Namespace()
+            args.paths = paths
+            args.config = config
+            args.backup = backup
+            args.excludes = excludes
+            args.fs_encoding = fs_encoding
+            args.quiet = quiet
+            args.list_plugins = False
+        args.plugin = self.plugin
+        args.db = db
 
-        return eyed3_main(self.args, None)
+        return eyed3_main(args, None)
 
 
 # info subcommand
