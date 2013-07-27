@@ -88,6 +88,10 @@ class SyncPlugin(LoaderPlugin):
                 if not tag:
                     log.warn("File missing tag/metadata, skipping: %s" % path)
                     continue
+                elif None in (tag.title, tag.artist):
+                    log.warn("File missing required artist and/or title "
+                             "metadata, skipping: %s" % path)
+                    continue
 
                 track = session.query(Track).filter_by(path=path).all()
                 if track:
@@ -98,11 +102,6 @@ class SyncPlugin(LoaderPlugin):
 
                 # Either adding the track (track == None)
                 # or modifying (track != None)
-
-                if not tag.artist:
-                    log.warn("File missing required artist metadata, "
-                             "skipping: %s" % path)
-                    continue
 
                 artist_rows = self.db.getArtist(session, name=tag.artist)
                 if artist_rows:
@@ -179,9 +178,12 @@ class SyncPlugin(LoaderPlugin):
         # Look for orphans
         num_orphaned_artists = 0
         num_orphaned_albums = 0
+        found_ids = set()
+
         printMsg("Purging orphan artist names...")
         for artist in session.query(Artist).all():
-            if artist.name == VARIOUS_ARTISTS_NAME:
+            if (artist.name == VARIOUS_ARTISTS_NAME or
+                    artist.id in found_ids):
                 continue
 
             any_track = session.query(Track).filter(Track.artist_id==artist.id)\
@@ -189,13 +191,23 @@ class SyncPlugin(LoaderPlugin):
             if not any_track:
                 session.delete(artist)
                 num_orphaned_artists += 1
+            else:
+                found_ids.add(artist.id)
+        session.flush()
+
+        found_ids.clear()
         printMsg("Purging orphan album names...")
         for album in session.query(Album).all():
+            if album.id in found_ids:
+                continue
+
             any_track = session.query(Track).filter(Track.album_id==album.id)\
                                             .first()
             if not any_track:
                 session.delete(album)
                 num_orphaned_albums += 1
+            else:
+                found_ids.add(album.id)
         session.flush()
 
         if self._num_loaded or self._num_deleted:
