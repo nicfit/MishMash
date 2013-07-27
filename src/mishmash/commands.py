@@ -20,15 +20,18 @@
 from __future__ import print_function
 
 import os
+import getpass
 
 import eyed3
 eyed3.require("0.7.4")
 
 import eyed3.main
 from eyed3.main import main as eyed3_main
+from eyed3.utils.cli import ArgumentParser
 from eyed3.utils.cli import printError, printMsg, printWarning
 
-from .database import SUPPORTED_DB_TYPES, Database, MissingSchemaException
+from .database import (SUPPORTED_DB_TYPES, DBInfo, Database,
+                       MissingSchemaException)
 from .orm import Track, Artist, Album, Meta, Label
 from .log import log
 
@@ -39,17 +42,16 @@ _cmds = []
 class Command(object):
     cmds = {}
     
-    def __init__(self, subparsers, name, help):
+    def __init__(self, name, help, subparsers=None):
         self.subparsers = subparsers
         self.parser = self.subparsers.add_parser(name, help=help)
-        self.parser.set_defaults(func=self.run)
+        self.parser.set_defaults(func=self._handleArgs)
         self.cmds[name] = self
 
-    def makeDatabase(self, args, do_create=False):
-        return Database(args.db_type, args.db_name,
-                        username=args.username, password=args.password,
-                        host=args.host, port=args.port,
-                        do_create=do_create)
+    def _handleArgs(self, args):
+        self.args = args
+        return DBInfo(args.db_type, args.db_name, username=args.username,
+                      password=args.password, host=args.host, port=args.port)
     
     def run(self, args):
         raise Exception("Must implement the run() function")
@@ -62,53 +64,96 @@ class Command(object):
 
 # init subcommand
 class Init(Command):
-    def __init__(self, subparsers):
-        super(Init, self).__init__(subparsers, "init",
-                                   "Initialize music database.")
+    def __init__(self, subparsers=None):
+        super(Init, self).__init__("init", "Initialize music database.",
+                                   subparsers)
         self.parser.add_argument("--drop-all", action="store_true",
                                  help="Drop all tables and re-init")
 
-    def run(self, args):
+    def _handleArgs(self, args):
+        dbinfo = super(Init, self)._handleArgs(args)
+        self.run(dbinfo, args.drop_all)
+
+    def run(self, dbinfo, drop_all=False):
         try:
-            db = self.makeDatabase(args, False)
+            db = Database(dbinfo, do_create=False)
         except MissingSchemaException as ex:
             db = None
 
         dropped = False
-        if db and args.drop_all:
+        if db and drop_all:
             printWarning("Dropping all database tables.")
             db.dropAllTables()
             dropped = True
 
         if not db or dropped:
             printMsg("Initializing...")
-            db = self.makeDatabase(args, True)
+            db = Database(dbinfo, do_create=True)
     
+
+# 'args' like object for feeding to eyed3 when being run as an API and not
+# through main with argparse.
+class Args(object):
+    def __init__(self, dbinfo, paths, config, backup, excludes, fs_encoding,
+                 quiet):
+        self.db_type = dbinfo.db_type
+        self.name = dbinfo.name
+        self.username = dbinfo.username
+        self.password = dbinfo.password
+        self.host = dbinfo.host
+        self.port = dbinfo.port
+        self.paths = paths
+        self.config = config
+        self.backup = backup
+        self.excludes = excludes
+        self.fs_encoding = fs_encoding
+        self.quiet = quiet
+        self.list_plugins = False
+
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+
 
 # sync subcommand
 class Sync(Command):
-    def __init__(self, subparsers):
-        super(Sync, self).__init__(subparsers, "sync",
-                                   "Syncronize music and database.")
+    def __init__(self, subparsers=None):
+        super(Sync, self).__init__("sync", "Syncronize music and database.",
+                                   subparsers)
         from . import sync
         self.parser = eyed3.main.makeCmdLineParser(self.parser)
         self.plugin = sync.SyncPlugin(self.parser)
+        self.args = None
 
-    def run(self, args):
-        db = self.makeDatabase(args)
-        args.db = db
+    def _handleArgs(self, args):
+        self.args = args
+        self.args.plugin = self.plugin
+        dbinfo = super(Sync, self)._handleArgs(self.args)
+        self.run(dbinfo)
 
-        return eyed3_main(args, None)
+    def run(self, dbinfo, paths=[], config=None, backup=False, excludes=None,
+            fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False):
+        db = Database(dbinfo)
+        if not self.args:
+            self.args = Args(dbinfo, paths, config, backup, excludes,
+                             fs_encoding, quiet)
+            self.args.plugin = self.plugin
+        self.args.db = db
+
+        return eyed3_main(self.args, None)
 
 
 # info subcommand
 class Info(Command):
-    def __init__(self, subparsers):
-        super(Info, self).__init__(subparsers, "info",
-                                   "Show information about music database.")
+    def __init__(self, subparsers=None):
+        super(Info, self).__init__(
+            "info", "Show information about music database.", subparsers)
 
-    def run(self, args):
-        db = self.makeDatabase(args)
+    def _handleArgs(self, args):
+        dbinfo = super(Info, self)._handleArgs(args)
+        self.run(dbinfo)
+
+    def run(self, dbinfo):
+        db = Database(dbinfo)
             
         session = db.Session()
         with session.begin():
@@ -125,34 +170,42 @@ class Info(Command):
 
 # random subcommand
 class Random(Command):
-    def __init__(self, subparsers):
-        super(Random, self).__init__(subparsers, "random",
-                                     "Retrieve random tracks.")
+    def __init__(self, subparsers=None):
+        super(Random, self).__init__("random", "Retrieve random tracks.",
+                                     subparsers)
         self.parser.add_argument("count", type=int, metavar="COUNT")
 
-    def run(self, args):
+    def _handleArgs(self, args):
+        dbinfo = super(Random, self)._handleArgs(args)
+        self.run(dbinfo, args.count)
+
+    def run(self, dbinfo, count):
         from sqlalchemy.sql.expression import func
             
-        db = self.makeDatabase(args)
+        db = Database(dbinfo)
             
         session = db.Session()
         for track in session.query(Track).order_by(func.random())\
-                                         .limit(args.count).all():
+                                         .limit(count).all():
             printMsg(track.path)
 
 
 class Search(Command):
-    def __init__(self, subparsers):
-        super(Search, self).__init__(subparsers, "search",
-                                     "Search music database.")
+    def __init__(self, subparsers=None):
+        super(Search, self).__init__("search", "Search music database.",
+                                     subparsers)
         self.parser.add_argument("search_pattern", type=unicode,
                                  metavar="SEARCH", help="Search string.")
 
-    def run(self, args):
-        db = self.makeDatabase(args)
+    def _handleArgs(self, args):
+        dbinfo = super(Search, self)._handleArgs(args)
+        self.run(dbinfo, args.search_pattern)
+
+    def run(self, dbinfo, search_pattern):
+        db = Database(dbinfo)
         session = db.Session()
             
-        s = args.search_pattern
+        s = search_pattern
         printMsg("\nSearching for '%s'" % s)
             
         print("Artists:")
@@ -176,19 +229,23 @@ class Search(Command):
 
 
 class List(Command):
-    def __init__(self, subparsers):
-        super(List, self).__init__(subparsers, "list",
-                                   "Listings from music database.")
+    def __init__(self, subparsers=None):
+        super(List, self).__init__("list", "Listings from music database.",
+                                   subparsers)
         list_choices = ("artists", "albums")
         self.parser.add_argument(
             "what", metavar="WHAT", choices=list_choices,
             help="What to list. Valid values are %s." %
                  ','.join(["'%s'" % c for c in list_choices]))
 
-    def run(self, args):
-        db = self.makeDatabase(args)
+    def _handleArgs(self, args):
+        dbinfo = super(List, self)._handleArgs(args)
+        self.run(dbinfo, args.what)
+
+    def run(self, dbinfo, what):
+        db = Database(dbinfo)
     
-        if args.what == "artists":
+        if what == "artists":
             banner = None
     
             session = db.Session()
@@ -198,7 +255,7 @@ class List(Command):
                     banner = artist.sort_name[0]
                     printMsg(u"\n== %s ==" % banner)
                 printMsg(u"\t%s" % artist.sort_name)
-        elif args.what == "albums":
+        elif what == "albums":
             def albumSortKey(alb):
                 return alb.release_date
     
@@ -217,33 +274,82 @@ class List(Command):
 
 
 class Relocate(Command):
-    def __init__(self, subparsers):
+    def __init__(self, subparsers=None):
         super(Relocate, self).__init__(
-            subparsers,"relocate",
-            "Relocate file paths from one root prefix to another")
+            "relocate", "Relocate file paths from one root prefix to another",
+            subparsers)
         self.parser.add_argument("oldroot", help="The path to replace.")
         self.parser.add_argument("newroot", help="The substitute path.")
 
-    def run(self, args):
-        db = self.makeDatabase(args)
+    def _handleArgs(self, args):
+        dbinfo = super(Relocate, self)._handleArgs(args)
+        self.run(dbinfo, args.oldroot, args.newroot)
+
+    def run(self, dbinfo, oldroot, newroot):
+        db = Database(dbinfo)
         session = db.Session()
     
-        old, new = args.oldroot, args.newroot
-        if old[-1] != os.sep:
-            old += os.sep
-        if new[-1] != os.sep:
-            new += os.sep
+        if oldroot[-1] != os.sep:
+            oldroot += os.sep
+        if newroot[-1] != os.sep:
+            newroot += os.sep
     
         num_relocates = 0
         with session.begin():
     
             for track in session.query(Track).filter(
-                    Track.path.like(u"%s%%" % old)).all():
-                track.path = track.path.replace(old, new)
+                    Track.path.like(u"%s%%" % oldroot)).all():
+                track.path = track.path.replace(oldroot, newroot)
                 num_relocates += 1
     
             session.flush()
-        print("%d files relocated from '%s' to '%s'" % (num_relocates, old, new))
+        print("%d files relocated from '%s' to '%s'" % (num_relocates, oldroot,
+                                                        newroot))
 
 
 _cmds.extend([Init, Sync, Info, Random, Search, List, Relocate])
+
+
+def makeCmdLineParser():
+
+    parser = ArgumentParser(prog="mishmash")
+
+    db_group = parser.add_argument_group(title="Database settings and options")
+
+    db_group.add_argument("--db-type", dest="db_type", default="sqlite",
+                          help="Database type. Supported types: %s" %
+                               ', '.join(SUPPORTED_DB_TYPES))
+    db_group.add_argument("--database", dest="db_name",
+                          default=os.path.expandvars("${HOME}/mishmash.db"),
+                          help="The name of the datbase (path for sqlite).")
+    db_group.add_argument("--username", dest="username",
+                          default=getpass.getuser(),
+                          help="Login name for database. Not used for sqlite. "
+                               "Default is the user login name.")
+    db_group.add_argument("--password", dest="password", default=None,
+                          help="Password for database. Not used for sqlite. ")
+    db_group.add_argument("--host", dest="host", default="localhost",
+                          help="Hostname for database. Not used for sqlite. "
+                               "The default is 'localhost'")
+    db_group.add_argument("--port", dest="port", default=5432,
+                          help="Port for database. Not used for sqlite.")
+
+    subparsers = parser.add_subparsers(
+            title="Sub commands",
+            description="Database command line options are required by most "
+                        "sub commands.")
+
+    # help subcommand; turns it into the less intuitive --help format.
+    def _help(args):
+        if args.command:
+            parser.parse_args([args.command, "--help"])
+        else:
+            parser.print_help()
+        parser.exit(0)
+    help_parser = subparsers.add_parser("help", help="Show help.")
+    help_parser.set_defaults(func=_help)
+    help_parser.add_argument("command", nargs='?', default=None)
+
+    Command.initAll(subparsers)
+
+    return parser
