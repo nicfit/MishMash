@@ -27,17 +27,31 @@ from . import log
 SUPPORTED_DB_TYPES = ["sqlite", "postgresql", "oracle"]
 
 
+class DBInfo(object):
+    def __init__(self, db_type=None, name=None, host=None, port=None,
+                 username=None, password=None, uri=None):
+        self.db_type = db_type
+        self.name = name
+        self.host = host
+        self.port = port
+        self.username = username
+        self.password = password
+        self.uri = uri
+
+
 class Database(object):
     DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                            "encoding": "utf8",
                           }
 
-    def __init__(self, db_type, name, host=None, port=None,
-                 username=None, password=None, do_create=False,
-                 do_upgrage=False):
+    def __init__(self, dbinfo, do_create=False, do_upgrade=False):
 
-        self._db_uri = makeDbUri(db_type, name, host=host, port=port,
-                                 username=username, password=password)
+        if dbinfo.uri:
+            self._db_uri = dbinfo.uri
+        else:
+            self._db_uri = makeDbUri(dbinfo.db_type, dbinfo.name, host=dbinfo.host,
+                                     port=dbinfo.port, username=dbinfo.username,
+                                     password=dbinfo.password)
         self._engine = sql.create_engine(self._db_uri,
                                          **self.DEFAULT_ENGINE_ARGS)
         try:
