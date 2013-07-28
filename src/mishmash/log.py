@@ -27,9 +27,10 @@ class DefaultFormatter(logging.Formatter):
 
 log = logging.getLogger("mishmash")
 
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(DefaultFormatter())
-log.addHandler(console_handler)
+def setupLogging():
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(DefaultFormatter())
+    log.addHandler(console_handler)
 
-log.setLevel(logging.NOTSET)
-log.propagate = False
+    log.setLevel(logging.NOTSET)
+    log.propagate = False
