@@ -17,9 +17,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+import os
 import sqlalchemy as sql
 
-from .orm import TYPES, TABLES, LABELS
+from .orm import TYPES, TABLES, LABELS, VARIOUS_ARTISTS_NAME
 from .orm import Track, Artist, Album
 from . import log
 
@@ -49,7 +50,8 @@ class Database(object):
         if dbinfo.uri:
             self._db_uri = dbinfo.uri
         else:
-            self._db_uri = makeDbUri(dbinfo.db_type, dbinfo.name, host=dbinfo.host,
+            self._db_uri = makeDbUri(dbinfo.db_type, dbinfo.name,
+                                     host=dbinfo.host,
                                      port=dbinfo.port, username=dbinfo.username,
                                      password=dbinfo.password)
         self._engine = sql.create_engine(self._db_uri,
@@ -100,7 +102,54 @@ class Database(object):
         query = session.query(Artist).filter_by(**kwargs)
         return query.all() if not one else query.one()
 
+    def deleteOrphans(self, session):
+        num_orphaned_artists = 0
+        num_orphaned_albums = 0
+        num_orphaned_tracks = 0
+        found_ids = set()
 
+        # Tracks
+        for track in session.query(Track).all():
+            if not os.path.exists(track.path):
+                # FIXME: logging
+                session.delete(track)
+                num_orphaned_tracks += 1
+
+        # Artists
+        found_ids.clear()
+        for artist in session.query(Artist).all():
+            if (artist.name == VARIOUS_ARTISTS_NAME or
+                    artist.id in found_ids):
+                continue
+
+            any_track = session.query(Track).filter(Track.artist_id==artist.id)\
+                                            .first()
+            if not any_track:
+                # FIXME: logging
+                session.delete(artist)
+                num_orphaned_artists += 1
+            else:
+                found_ids.add(artist.id)
+
+        # Albums
+        found_ids.clear()
+        for album in session.query(Album).all():
+            if album.id in found_ids:
+                continue
+
+            any_track = session.query(Track).filter(Track.album_id==album.id)\
+                                            .first()
+            if not any_track:
+                # FIXME: logging
+                session.delete(album)
+                num_orphaned_albums += 1
+            else:
+                found_ids.add(album.id)
+
+        if num_orphaned_tracks or num_orphaned_artists or num_orphaned_albums:
+            session.flush()
+
+        return (num_orphaned_tracks, num_orphaned_artists, num_orphaned_albums)
 
 
 def makeDbUri(db_type, name, host=None, port=None,

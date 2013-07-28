@@ -24,7 +24,6 @@ import getpass
 from argparse import Namespace
 
 import eyed3
-eyed3.require("0.7.4")
 
 import eyed3.main
 from eyed3.main import main as eyed3_main
@@ -42,7 +41,7 @@ _cmds = []
 
 class Command(object):
     cmds = {}
-    
+
     def __init__(self, name, help, subparsers=None):
         self.subparsers = subparsers
         self.parser = self.subparsers.add_parser(name, help=help)
@@ -53,7 +52,7 @@ class Command(object):
         self.args = args
         return DBInfo(args.db_type, args.db_name, username=args.username,
                       password=args.password, host=args.host, port=args.port)
-    
+
     def run(self, args):
         raise Exception("Must implement the run() function")
 
@@ -97,6 +96,12 @@ class Sync(Command):
     def __init__(self, subparsers=None):
         super(Sync, self).__init__("sync", "Syncronize music and database.",
                                    subparsers)
+        self.parser.add_argument(
+                "--no-purge", action="store_true", dest="no_purge",
+                help="Do not purge orphaned data (tracks, artists, albums, "
+                     "etc.). This will make for a faster sync, and useful when "
+                     "files were only added to a library.")
+
         from . import sync
         self.parser = eyed3.main.makeCmdLineParser(self.parser)
         self.plugin = sync.SyncPlugin(self.parser)
@@ -108,7 +113,7 @@ class Sync(Command):
         self.run(dbinfo)
 
     def run(self, dbinfo, paths=[], config=None, backup=False, excludes=None,
-            fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False):
+            fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
         db = Database(dbinfo)
         if self.args:
             args = self.args
@@ -122,6 +127,7 @@ class Sync(Command):
             args.fs_encoding = fs_encoding
             args.quiet = quiet
             args.list_plugins = False
+            args.no_purge = no_purge
         args.plugin = self.plugin
         args.db = db
 
@@ -140,7 +146,7 @@ class Info(Command):
 
     def run(self, dbinfo):
         db = Database(dbinfo)
-            
+
         session = db.Session()
         with session.begin():
             print("\nDatabase:")
@@ -152,7 +158,7 @@ class Info(Command):
             print("%d artists" % session.query(Artist).count())
             print("%d albums" % session.query(Album).count())
             print("%d labels" % session.query(Label).count())
-    
+
 
 # random subcommand
 class Random(Command):
@@ -167,9 +173,9 @@ class Random(Command):
 
     def run(self, dbinfo, count):
         from sqlalchemy.sql.expression import func
-            
+
         db = Database(dbinfo)
-            
+
         session = db.Session()
         for track in session.query(Track).order_by(func.random())\
                                          .limit(count).all():
@@ -190,21 +196,21 @@ class Search(Command):
     def run(self, dbinfo, search_pattern):
         db = Database(dbinfo)
         session = db.Session()
-            
+
         s = search_pattern
         printMsg("\nSearching for '%s'" % s)
-            
+
         print("Artists:")
         for artist in session.query(Artist).filter(
                 Artist.name.ilike(u"%%%s%%" % s)).all():
             printMsg(u"\t%s (id: %d)" % (artist.name, artist.id))
-                
+
         print("Albums:")
         for album in session.query(Album).filter(
                 Album.title.ilike(u"%%%s%%" % s)).all():
             printMsg(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
                                                       album.artist.name))
-                    
+
         print("Tracks:")
         for track in session.query(Track).filter(
                 Track.title.ilike(u"%%%s%%" % s)).all():
@@ -230,10 +236,10 @@ class List(Command):
 
     def run(self, dbinfo, what):
         db = Database(dbinfo)
-    
+
         if what == "artists":
             banner = None
-    
+
             session = db.Session()
             for artist in session.query(Artist)\
                                  .order_by(Artist.sort_name).all():
@@ -244,12 +250,12 @@ class List(Command):
         elif what == "albums":
             def albumSortKey(alb):
                 return alb.release_date
-    
+
             session = db.Session()
             for artist in session.query(Artist)\
                                  .order_by(Artist.sort_name).all():
                 printMsg(artist.sort_name)
-    
+
                 albums = sorted(artist.albums, key=albumSortKey)
                 for alb in albums:
                     printMsg(u"\t%s (released: %s)" % (alb.title,
@@ -274,20 +280,20 @@ class Relocate(Command):
     def run(self, dbinfo, oldroot, newroot):
         db = Database(dbinfo)
         session = db.Session()
-    
+
         if oldroot[-1] != os.sep:
             oldroot += os.sep
         if newroot[-1] != os.sep:
             newroot += os.sep
-    
+
         num_relocates = 0
         with session.begin():
-    
+
             for track in session.query(Track).filter(
                     Track.path.like(u"%s%%" % oldroot)).all():
                 track.path = track.path.replace(oldroot, newroot)
                 num_relocates += 1
-    
+
             session.flush()
         print("%d files relocated from '%s' to '%s'" % (num_relocates, oldroot,
                                                         newroot))

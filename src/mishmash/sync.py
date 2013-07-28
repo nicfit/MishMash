@@ -164,51 +164,18 @@ class SyncPlugin(LoaderPlugin):
 
     def handleDone(self):
         t = time.time() - self.start_time
-
         session = self.db.Session()
-        for track in session.query(Track).all():
-            if not os.path.exists(track.path):
-                printWarning("Deleting track %s" % track.path)
-                session.delete(track)
-                self._num_deleted += 1
-        if self._num_deleted:
-            session.flush()
+
         printMsg("All files sync'd")
 
-        # Look for orphans
         num_orphaned_artists = 0
         num_orphaned_albums = 0
-        found_ids = set()
-
-        printMsg("Purging orphan artist names...")
-        for artist in session.query(Artist).all():
-            if (artist.name == VARIOUS_ARTISTS_NAME or
-                    artist.id in found_ids):
-                continue
-
-            any_track = session.query(Track).filter(Track.artist_id==artist.id)\
-                                            .first()
-            if not any_track:
-                session.delete(artist)
-                num_orphaned_artists += 1
-            else:
-                found_ids.add(artist.id)
-        session.flush()
-
-        found_ids.clear()
-        printMsg("Purging orphan album names...")
-        for album in session.query(Album).all():
-            if album.id in found_ids:
-                continue
-
-            any_track = session.query(Track).filter(Track.album_id==album.id)\
-                                            .first()
-            if not any_track:
-                session.delete(album)
-                num_orphaned_albums += 1
-            else:
-                found_ids.add(album.id)
-        session.flush()
+        if not self.args.no_purge:
+            printMsg("Purging orphans (tracks, artists, albums, etc.) from "
+                     "database...")
+            (self._num_deleted,
+             num_orphaned_artists,
+             num_orphaned_albums) = self.db.deleteOrphans(session)
 
         if self._num_loaded or self._num_deleted:
             print("")
