@@ -47,7 +47,7 @@ class Command(object):
         self.subparsers = subparsers
         self.parser = self.subparsers.add_parser(name, help=help)
         self.parser.set_defaults(func=self._handleArgs)
-        self.cmds[name] = self
+        Command.cmds[name] = self
 
     def _handleArgs(self, args):
         self.args = args
