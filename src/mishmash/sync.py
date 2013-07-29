@@ -32,7 +32,7 @@ from eyed3.plugins import LoaderPlugin
 from eyed3.utils.cli import printError, printMsg, printWarning
 
 from .database import Database
-from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label
+from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta
 from .log import log
 
 
@@ -179,15 +179,17 @@ class SyncPlugin(LoaderPlugin):
         session = self.db.Session()
 
         printMsg("All files sync'd")
+        with session.begin():
+            self.db.getMeta(session).last_sync = datetime.now()
 
-        num_orphaned_artists = 0
-        num_orphaned_albums = 0
-        if not self.args.no_purge:
-            printMsg("Purging orphans (tracks, artists, albums, etc.) from "
-                     "database...")
-            (self._num_deleted,
-             num_orphaned_artists,
-             num_orphaned_albums) = self.db.deleteOrphans(session)
+            num_orphaned_artists = 0
+            num_orphaned_albums = 0
+            if not self.args.no_purge:
+                printMsg("Purging orphans (tracks, artists, albums) from "
+                         "database...")
+                (self._num_deleted,
+                 num_orphaned_artists,
+                 num_orphaned_albums) = self.db.deleteOrphans(session)
 
         if self._num_loaded or self._num_deleted:
             print("")

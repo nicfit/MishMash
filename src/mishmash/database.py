@@ -21,7 +21,7 @@ import os
 import sqlalchemy as sql
 
 from .orm import TYPES, TABLES, LABELS, VARIOUS_ARTISTS_NAME
-from .orm import Track, Artist, Album
+from .orm import Track, Artist, Album, Meta
 from . import log
 
 
@@ -32,7 +32,14 @@ class DBInfo(object):
     def __init__(self, db_type=None, name=None, host=None, port=None,
                  username=None, password=None, uri=None):
         self.db_type = db_type
-        self.name = name
+
+        if name:
+            self.name = name
+        elif db_type == "sqlite":
+            self.name = os.path.expandvars("${HOME}/mishmash.db")
+        else:
+            self.name = "mishmash"
+
         self.host = host
         self.port = port
         self.username = username
@@ -76,6 +83,8 @@ class Database(object):
             if not self._engine.has_table(table.name):
                 missing_tables.append(table)
 
+        # FIXME: what about other differences (new columns, etc)
+
         if missing_tables and not do_create:
             raise MissingSchemaException([str(t) for t in missing_tables])
 
@@ -101,6 +110,9 @@ class Database(object):
     def getArtist(self, session, one=False, **kwargs):
         query = session.query(Artist).filter_by(**kwargs)
         return query.all() if not one else query.one()
+
+    def getMeta(self, session):
+        return session.query(Meta).one()
 
     def deleteOrphans(self, session):
         num_orphaned_artists = 0
@@ -145,9 +157,6 @@ class Database(object):
                 num_orphaned_albums += 1
             else:
                 found_ids.add(album.id)
-
-        if num_orphaned_tracks or num_orphaned_artists or num_orphaned_albums:
-            session.flush()
 
         return (num_orphaned_tracks, num_orphaned_artists, num_orphaned_albums)
 
