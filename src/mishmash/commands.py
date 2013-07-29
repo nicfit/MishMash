@@ -150,14 +150,16 @@ class Info(Command):
         session = db.Session()
         with session.begin():
             print("\nDatabase:")
-            print("URI: %s" % db._db_uri)
+            print("\tURI: %s" % db._db_uri)
             meta = session.query(Meta).one()
-            print("Version:", meta.version)
-            print("Last Sync:", meta.last_sync)
-            print("%d tracks" % session.query(Track).count())
-            print("%d artists" % session.query(Artist).count())
-            print("%d albums" % session.query(Album).count())
-            print("%d labels" % session.query(Label).count())
+            print("\tVersion:", meta.version)
+            print("\tLast Sync:", meta.last_sync)
+
+            print("\nMusic:")
+            print("\t%d tracks" % session.query(Track).count())
+            print("\t%d artists" % session.query(Artist).count())
+            print("\t%d albums" % session.query(Album).count())
+            print("\t%d labels" % session.query(Label).count())
 
 
 # random subcommand
@@ -312,7 +314,7 @@ def makeCmdLineParser():
                           help="Database type. Supported types: %s" %
                                ', '.join(SUPPORTED_DB_TYPES))
     db_group.add_argument("--database", dest="db_name",
-                          default=os.path.expandvars("${HOME}/mishmash.db"),
+                          default=None,
                           help="The name of the datbase (path for sqlite).")
     db_group.add_argument("--username", dest="username",
                           default=getpass.getuser(),
