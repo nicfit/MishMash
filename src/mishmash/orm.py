@@ -118,6 +118,8 @@ class Album(Base, OrmObject):
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.datetime.now)
     release_date = sql.Column(sql.String(24))
+    original_release_date = sql.Column(sql.String(24))
+    recording_date = sql.Column(sql.String(24))
     compilation = sql.Column(sql.Boolean(), nullable=False, default=False)
 
     # Foreign keys

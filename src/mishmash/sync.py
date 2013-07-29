@@ -119,21 +119,33 @@ class SyncPlugin(LoaderPlugin):
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
                                                artist_id=album_artist_id).all()
+                rel_date = tag.release_date
+                rec_date = tag.recording_date
+                or_date = tag.original_release_date
+
+                # Helper for getting the stringified date or None
+                def _procDate(d):
+                    return str(d) if d else None
+
                 if album_rows:
                     if len(album_rows) > 1:
                         raise NotImplementedError("FIXME")
                     album = album_rows[0]
+
+                    album.compilation = is_comp
+
+                    album.release_date = _procDate(rel_date)
+                    album.original_release_date = _procDate(or_date)
+                    album.recording_date = _procDate(rec_date)
                 elif tag.album:
-                    # FIXME: really, the dates need to be separate
-                    release_date = tag.best_release_date
                     album = Album(title=tag.album, artist_id=album_artist_id,
                                   compilation=is_comp,
-                                  release_date=str(release_date)
-                                  if release_date else None)
+                                  release_date=_procDate(rel_date),
+                                  original_release_date=_procDate(or_date),
+                                  recording_date=_procDate(rec_date))
                     session.add(album)
-                    session.flush()
 
-                # FIXME: Handle upates to release date
+                session.flush()
 
                 if not track:
                     track = Track(audio_file=audio_file)
