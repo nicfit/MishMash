@@ -27,7 +27,7 @@ class DefaultFormatter(logging.Formatter):
 
 log = logging.getLogger("mishmash")
 
-def setupLogging():
+def initLogging():
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(DefaultFormatter())
     log.addHandler(console_handler)

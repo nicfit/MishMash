@@ -31,12 +31,12 @@ import eyed3.main
 from eyed3.utils.cli import printError, printMsg, printWarning
 
 from .database import MissingSchemaException
-from .log import log, setupLogging
+from .log import log, initLogging
 from .commands import makeCmdLineParser
 
 
 def main():
-    setupLogging()
+    initLogging()
     parser = makeCmdLineParser()
 
     # Run command
