@@ -28,7 +28,7 @@ import eyed3
 eyed3.require("0.7.4")
 
 import eyed3.main
-from eyed3.utils.cli import printError, printMsg, printWarning
+from eyed3.utils.console import printError, printMsg, printWarning
 
 from .database import MissingSchemaException
 from .log import log

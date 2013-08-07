@@ -27,8 +27,8 @@ import eyed3
 
 import eyed3.main
 from eyed3.main import main as eyed3_main
-from eyed3.utils.cli import ArgumentParser
-from eyed3.utils.cli import printError, printMsg, printWarning
+from eyed3.utils import ArgumentParser
+from eyed3.utils.console import printError, printMsg, printWarning
 
 from .database import (SUPPORTED_DB_TYPES, DBInfo, Database,
                        MissingSchemaException)

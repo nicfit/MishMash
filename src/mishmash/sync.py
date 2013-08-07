@@ -29,7 +29,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from eyed3.plugins import LoaderPlugin
-from eyed3.utils.cli import printError, printMsg, printWarning
+from eyed3.utils.console import printError, printMsg, printWarning
 
 from .database import Database
 from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta
