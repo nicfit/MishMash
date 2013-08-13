@@ -149,17 +149,17 @@ class Info(Command):
 
         session = db.Session()
         with session.begin():
-            print("\nDatabase:")
-            print("\tURI: %s" % db._db_uri)
+            printMsg("\nDatabase:")
+            printMsg("\tURI: %s" % db._db_uri)
             meta = session.query(Meta).one()
-            print("\tVersion:", meta.version)
-            print("\tLast Sync:", meta.last_sync)
+            printMsg("\tVersion:", meta.version)
+            printMsg("\tLast Sync:", meta.last_sync)
 
-            print("\nMusic:")
-            print("\t%d tracks" % session.query(Track).count())
-            print("\t%d artists" % session.query(Artist).count())
-            print("\t%d albums" % session.query(Album).count())
-            print("\t%d labels" % session.query(Label).count())
+            printMsg("\nMusic:")
+            printMsg("\t%d tracks" % session.query(Track).count())
+            printMsg("\t%d artists" % session.query(Artist).count())
+            printMsg("\t%d albums" % session.query(Album).count())
+            printMsg("\t%d labels" % session.query(Label).count())
 
 
 # random subcommand
@@ -202,18 +202,18 @@ class Search(Command):
         s = search_pattern
         printMsg("\nSearching for '%s'" % s)
 
-        print("Artists:")
+        printMsg("Artists:")
         for artist in session.query(Artist).filter(
                 Artist.name.ilike(u"%%%s%%" % s)).all():
             printMsg(u"\t%s (id: %d)" % (artist.name, artist.id))
 
-        print("Albums:")
+        printMsg("Albums:")
         for album in session.query(Album).filter(
                 Album.title.ilike(u"%%%s%%" % s)).all():
             printMsg(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
                                                       album.artist.name))
 
-        print("Tracks:")
+        printMsg("Tracks:")
         for track in session.query(Track).filter(
                 Track.title.ilike(u"%%%s%%" % s)).all():
             printMsg(u"\t%s (id: %d) (artist: %s) (album: %s)" %
@@ -297,8 +297,8 @@ class Relocate(Command):
                 num_relocates += 1
 
             session.flush()
-        print("%d files relocated from '%s' to '%s'" % (num_relocates, oldroot,
-                                                        newroot))
+        printMsg("%d files relocated from '%s' to '%s'" %
+                 (num_relocates, oldroot, newroot))
 
 
 _cmds.extend([Init, Sync, Info, Random, Search, List, Relocate])
