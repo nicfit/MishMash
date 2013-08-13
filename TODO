@@ -1,0 +1,21 @@
+First release - 0.3.0
+---------------------
+- setup.py 
+- pavement.py
+- show_orphans
+- All FIXMEs
+
+
+After
+----
+
+- Logging options not honored. Use eyed3.logging 
+- All dates need columns. Best date algo needs to come from what's avail in DB
+    - Release, orginal release, etc. dates added to Album / Track ORM
+- country, city, state info
+- Add bitrate to Track orm
+- Handle duplicate Artist names (e.g. Death)
+- Handle duplicate Album names (by the same artist)
+- Smarter moves.. Right now if a file name changes a new track is add/delete
+- Live flag (Track?)
+- Original artist extraction from tags and col on Track (i.e. cover songs)
