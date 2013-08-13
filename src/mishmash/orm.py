@@ -20,12 +20,23 @@
 import os
 import datetime
 import sqlalchemy as sql
-from sqlalchemy import orm
+from sqlalchemy import orm, event
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from .info import VERSION
 
 
 VARIOUS_ARTISTS_NAME = u"Various Artists"
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    '''Allows foreign keeys to work in sqlite.'''
+    import sqlite3
+    if dbapi_connection.__class__ is sqlite3.Connection:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 
 Base = declarative_base()
