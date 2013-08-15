@@ -30,7 +30,8 @@ SUPPORTED_DB_TYPES = ["sqlite", "postgresql", "oracle"]
 
 class DBInfo(object):
     def __init__(self, db_type=None, name=None, host=None, port=None,
-                 username=None, password=None, uri=None):
+                 username=None, password=None, uri=None, dbengine=None,
+                 dbsession=None):
         self.db_type = db_type
 
         if name:
@@ -45,6 +46,8 @@ class DBInfo(object):
         self.username = username
         self.password = password
         self.uri = uri
+        self.dbengine = dbengine
+        self.dbsession = dbsession
 
 
 class Database(object):
@@ -61,17 +64,23 @@ class Database(object):
                                      host=dbinfo.host,
                                      port=dbinfo.port, username=dbinfo.username,
                                      password=dbinfo.password)
-        self._engine = sql.create_engine(self._db_uri,
-                                         **self.DEFAULT_ENGINE_ARGS)
-        try:
-            log.info("Connecting to database '%s'" % self._db_uri)
-            self._engine.connect()
-        except sql.exc.OperationalError as ex:
-            raise ConnectException(str(ex))
+        if dbinfo.dbengine:
+            self._engine = dbinfo.dbengine
+        else:
+            self._engine = sql.create_engine(self._db_uri,
+                                             **self.DEFAULT_ENGINE_ARGS)
+            try:
+                log.info("Connecting to database '%s'" % self._db_uri)
+                self._engine.connect()
+            except sql.exc.OperationalError as ex:
+                raise ConnectException(str(ex))
 
-        # Make the type creating sessions.
-        self.Session = sql.orm.sessionmaker(bind=self._engine,
-                                            autocommit=True, autoflush=False)
+        if dbinfo.dbsession:
+            self.Session = dbinfo.dbsession
+        else:
+            # Make the type creating sessions.
+            self.Session = sql.orm.sessionmaker(bind=self._engine,
+                                                autocommit=True, autoflush=False)
 
         # Map the ORM
         for T in TYPES:
