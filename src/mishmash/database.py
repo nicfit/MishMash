@@ -49,6 +49,10 @@ class DBInfo(object):
         self.dbengine = dbengine
         self.dbsession = dbsession
 
+        # Must supply a dbengine if supplying a dbsession
+        assert ((not dbengine and not dbsession) or (dbengine and dbsession) or
+                (dbengine and not dbsession))
+
 
 class Database(object):
     DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
@@ -56,6 +60,11 @@ class Database(object):
                           }
 
     def __init__(self, dbinfo, do_create=False, do_upgrade=False):
+
+        # Must supply a dbengine if supplying a dbsession
+        assert ((not dbinfo.dbengine and not dbinfo.dbsession) or
+                (dbinfo.dbengine and dbinfo.dbsession) or
+                (dbinfo.dbengine and not dbinfo.dbsession))
 
         if dbinfo.uri:
             self._db_uri = dbinfo.uri
