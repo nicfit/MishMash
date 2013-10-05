@@ -135,7 +135,7 @@ class Album(Base, OrmObject):
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
-                           nullable=False)
+                           nullable=False, index=True)
 
     # Relations
     artist = orm.relation("Artist")
@@ -163,9 +163,9 @@ class Track(Base, OrmObject):
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
-                           nullable=False)
+                           nullable=False, index=True)
     album_id = sql.Column(sql.Integer, sql.ForeignKey("albums.id"),
-                          nullable=True)
+                          nullable=True, index=True)
     # Relations
     artist = orm.relation("Artist")
     album = orm.relation("Album")
