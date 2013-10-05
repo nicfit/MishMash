@@ -29,6 +29,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from eyed3.plugins import LoaderPlugin
+from eyed3.utils import guessMimetype
 from eyed3.utils.console import printError, printMsg, printWarning
 
 from .database import Database
@@ -49,6 +50,7 @@ class SyncPlugin(LoaderPlugin):
         self._num_deleted = 0
         self._comp_artist_id = None
         self.db = None
+        self._dir_images = []
 
     def start(self, args, config):
         super(SyncPlugin, self).start(args, config)
@@ -62,9 +64,19 @@ class SyncPlugin(LoaderPlugin):
                                                      name=VARIOUS_ARTISTS_NAME,
                                                      one=True).id
 
+    def handleFile(self, f, *args, **kwargs):
+        super(SyncPlugin, self).handleFile(f, *args, **kwargs)
+        if self.audio_file is None:
+            mt = guessMimetype(f)
+            if mt.startswith("image/"):
+                self._dir_images.append(f)
+
     def handleDirectory(self, d, _):
         audio_files = list(self._file_cache)
         self._file_cache = []
+
+        images = self._dir_images
+        self._dir_images = []
 
         if not audio_files:
             return
