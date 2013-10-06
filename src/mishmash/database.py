@@ -181,19 +181,23 @@ class Database(object):
 
 def makeDbUri(db_type, name, host=None, port=None,
               username=None, password=None):
-        assert(db_type and name)
+        if not (db_type and name):
+            raise ValueError("Database type and name required")
 
         uri = None
         if db_type == "postgresql":
             port = 5432 if not port else port
-            assert(host and port and username and password)
+            if not (host and port and username and password):
+                raise ValueError("host, port, username, and password required")
             uri = "%s://%s:%s@%s:%d/%s" % (db_type, username, password,
                                            host, int(port), name)
 
         elif db_type == "sqlite":
             uri = "%s:///%s" % (db_type, name)
         elif db_type == "oracle":
-            assert(username and password)
+            # XXX: Oracle remains untested
+            if not (username and password):
+                raise ValueError("username and password required")
             # Name is the DSN
             uri = "%s://%s:%s@%s" % (db_type, username, password, name)
         else:
