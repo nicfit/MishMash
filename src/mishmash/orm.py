@@ -160,6 +160,8 @@ class Track(Base, OrmObject):
     track_total = sql.Column(sql.SmallInteger)
     media_num = sql.Column(sql.SmallInteger)
     media_total = sql.Column(sql.SmallInteger)
+    bit_rate = sql.Column(sql.SmallInteger)
+    variable_bit_rate = sql.Column(sql.Boolean)
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
@@ -184,14 +186,16 @@ class Track(Base, OrmObject):
     def update(self, audio_file):
         path = audio_file.path
         tag = audio_file.tag
+        info = audio_file.info
 
         self.path = path
-        self.size_bytes = audio_file.info.size_bytes
+        self.size_bytes = info.size_bytes
         self.ctime = datetime.datetime.fromtimestamp(os.path.getctime(path))
         self.mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
-        self.time_secs = audio_file.info.time_secs
+        self.time_secs = info.time_secs
         self.title = tag.title
         self.track_num, self.track_total = tag.track_num
+        self.variable_bit_rate, self.bit_rate = info.bit_rate
         self.media_num, self.media_total = tag.disc_num
 
 
