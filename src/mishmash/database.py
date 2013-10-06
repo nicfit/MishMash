@@ -57,6 +57,7 @@ class DBInfo(object):
 class Database(object):
     DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                            "encoding": "utf8",
+                           "echo": False,
                           }
 
     def __init__(self, dbinfo, do_create=False, do_upgrade=False):
