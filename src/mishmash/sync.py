@@ -66,6 +66,7 @@ class SyncPlugin(LoaderPlugin):
 
     def handleFile(self, f, *args, **kwargs):
         super(SyncPlugin, self).handleFile(f, *args, **kwargs)
+
         if self.audio_file is None:
             mt = guessMimetype(f)
             if mt.startswith("image/"):
@@ -81,7 +82,7 @@ class SyncPlugin(LoaderPlugin):
         if not audio_files:
             return
 
-        # This directory of files can be
+        # This directory of files can be:
         # 1) an album by a single artist (tag.artist and tag.album all equal)
         # 2) a comp (tag.album equal, tag.artist differ)
         # 3) not associated with a collection (tag.artist and tag.album differ)
