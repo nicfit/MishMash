@@ -62,6 +62,20 @@ track_labels = sql.Table("track_labels", Base.metadata,
                                     sql.ForeignKey("labels.id")),
                         )
 
+artist_images = sql.Table("artist_images", Base.metadata,
+                          sql.Column("artist_id", sql.Integer,
+                                     sql.ForeignKey("artists.id")),
+                          sql.Column("img_id", sql.Integer,
+                                     sql.ForeignKey("images.id")),
+                         )
+
+album_images = sql.Table("album_images", Base.metadata,
+                         sql.Column("album_id", sql.Integer,
+                                    sql.ForeignKey("albums.id")),
+                         sql.Column("img_id", sql.Integer,
+                                    sql.ForeignKey("images.id")),
+                        )
+
 
 class OrmObject(object):
     @staticmethod
@@ -112,6 +126,8 @@ class Artist(Base, OrmObject):
     '''all tracks by the artist'''
     labels = orm.relation("Label", secondary=artist_labels)
     '''one-to-many (artist->label) and many-to-one (label->artist)'''
+    images = orm.relation("Image", secondary=artist_images, cascade="all")
+    '''one-to-many artist images.'''
 
     @staticmethod
     def initTable(session):
@@ -141,6 +157,8 @@ class Album(Base, OrmObject):
     artist = orm.relation("Artist")
     tracks = orm.relation("Track", cascade="all")
     labels = orm.relation("Label", secondary=album_labels)
+    images = orm.relation("Image", secondary=album_images, cascade="all")
+    '''one-to-many album images.'''
 
 
 class Track(Base, OrmObject):
@@ -207,8 +225,21 @@ class Label(Base, OrmObject):
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
 
 
-TYPES  = [Meta, Label, Artist, Album, Track]
-LABELS = [artist_labels, album_labels, track_labels]
+class Image(Base, OrmObject):
+    __tablename__ = "images"
+
+    id = sql.Column(sql.Integer, primary_key=True)
+    _types_enum = sql.Enum("ARTIST", "FRONT_COVER", "BACK_COVER",
+                           name="image_types")
+    type = sql.Column(_types_enum, nullable=False)
+    mime_type = sql.Column(sql.String(32), nullable=False)
+    data = sql.Column(sql.LargeBinary, nullable=False)
+
+
+TYPES  = [Meta, Label, Artist, Album, Track, Image]
+LABELS = [artist_labels, album_labels, track_labels,
+          artist_images, album_images]
 TABLES = [T.__table__ for T in TYPES] + LABELS
+ENUMS = [Image._types_enum]
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''

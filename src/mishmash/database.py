@@ -20,7 +20,7 @@
 import os
 import sqlalchemy as sql
 
-from .orm import TYPES, TABLES, LABELS, VARIOUS_ARTISTS_NAME
+from .orm import TYPES, TABLES, LABELS, VARIOUS_ARTISTS_NAME, ENUMS
 from .orm import Track, Artist, Album, Meta
 from . import log
 
@@ -89,7 +89,8 @@ class Database(object):
         else:
             # Make the type creating sessions.
             self.Session = sql.orm.sessionmaker(bind=self._engine,
-                                                autocommit=True, autoflush=False)
+                                                autocommit=True,
+                                                autoflush=False)
 
         # Map the ORM
         for T in TYPES:
@@ -118,12 +119,14 @@ class Database(object):
         # Once schema version is in 'meta' do upgrades.
         # TODO
 
-    def dropAllTables(self):
+    def dropAll(self):
         log.warn("Dropping all database tables!")
-        tables = list(TABLES)
-        tables.reverse()
-        for table in tables:
-            table.drop()
+
+        for dbo_list in [TABLES, ENUMS]:
+            tmp = list(dbo_list)
+            tmp.reverse()
+            for dbo in tmp:
+                dbo.drop(bind=self._engine)
 
     def getArtist(self, session, one=False, **kwargs):
         query = session.query(Artist).filter_by(**kwargs)

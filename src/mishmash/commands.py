@@ -81,7 +81,7 @@ class Init(Command):
         dropped = False
         if db and self.args.drop_all:
             printWarning("Dropping all database tables.")
-            db.dropAllTables()
+            db.dropAll()
             dropped = True
 
         if not db or dropped:
