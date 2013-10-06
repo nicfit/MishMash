@@ -103,8 +103,6 @@ class Database(object):
             if not self._engine.has_table(table.name):
                 missing_tables.append(table)
 
-        # FIXME: what about other differences (new columns, etc)
-
         if missing_tables and not do_create:
             raise MissingSchemaException([str(t) for t in missing_tables])
 
@@ -116,9 +114,6 @@ class Database(object):
                     session = self.Session()
                     with session.begin():
                         T.initTable(session)
-
-        # Once schema version is in 'meta' do upgrades.
-        # TODO
 
     def dropAll(self):
         log.warn("Dropping all database tables!")
@@ -145,9 +140,11 @@ class Database(object):
         # Tracks
         for track in session.query(Track).all():
             if not os.path.exists(track.path):
-                # FIXME: logging
+                log.warn("Deleting track: %s" % str(track))
                 session.delete(track)
                 num_orphaned_tracks += 1
+
+        session.flush()
 
         # Artists
         found_ids.clear()
@@ -159,11 +156,13 @@ class Database(object):
             any_track = session.query(Track).filter(Track.artist_id==artist.id)\
                                             .first()
             if not any_track:
-                # FIXME: logging
+                log.warn("Deleting artist: %s" % str(artist))
                 session.delete(artist)
                 num_orphaned_artists += 1
             else:
                 found_ids.add(artist.id)
+
+        session.flush()
 
         # Albums
         found_ids.clear()
@@ -174,7 +173,7 @@ class Database(object):
             any_track = session.query(Track).filter(Track.album_id==album.id)\
                                             .first()
             if not any_track:
-                # FIXME: logging
+                log.warn("Deleting album: %s" % str(album))
                 session.delete(album)
                 num_orphaned_albums += 1
             else:
