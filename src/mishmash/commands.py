@@ -45,15 +45,17 @@ class Command(object):
     def __init__(self, name, help, subparsers=None):
         self.subparsers = subparsers
         self.parser = self.subparsers.add_parser(name, help=help)
-        self.parser.set_defaults(func=self._handleArgs)
+        self.parser.set_defaults(func=self.run)
         Command.cmds[name] = self
 
-    def _handleArgs(self, args):
-        self.args = args
-        return DBInfo(args.db_type, args.db_name, username=args.username,
-                      password=args.password, host=args.host, port=args.port)
-
     def run(self, args):
+        self.args = args
+        self.dbinfo = DBInfo(args.db_type, args.db_name,
+                             username=args.username, password=args.password,
+                             host=args.host, port=args.port)
+        return self._run()
+
+    def _run(self):
         raise Exception("Must implement the run() function")
 
     @staticmethod
@@ -70,25 +72,21 @@ class Init(Command):
         self.parser.add_argument("--drop-all", action="store_true",
                                  help="Drop all tables and re-init")
 
-    def _handleArgs(self, args):
-        dbinfo = super(Init, self)._handleArgs(args)
-        self.run(dbinfo, args.drop_all)
-
-    def run(self, dbinfo, drop_all=False):
+    def _run(self):
         try:
-            db = Database(dbinfo, do_create=False)
+            db = Database(self.dbinfo, do_create=False)
         except MissingSchemaException as ex:
             db = None
 
         dropped = False
-        if db and drop_all:
+        if db and self.args.drop_all:
             printWarning("Dropping all database tables.")
             db.dropAllTables()
             dropped = True
 
         if not db or dropped:
             printMsg("Initializing...")
-            db = Database(dbinfo, do_create=True)
+            db = Database(self.dbinfo, do_create=True)
 
 
 # sync subcommand
@@ -107,14 +105,9 @@ class Sync(Command):
         self.plugin = sync.SyncPlugin(self.parser)
         self.args = None
 
-    def _handleArgs(self, args):
-        self.args = args
-        dbinfo = super(Sync, self)._handleArgs(self.args)
-        self.run(dbinfo)
-
-    def run(self, dbinfo, paths=[], config=None, backup=False, excludes=None,
-            fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
-        db = Database(dbinfo)
+    def _run(self, paths=[], config=None, backup=False, excludes=None,
+             fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
+        db = Database(self.dbinfo)
         if self.args:
             args = self.args
         else:
@@ -128,6 +121,7 @@ class Sync(Command):
             args.quiet = quiet
             args.list_plugins = False
             args.no_purge = no_purge
+
         args.plugin = self.plugin
         args.db = db
 
@@ -140,20 +134,20 @@ class Info(Command):
         super(Info, self).__init__(
             "info", "Show information about music database.", subparsers)
 
-    def _handleArgs(self, args):
-        dbinfo = super(Info, self)._handleArgs(args)
-        self.run(dbinfo)
-
-    def run(self, dbinfo):
-        db = Database(dbinfo)
+    def _run(self):
+        try:
+            db = Database(self.dbinfo)
+        except Exception as ex:
+            printError(str(ex))
+            return 1
 
         session = db.Session()
         with session.begin():
             printMsg("\nDatabase:")
             printMsg("\tURI: %s" % db._db_uri)
             meta = session.query(Meta).one()
-            printMsg("\tVersion:", meta.version)
-            printMsg("\tLast Sync:", meta.last_sync)
+            printMsg("\tVersion: %s" % meta.version)
+            printMsg("\tLast Sync: %s" % meta.last_sync)
 
             printMsg("\nMusic:")
             printMsg("\t%d tracks" % session.query(Track).count())
@@ -169,18 +163,14 @@ class Random(Command):
                                      subparsers)
         self.parser.add_argument("count", type=int, metavar="COUNT")
 
-    def _handleArgs(self, args):
-        dbinfo = super(Random, self)._handleArgs(args)
-        self.run(dbinfo, args.count)
-
-    def run(self, dbinfo, count):
+    def _run(self):
         from sqlalchemy.sql.expression import func
 
-        db = Database(dbinfo)
+        db = Database(self.dbinfo)
 
         session = db.Session()
         for track in session.query(Track).order_by(func.random())\
-                                         .limit(count).all():
+                                         .limit(self.args.count).all():
             printMsg(track.path)
 
 
@@ -191,15 +181,11 @@ class Search(Command):
         self.parser.add_argument("search_pattern", type=unicode,
                                  metavar="SEARCH", help="Search string.")
 
-    def _handleArgs(self, args):
-        dbinfo = super(Search, self)._handleArgs(args)
-        self.run(dbinfo, args.search_pattern)
-
-    def run(self, dbinfo, search_pattern):
-        db = Database(dbinfo)
+    def _run(self):
+        db = Database(self.dbinfo)
         session = db.Session()
 
-        s = search_pattern
+        s = self.args.search_pattern
         printMsg("\nSearching for '%s'" % s)
 
         printMsg("Artists:")
@@ -236,10 +222,10 @@ class List(Command):
         dbinfo = super(List, self)._handleArgs(args)
         self.run(dbinfo, args.what)
 
-    def run(self, dbinfo, what):
-        db = Database(dbinfo)
+    def _run(self):
+        db = Database(self.dbinfo)
 
-        if what == "artists":
+        if self.args.what == "artists":
             banner = None
 
             session = db.Session()
@@ -249,7 +235,7 @@ class List(Command):
                     banner = artist.sort_name[0]
                     printMsg(u"\n== %s ==" % banner)
                 printMsg(u"\t%s" % artist.sort_name)
-        elif what == "albums":
+        elif self.args.what == "albums":
             def albumSortKey(alb):
                 return alb.release_date
 
@@ -275,18 +261,18 @@ class Relocate(Command):
         self.parser.add_argument("oldroot", help="The path to replace.")
         self.parser.add_argument("newroot", help="The substitute path.")
 
-    def _handleArgs(self, args):
-        dbinfo = super(Relocate, self)._handleArgs(args)
-        self.run(dbinfo, args.oldroot, args.newroot)
-
-    def run(self, dbinfo, oldroot, newroot):
-        db = Database(dbinfo)
+    def _run(self):
+        db = Database(self.dbinfo)
         session = db.Session()
+
+        oldroot, newroot = self.args.oldroot, self.args.newroot
 
         if oldroot[-1] != os.sep:
             oldroot += os.sep
         if newroot[-1] != os.sep:
             newroot += os.sep
+
+        # FIXME: warn if relocated path value does not exist
 
         num_relocates = 0
         with session.begin():
