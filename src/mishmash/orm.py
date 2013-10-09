@@ -228,11 +228,15 @@ class Label(Base, OrmObject):
 class Image(Base, OrmObject):
     __tablename__ = "images"
 
-    id = sql.Column(sql.Integer, primary_key=True)
-    _types_enum = sql.Enum("ARTIST", "FRONT_COVER", "BACK_COVER",
+    _types_enum = sql.Enum("ARTIST",
+                           "FRONT_COVER", "GATEFOLD_COVER", "BACK_COVER",
                            name="image_types")
+
+    id = sql.Column(sql.Integer, primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
     mime_type = sql.Column(sql.String(32), nullable=False)
+    md5 = sql.Column(sql.String(32), nullable=False)
+    size = sql.Column(sql.Integer, nullable=False)
     data = sql.Column(sql.LargeBinary, nullable=False)
 
 
@@ -240,6 +244,6 @@ TYPES  = [Meta, Label, Artist, Album, Track, Image]
 LABELS = [artist_labels, album_labels, track_labels,
           artist_images, album_images]
 TABLES = [T.__table__ for T in TYPES] + LABELS
-ENUMS = [Image._types_enum]
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''
+ENUMS = [Image._types_enum]
