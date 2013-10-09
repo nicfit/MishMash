@@ -291,8 +291,9 @@ _cmds.extend([Init, Sync, Info, Random, Search, List, Relocate])
 
 
 def makeCmdLineParser():
+    from .info import VERSION_MSG
 
-    parser = ArgumentParser(prog="mishmash")
+    parser = ArgumentParser(prog="mishmash", version=VERSION_MSG)
 
     db_group = parser.add_argument_group(title="Database settings and options")
 
