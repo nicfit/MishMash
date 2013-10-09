@@ -24,8 +24,8 @@ use the ``-m`` option provided by Python.::
 Once you decide on a database you can make an alias. For example, it is easiest
 to start with ``sqlite``.::
 
-  $ alias mishmash="python -m mishmash --db-type=sqlite --database=${HOME}/mishmash.db"
-  $ alias mishmash="python -m mishmash --db-type=postgresql --database=mishmash"
+  $ alias mishmash="mishmash --db-type=sqlite --database=${HOME}/mishmash.db"
+  $ alias mishmash="mishmash --db-type=postgresql --database=mishmash --username=travis --password=travis"
 
 Inialize the database tables with the ``init`` command.::
 
