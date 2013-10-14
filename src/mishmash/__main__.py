@@ -47,7 +47,7 @@ def main():
         printError("Schema error:")
         printMsg("The table%s '%s' %s missing from the database schema." %
                  ('s' if len(ex.tables) > 1 else '',
-                  ", ".join(ex.tables),
+                  ", ".join([str(t) for t in ex.tables]),
                   "are" if len(ex.tables) > 1 else "is"))
         retval = 1
     except Exception as ex:
