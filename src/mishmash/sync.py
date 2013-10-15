@@ -32,14 +32,13 @@ from eyed3.plugins import LoaderPlugin
 from eyed3.utils import guessMimetype
 from eyed3.utils.console import printError, printMsg, printWarning
 
-from .database import Database
 from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta
 from .log import log
 
 
 class SyncPlugin(LoaderPlugin):
     NAMES = ['mishmash-sync']
-    SUMMARY = u"Synchronize files/direcotries with a Mishmash database."
+    SUMMARY = u"Synchronize files/directories with a Mishmash database."
     DESCRIPTION = u""
 
     def __init__(self, arg_parser):
@@ -49,27 +48,27 @@ class SyncPlugin(LoaderPlugin):
         self._num_modified = 0
         self._num_deleted = 0
         self._comp_artist_id = None
-        self.db = None
+        self.DBSession = None
         self._dir_images = []
 
     def start(self, args, config):
         super(SyncPlugin, self).start(args, config)
         self.start_time = time.time()
-        self.db = args.db
+        self.DBSession = args.db_session
 
-        session = self.db.Session()
+        session = self.DBSession()
         with session.begin():
             # Get the compilation artist, its ID will be used for compilations
-            self._comp_artist_id = self.db.getArtist(session,
-                                                     name=VARIOUS_ARTISTS_NAME,
-                                                     one=True).id
+            self._comp_artist_id = session.query(Artist)\
+                                          .filter_by(name=VARIOUS_ARTISTS_NAME)\
+                                          .one().id
 
     def handleFile(self, f, *args, **kwargs):
         super(SyncPlugin, self).handleFile(f, *args, **kwargs)
 
         if self.audio_file is None:
             mt = guessMimetype(f)
-            if mt.startswith("image/"):
+            if mt and mt.startswith("image/"):
                 self._dir_images.append(f)
 
     def handleDirectory(self, d, _):
@@ -91,7 +90,7 @@ class SyncPlugin(LoaderPlugin):
         is_album = len(artists) == 1 and len(albums) == 1
         is_comp = len(artists) > 1 and len(albums) == 1
 
-        session = self.db.Session()
+        session = self.DBSession()
         with session.begin():
             for audio_file in audio_files:
                 path = audio_file.path
@@ -106,9 +105,11 @@ class SyncPlugin(LoaderPlugin):
                              "metadata, skipping: %s" % path)
                     continue
 
-                track = session.query(Track).filter_by(path=path).all()
-                if track:
-                    track = track[0]
+                try:
+                    track = session.query(Track).filter_by(path=path).one()
+                except NoResultFound:
+                    track = None
+                else:
                     if datetime.fromtimestamp(getctime(path)) <= track.ctime:
                         # track is in DB and the file is not modified
                         continue
@@ -116,7 +117,8 @@ class SyncPlugin(LoaderPlugin):
                 # Either adding the track (track == None)
                 # or modifying (track != None)
 
-                artist_rows = self.db.getArtist(session, name=tag.artist)
+                artist_rows = session.query(Artist).filter_by(name=tag.artist)\
+                                                   .all()
                 if artist_rows:
                     if len(artist_rows) > 1:
                         raise NotImplementedError("FIXME")
@@ -189,11 +191,11 @@ class SyncPlugin(LoaderPlugin):
 
     def handleDone(self):
         t = time.time() - self.start_time
-        session = self.db.Session()
+        session = self.DBSession()
 
         printMsg("All files sync'd")
         with session.begin():
-            self.db.getMeta(session).last_sync = datetime.now()
+            session.query(Meta).one().last_sync = datetime.now()
 
             num_orphaned_artists = 0
             num_orphaned_albums = 0
@@ -202,7 +204,7 @@ class SyncPlugin(LoaderPlugin):
                          "database...")
                 (self._num_deleted,
                  num_orphaned_artists,
-                 num_orphaned_albums) = self.db.deleteOrphans(session)
+                 num_orphaned_albums) = deleteOrphans(session)
 
         if self._num_loaded or self._num_deleted:
             printMsg("")
@@ -213,3 +215,54 @@ class SyncPlugin(LoaderPlugin):
             printMsg("%d orphaned artists deleted" % num_orphaned_artists)
             printMsg("%d orphaned albums deleted" % num_orphaned_albums)
             printMsg("%fs time (%f/s)" % (t, self._num_loaded / t))
+
+
+def deleteOrphans(session):
+    num_orphaned_artists = 0
+    num_orphaned_albums = 0
+    num_orphaned_tracks = 0
+    found_ids = set()
+
+    # Tracks
+    for track in session.query(Track).all():
+        if not os.path.exists(track.path):
+            log.warn("Deleting track: %s" % str(track))
+            session.delete(track)
+            num_orphaned_tracks += 1
+
+    session.flush()
+
+    # Artists
+    found_ids.clear()
+    for artist in session.query(Artist).all():
+        if (artist.name == VARIOUS_ARTISTS_NAME or
+                artist.id in found_ids):
+            continue
+
+        any_track = session.query(Track).filter(Track.artist_id==artist.id)\
+                                        .first()
+        if not any_track:
+            log.warn("Deleting artist: %s" % str(artist))
+            session.delete(artist)
+            num_orphaned_artists += 1
+        else:
+            found_ids.add(artist.id)
+
+    session.flush()
+
+    # Albums
+    found_ids.clear()
+    for album in session.query(Album).all():
+        if album.id in found_ids:
+            continue
+
+        any_track = session.query(Track).filter(Track.album_id==album.id)\
+                                        .first()
+        if not any_track:
+            log.warn("Deleting album: %s" % str(album))
+            session.delete(album)
+            num_orphaned_albums += 1
+        else:
+            found_ids.add(album.id)
+
+    return (num_orphaned_tracks, num_orphaned_artists, num_orphaned_albums)

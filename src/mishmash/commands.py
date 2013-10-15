@@ -30,8 +30,9 @@ from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
 from eyed3.utils.console import printError, printMsg, printWarning
 
-from .database import (SUPPORTED_DB_TYPES, DBInfo, Database,
-                       MissingSchemaException)
+from . import database
+from .database import makeDbUri
+
 from .orm import Track, Artist, Album, Meta, Label
 from .log import log
 
@@ -50,9 +51,10 @@ class Command(object):
 
     def run(self, args):
         self.args = args
-        self.dbinfo = DBInfo(args.db_type, args.db_name,
-                             username=args.username, password=args.password,
-                             host=args.host, port=args.port)
+        self.args.db_uri = makeDbUri(args.db_type, args.db_name,
+                                     host=args.host, port=args.port,
+                                     username=args.username,
+                                     password=args.password)
         return self._run()
 
     def _run(self):
@@ -73,20 +75,25 @@ class Init(Command):
                                  help="Drop all tables and re-init")
 
     def _run(self):
+        missing_tables = []
+
+        engine, session = database.init(self.args.db_uri)
         try:
-            db = Database(self.dbinfo, do_create=False)
-        except MissingSchemaException as ex:
-            db = None
+            database.check(engine)
+        except database.MissingSchemaException as ex:
+            missing_tables = ex.tables
 
         dropped = False
-        if db and self.args.drop_all:
-            printWarning("Dropping all database tables.")
-            db.dropAll()
+        if self.args.drop_all:
+            printMsg("Dropping schema...")
+            database.dropAll(engine)
             dropped = True
 
-        if not db or dropped:
-            printMsg("Initializing...")
-            db = Database(self.dbinfo, do_create=True)
+        if missing_tables or dropped:
+            printMsg("Creating schema...")
+            database.create(session, None if dropped else missing_tables)
+
+        printMsg("Initialized")
 
 
 # sync subcommand
@@ -107,7 +114,8 @@ class Sync(Command):
 
     def _run(self, paths=[], config=None, backup=False, excludes=None,
              fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
-        db = Database(self.dbinfo)
+        engine, session = database.init(self.args.db_uri)
+
         if self.args:
             args = self.args
         else:
@@ -123,7 +131,7 @@ class Sync(Command):
             args.no_purge = no_purge
 
         args.plugin = self.plugin
-        args.db = db
+        args.db_engine, args.db_session = engine, session
 
         return eyed3_main(args, None)
 
@@ -135,16 +143,10 @@ class Info(Command):
             "info", "Show information about music database.", subparsers)
 
     def _run(self):
-        try:
-            db = Database(self.dbinfo)
-        except Exception as ex:
-            printError(str(ex))
-            return 1
-
-        session = db.Session()
+        engine, session = database.init(self.args.db_uri)
         with session.begin():
             printMsg("\nDatabase:")
-            printMsg("\tURI: %s" % db._db_uri)
+            printMsg("\tURI: %s" % self.args.db_uri)
             meta = session.query(Meta).one()
             printMsg("\tVersion: %s" % meta.version)
             printMsg("\tLast Sync: %s" % meta.last_sync)
@@ -166,9 +168,8 @@ class Random(Command):
     def _run(self):
         from sqlalchemy.sql.expression import func
 
-        db = Database(self.dbinfo)
+        engine, session = database.init(self.args.db_uri)
 
-        session = db.Session()
         for track in session.query(Track).order_by(func.random())\
                                          .limit(self.args.count).all():
             printMsg(track.path)
@@ -182,8 +183,7 @@ class Search(Command):
                                  metavar="SEARCH", help="Search string.")
 
     def _run(self):
-        db = Database(self.dbinfo)
-        session = db.Session()
+        engine, session = database.init(self.args.db_uri)
 
         s = self.args.search_pattern
         printMsg("\nSearching for '%s'" % s)
@@ -218,17 +218,12 @@ class List(Command):
             help="What to list. Valid values are %s." %
                  ','.join(["'%s'" % c for c in list_choices]))
 
-    def _handleArgs(self, args):
-        dbinfo = super(List, self)._handleArgs(args)
-        self.run(dbinfo, args.what)
-
     def _run(self):
-        db = Database(self.dbinfo)
+        engine, session = database.init(self.args.db_uri)
 
         if self.args.what == "artists":
             banner = None
 
-            session = db.Session()
             for artist in session.query(Artist)\
                                  .order_by(Artist.sort_name).all():
                 if banner != artist.sort_name[0]:
@@ -239,7 +234,6 @@ class List(Command):
             def albumSortKey(alb):
                 return alb.release_date
 
-            session = db.Session()
             for artist in session.query(Artist)\
                                  .order_by(Artist.sort_name).all():
                 printMsg(artist.sort_name)
@@ -262,8 +256,7 @@ class Relocate(Command):
         self.parser.add_argument("newroot", help="The substitute path.")
 
     def _run(self):
-        db = Database(self.dbinfo)
-        session = db.Session()
+        engine, session = database.init(self.args.db_uri)
 
         oldroot, newroot = self.args.oldroot, self.args.newroot
 
@@ -299,7 +292,7 @@ def makeCmdLineParser():
 
     db_group.add_argument("--db-type", dest="db_type", default="sqlite",
                           help="Database type. Supported types: %s" %
-                               ', '.join(SUPPORTED_DB_TYPES))
+                               ', '.join(database.SUPPORTED_DB_TYPES))
     db_group.add_argument("--database", dest="db_name",
                           default=None,
                           help="The name of the datbase (path for sqlite).")
