@@ -18,11 +18,16 @@
 #
 ################################################################################
 import os
-import datetime
+from datetime import datetime
+from hashlib import md5
+
 import sqlalchemy as sql
 from sqlalchemy import orm, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
+
+from eyed3.utils import guessMimetype
+
 from .info import VERSION
 
 
@@ -117,7 +122,7 @@ class Artist(Base, OrmObject):
     sort_name = sql.Column(sql.Unicode(128), nullable=False,
                            default=_getSortName, onupdate=_getSortName)
     date_added = sql.Column(sql.DateTime(), nullable=False,
-                            default=datetime.datetime.now)
+                            default=datetime.now)
 
     # Relations
     albums = orm.relation("Album", cascade="all")
@@ -143,7 +148,7 @@ class Album(Base, OrmObject):
     id = sql.Column(sql.Integer, primary_key=True)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     date_added = sql.Column(sql.DateTime(), nullable=False,
-                            default=datetime.datetime.now)
+                            default=datetime.now)
     release_date = sql.Column(sql.String(24))
     original_release_date = sql.Column(sql.String(24))
     recording_date = sql.Column(sql.String(24))
@@ -171,7 +176,7 @@ class Track(Base, OrmObject):
     ctime = sql.Column(sql.DateTime(), nullable=False)
     mtime = sql.Column(sql.DateTime(), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
-                            default=datetime.datetime.now)
+                            default=datetime.now)
     time_secs = sql.Column(sql.Integer, nullable=False)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     track_num = sql.Column(sql.SmallInteger)
@@ -208,8 +213,8 @@ class Track(Base, OrmObject):
 
         self.path = path
         self.size_bytes = info.size_bytes
-        self.ctime = datetime.datetime.fromtimestamp(os.path.getctime(path))
-        self.mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+        self.ctime = datetime.fromtimestamp(os.path.getctime(path))
+        self.mtime = datetime.fromtimestamp(os.path.getmtime(path))
         self.time_secs = info.time_secs
         self.title = tag.title
         self.track_num, self.track_total = tag.track_num
@@ -225,19 +230,59 @@ class Label(Base, OrmObject):
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
 
 
+FRONT_COVER_TYPE = "FRONT_COVER"
+BACK_COVER_TYPE = "BACK_COVER"
+IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE]
+
 class Image(Base, OrmObject):
     __tablename__ = "images"
 
-    _types_enum = sql.Enum("ARTIST",
-                           "FRONT_COVER", "GATEFOLD_COVER", "BACK_COVER",
-                           name="image_types")
+    _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
     id = sql.Column(sql.Integer, primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
     mime_type = sql.Column(sql.String(32), nullable=False)
     md5 = sql.Column(sql.String(32), nullable=False)
     size = sql.Column(sql.Integer, nullable=False)
+    ctime = sql.Column(sql.DateTime())
+    description = sql.Column(sql.String(1024), nullable=False)
+    '''The description will be the base file name when the source if a file.'''
     data = sql.Column(sql.LargeBinary, nullable=False)
+
+    def update(self, path):
+        new_img = Image.fromFile(path)
+
+        self.mime_type = new_img.mime_type
+        self.md5 = new_img.md5
+        self.ctime = new_img.ctime
+        self.size = new_img.size
+        self.data = new_img.data
+
+    @staticmethod
+    def fromTagFrame(img):
+        md5hash = md5()
+        md5hash.update(img.image_data)
+
+        return Image(mime_type=img.mime_type,
+                     md5=md5hash.hexdigest(),
+                     size=len(img.image_data),
+                     data=img.image_data)
+
+    @staticmethod
+    def fromFile(path):
+        md5hash = md5()
+
+        img = open(path, "rb")
+        data = img.read()
+        img.close()
+
+        md5hash.update(data)
+
+        return Image(mime_type=guessMimetype(path),
+                     md5=md5hash.hexdigest(),
+                     size=len(data),
+                     ctime=datetime.fromtimestamp(os.path.getctime(path)),
+                     data=data)
 
 
 TYPES  = [Meta, Label, Artist, Album, Track, Image]
