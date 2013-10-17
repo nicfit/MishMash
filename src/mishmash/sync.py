@@ -28,12 +28,24 @@ from datetime import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 
+from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils import guessMimetype
 from eyed3.utils.console import printError, printMsg, printWarning
 
-from .orm import Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta
+from .orm import (Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta,
+                  Image)
+from . import orm
 from .log import log
+
+
+ARTWORK_FILENAMES = {orm.FRONT_COVER_TYPE: ["cover-front", "cover", "folder"],
+                     orm.BACK_COVER_TYPE: ["cover-back"],
+                    }
+TAG_IMAGE_TYPES_TO_DB_IMG_TYPES = {
+        ImageFrame.FRONT_COVER: orm.FRONT_COVER_TYPE,
+        ImageFrame.BACK_COVER: orm.BACK_COVER_TYPE,
+}
 
 
 class SyncPlugin(LoaderPlugin):
@@ -75,7 +87,7 @@ class SyncPlugin(LoaderPlugin):
         audio_files = list(self._file_cache)
         self._file_cache = []
 
-        images = self._dir_images
+        image_files = self._dir_images
         self._dir_images = []
 
         if not audio_files:
@@ -110,8 +122,11 @@ class SyncPlugin(LoaderPlugin):
                 except NoResultFound:
                     track = None
                 else:
-                    if datetime.fromtimestamp(getctime(path)) <= track.ctime:
-                        # track is in DB and the file is not modified
+                    if datetime.fromtimestamp(getctime(path)) == track.ctime:
+                        # Track is in DB and the file is not modified.
+                        # stash the album though, we'll look for artwork
+                        # updates later
+                        album = track.album
                         continue
 
                 # Either adding the track (track == None)
@@ -188,6 +203,65 @@ class SyncPlugin(LoaderPlugin):
                 if label:
                     track.labels.append(label)
                 session.add(track)
+
+                # Tag images
+                for img in tag.images:
+                    if not img.picture_type in TAG_IMAGE_TYPES_TO_DB_IMG_TYPES:
+                        log.warn("Skipping tag image of type: %d" %
+                                 img.picture_type)
+                        continue
+
+                    img_type = TAG_IMAGE_TYPES_TO_DB_IMG_TYPES[img.picture_type]
+                    add_image = True
+                    for db_image in album.images:
+                        if (db_image.type == img_type and
+                                db_image.description == img.description):
+                            # FIXME: md5 check to not add the same front a ton
+                            # Update
+                            # TODO
+                            add_image = False
+                            break
+
+                    if add_image:
+                        # TODO
+                        pass
+
+            for img_file in image_files:
+                basename = os.path.splitext(os.path.basename(img_file))[0]
+                for img_type in ARTWORK_FILENAMES:
+                    if basename in ARTWORK_FILENAMES[img_type]:
+                        break
+                    img_type = None
+
+                if img_type is None:
+                    log.warn("Skipping unrecognized image file: %s" % img_file)
+                    continue
+
+                log.debug("Album image: %s %s" % (img_type, img_file))
+
+                add_image = True
+                album_images = [img for img in album.images
+                                if img.type == img_type]
+                for img in album_images:
+                    if img.description == basename:
+                        add_image = False
+                        ctime = datetime.fromtimestamp(getctime(img_file))
+                        size = os.stat(img_file).st_size
+                        if (ctime != img.ctime) or (size != img.size):
+                            # Update
+                            img.update(img_file)
+                            session.add(img)
+                        break
+
+                if not album_images or add_image:
+                    printWarning("Adding image file %s" % img_file)
+
+                    db_image = Image.fromFile(img_file)
+                    db_image.type = img_type
+                    db_image.description = basename
+
+                    album.images.append(db_image)
+                    session.add(album)
 
     def handleDone(self):
         t = time.time() - self.start_time
