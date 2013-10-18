@@ -224,9 +224,6 @@ class Album(Base, OrmObject):
                 self.recording_date)
 
 
-
-
-
 class Track(Base, OrmObject):
     __tablename__ = "tracks"
 
