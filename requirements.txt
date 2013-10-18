@@ -1,3 +1,14 @@
-SQLAlchemy==0.8.2
+paver==1.2.1
 eyeD3==0.7.3
+
+SQLAlchemy==0.8.2
 psycopg2==2.5.1
+
+pyramid==1.5a2
+pyramid_chameleon
+pyramid_debugtoolbar
+pyramid_tm
+waitress
+transaction
+zope.sqlalchemy
+
