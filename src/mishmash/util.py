@@ -28,3 +28,12 @@ def splitNameByPrefix(s):
             return (s[len(prefix):], s[0:len(prefix.rstrip())])
     return (s, None)
 
+
+
+def sortAlbums(albums):
+    def _sortkey(a):
+        if isinstance(a.getBestDate(), unicode):
+            import ipdb; ipdb.set_trace()
+        return a.getBestDate()
+    return sorted(albums, key=_sortkey)
+
