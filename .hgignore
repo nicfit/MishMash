@@ -1,0 +1,7 @@
+syntax: glob
+
+*.pyc
+*.swp
+build/*
+.tox/*
+.pip-download-cache/*
