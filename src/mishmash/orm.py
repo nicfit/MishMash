@@ -24,9 +24,11 @@ from hashlib import md5
 import sqlalchemy as sql
 from sqlalchemy import orm, event
 from sqlalchemy.engine import Engine
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declarative_base
 
 from eyed3.utils import guessMimetype
+from eyed3.core import Date as Eyed3Date
 
 from .info import VERSION
 
@@ -149,9 +151,9 @@ class Album(Base, OrmObject):
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    release_date = sql.Column(sql.String(24))
-    original_release_date = sql.Column(sql.String(24))
-    recording_date = sql.Column(sql.String(24))
+    _release_date = sql.Column(sql.String(24))
+    _original_release_date = sql.Column(sql.String(24))
+    _recording_date = sql.Column(sql.String(24))
     compilation = sql.Column(sql.Boolean(), nullable=False, default=False)
 
     # Foreign keys
@@ -164,6 +166,65 @@ class Album(Base, OrmObject):
     labels = orm.relation("Label", secondary=album_labels)
     images = orm.relation("Image", secondary=album_images, cascade="all")
     '''one-to-many album images.'''
+
+    def __init__(self, **kwargs):
+        # The use of @hybrid_property means that we don't get keyword args for
+        # the non _ prefixed column names, so...
+        def _pop(key):
+            val = None
+            if key in kwargs:
+                val = kwargs[key]
+                del kwargs[key]
+            return val
+
+        self.release_date = _pop("release_date")
+        self.original_release_date = _pop("original_release_date")
+        self.recording_date = _pop("recording_date")
+
+        super(Album, self).__init__(**kwargs)
+
+    @hybrid_property
+    def recording_date(self):
+        return self._dateGetter(self._recording_date)
+
+    @recording_date.setter
+    def recording_date(self, d):
+        self._recording_date = self._dateSetter(d)
+
+    @hybrid_property
+    def release_date(self):
+        return self._dateGetter(self._release_date)
+
+    @release_date.setter
+    def release_date(self, d):
+        self._release_date = self._dateSetter(d)
+
+    @hybrid_property
+    def original_release_date(self):
+        return self._dateGetter(self._original_release_date)
+
+    @original_release_date.setter
+    def original_release_date(self, d):
+        self._original_release_date = self._dateSetter(d)
+
+    def _dateGetter(self, d):
+        return Eyed3Date.parse(d) if d else None
+
+    def _dateSetter(self, d):
+        if isinstance(d, Eyed3Date):
+            return str(d)
+        elif d:
+            return str(Eyed3Date.parse(d))
+        else:
+            return None
+
+    def getBestDate(self):
+        return (self.original_release_date or
+                self.release_date or
+                self.recording_date)
+
+
+
 
 
 class Track(Base, OrmObject):
@@ -247,7 +308,7 @@ class Image(Base, OrmObject):
     ctime = sql.Column(sql.DateTime())
     description = sql.Column(sql.String(1024), nullable=False)
     '''The description will be the base file name when the source if a file.'''
-    data = sql.Column(sql.LargeBinary, nullable=False)
+    data = orm.deferred(sql.Column(sql.LargeBinary, nullable=False))
 
     def update(self, path):
         new_img = Image.fromFile(path)
