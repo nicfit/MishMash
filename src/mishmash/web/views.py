@@ -20,11 +20,13 @@ class ResponseDict(dict):
         self.update(_vars)
 
 
-@view_config(route_name='home', renderer='templates/home.pt')
+@view_config(route_name="home", renderer="templates/home.pt",
+             layout="main-layout")
 def home_view(request):
     return ResponseDict()
 
-@view_config(route_name='artists', renderer='templates/artists.pt')
+@view_config(route_name="artists", renderer="templates/artists.pt",
+             layout="main-layout")
 def allArtistsView(request):
     NUMBER = u"#"
     OTHER = u"Other"
@@ -58,7 +60,8 @@ def allArtistsView(request):
                         artist_dict=artist_dict)
 
 
-@view_config(route_name='single_artist', renderer='templates/artist.pt')
+@view_config(route_name="single_artist", renderer="templates/artist.pt",
+             layout="main-layout")
 def singleArtistView(request):
     session = request.DBSession()
     artists = session.query(Artist)\
@@ -76,27 +79,8 @@ def singleArtistView(request):
         raise NotImplementedError("TODO")
 
 
-@view_config(route_name='search', renderer='templates/search_results.pt')
+@view_config(route_name="search", renderer="templates/search_results.pt",
+             layout="main-layout")
 def searchResultsView(request):
     return ResponseDict()
-
-
-@view_config(route_name='pyramid', renderer='templates/pyramid.pt')
-def pyramid_info_view(request):
-    conn_err_msg = """\
-Pyramid is having a problem using your SQL database.  The problem
-might be caused by one of the following things:
-
-1.  You may need to run the "initialize_web_db" script
-    to initialize your database tables.  Check your virtual
-    environment's "bin" directory for this script and try to run it.
-
-2.  Your database server may not be running.  Check that the
-    database server referred to by the "sqlalchemy.url" setting in
-    your "development.ini" file is running.
-
-After you fix the problem, please restart the Pyramid application to
-try it again.
-"""
-    return {'project': 'mishmash'}
 

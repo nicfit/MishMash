@@ -6,6 +6,7 @@ psycopg2==2.5.1
 
 pyramid==1.5a2
 pyramid_chameleon
+pyramid_layout
 pyramid_debugtoolbar
 pyramid_tm
 waitress

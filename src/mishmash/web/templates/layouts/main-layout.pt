@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang='en' xmlns:tal="http://xml.zope.org/namespaces/tal">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="keywords" content="python music web application" />
+  <meta name="description" content="music library" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${layout.page_title}</title>
+
+  <link href="${request.static_url('mishmash.web:static/css/bootstrap.min.css')}" rel="stylesheet">
+  <link href="${request.static_url('mishmash.web:static/css/bootstrap-responsive.min.css')}" rel="stylesheet">
+
+  <style type="text/css">
+      body {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <metal:content define-slot="content"/>
+  </div> <!-- /container -->
+</body>
+
+<script
+  src="${request.static_url('mishmash.web:static/js/bootstrap.min.js')}">
+</script>
+</html>
+<!-- vim: set ai sw=2: -->
