@@ -24,11 +24,15 @@
 
 <body>
 
+<div align="center">
+<span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
+</div>
+
 <tal:block>
-  <span tal:repeat="L partitioned_artists"><strong>${L}</strong><br/>
-    <a href="#${L}"/>
+  <span tal:repeat="L artist_keys"><strong>${L}</strong><br/>
+    <a name="${L}"/>
     <ul>
-      <li tal:repeat="artist partitioned_artists[L]">
+      <li tal:repeat="artist artist_dict[L]">
         <a href='${request.url}/${artist.name}'
            tal:content="artist.sort_name">Artist</a>
       </li>
