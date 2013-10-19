@@ -26,23 +26,36 @@ def home_view(request):
 
 @view_config(route_name='artists', renderer='templates/artists.pt')
 def allArtistsView(request):
+    NUMBER = u"#"
+    OTHER = u"Other"
 
-    full_list = []
-    curr_part = None
-    partitioned_artists = {}
+    buckets = set()
+    artist_dict = {}
+
+    def _bucket(name):
+        l = name[0].upper()
+        if not l.isalpha():
+            l = NUMBER if l.isnumeric() else OTHER
+        buckets.add(l)
+        return l
 
     session = request.DBSession()
     for artist in session.query(Artist)\
                          .order_by(Artist.sort_name).all():
-        if curr_part != artist.sort_name[0]:
-            curr_part = artist.sort_name[0]
-            partitioned_artists[curr_part] = []
 
-        partitioned_artists[curr_part].append(artist)
-        full_list.append(artist)
+        bucket = _bucket(artist.sort_name)
+        if bucket not in artist_dict:
+            artist_dict[bucket] = []
+        artist_dict[bucket].append(artist)
 
-    return ResponseDict(all_artists=full_list,
-                        partitioned_artists=partitioned_artists)
+    buckets = list(buckets)
+    buckets.sort()
+    if OTHER in buckets:
+        buckets.remove(OTHER)
+        buckets.append(OTHER)
+
+    return ResponseDict(artist_keys=buckets,
+                        artist_dict=artist_dict)
 
 
 @view_config(route_name='single_artist', renderer='templates/artist.pt')
