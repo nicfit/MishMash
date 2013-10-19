@@ -153,10 +153,6 @@ class SyncPlugin(LoaderPlugin):
                 rec_date = tag.recording_date
                 or_date = tag.original_release_date
 
-                # Helper for getting the stringified date or None
-                def _procDate(d):
-                    return str(d) if d else None
-
                 if album_rows:
                     if len(album_rows) > 1:
                         raise NotImplementedError("FIXME")
@@ -164,15 +160,15 @@ class SyncPlugin(LoaderPlugin):
 
                     album.compilation = is_comp
 
-                    album.release_date = _procDate(rel_date)
-                    album.original_release_date = _procDate(or_date)
-                    album.recording_date = _procDate(rec_date)
+                    album.release_date = rel_date
+                    album.original_release_date = or_date
+                    album.recording_date = rec_date
                 elif tag.album:
                     album = Album(title=tag.album, artist_id=album_artist_id,
                                   compilation=is_comp,
-                                  release_date=_procDate(rel_date),
-                                  original_release_date=_procDate(or_date),
-                                  recording_date=_procDate(rec_date))
+                                  release_date=rel_date,
+                                  original_release_date=or_date,
+                                  recording_date=rec_date)
                     session.add(album)
 
                 session.flush()
