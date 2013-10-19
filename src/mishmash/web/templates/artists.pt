@@ -1,36 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
-      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head>
-  <title>Mishmash Music Database</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta name="keywords" content="python music web application" />
-  <meta name="description" content="pyramid web application" />
-
-  <link rel="shortcut icon"
-        href="${request.static_url('mishmash.web:static/favicon.ico')}" />
-  <link rel="stylesheet"
-        href="${request.static_url('mishmash.web:static/pylons.css')}"
-        type="text/css" media="screen" charset="utf-8" />
-  <link rel="stylesheet"
-        href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css"
-        media="screen" />
-  <link rel="stylesheet"
-        href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css"
-        media="screen" />
-</head>
-
-<body>
+<metal:block use-macro="main_template">
+  <div metal:fill-slot="content">
 
 <div align="center">
-<span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
+  <span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
 </div>
 
 <tal:block>
-  <span tal:repeat="L artist_keys"><strong>${L}</strong><br/>
-    <a name="${L}"/>
+<span tal:repeat="L artist_keys"><a id='${L}'><strong>${L}</strong></a>
     <ul>
       <li tal:repeat="artist artist_dict[L]">
         <a href='${request.url}/${artist.name}'
@@ -40,6 +16,5 @@
   </span>
 </tal:block>
 
-</body>
-
-</html>
+  </div>
+</metal:block>

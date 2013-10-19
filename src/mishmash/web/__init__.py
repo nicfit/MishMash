@@ -29,6 +29,7 @@ def _configure(settings, DBSession):
     config = Configurator(settings=settings)
 
     config.include('pyramid_chameleon')
+    config.include('pyramid_layout')
 
     def _DBSession(request):
         return DBSession
@@ -43,7 +44,8 @@ def _configure(settings, DBSession):
     config.add_route('artists', '/artists')
     config.add_route('single_artist', '/artists/{name}')
 
-    config.scan()
+    config.scan(".views")
+    config.scan(".layouts")
 
     return config
 
