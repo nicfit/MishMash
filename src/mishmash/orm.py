@@ -115,6 +115,7 @@ def _getSortName(context):
     name, prefix = util.splitNameByPrefix(context.current_parameters["name"])
     return u"%s, %s" % (name, prefix) if prefix else name
 
+
 class Artist(Base, OrmObject):
     __tablename__ = "artists"
 
@@ -140,6 +141,14 @@ class Artist(Base, OrmObject):
     def initTable(session):
         session.add(Artist(name=VARIOUS_ARTISTS_NAME))
 
+    def getAlbumsByType(self, album_type):
+        if album_type != Album.VARIOUS_TYPE:
+            return [a for a in self.albums if a.type == album_type]
+        else:
+            albums = set([t.album for t in self.tracks
+                                  if t.album.type == album_type])
+            return list(albums)
+
 
 class Album(Base, OrmObject):
     __tablename__ = "albums"
@@ -150,7 +159,8 @@ class Album(Base, OrmObject):
     EP_TYPE = "EP"
     COMP_TYPE = "Compilation"
     LIVE_TYPE = "Live Set"
-    ALBUM_TYPES = [LP_TYPE, EP_TYPE, COMP_TYPE, LIVE_TYPE]
+    VARIOUS_TYPE = "Various Artist"
+    ALBUM_TYPES = [LP_TYPE, EP_TYPE, COMP_TYPE, LIVE_TYPE, VARIOUS_TYPE]
     _types_enum = sql.Enum(*ALBUM_TYPES, name="album_types")
 
     # Columns

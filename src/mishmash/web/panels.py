@@ -35,7 +35,7 @@ def navbar(context, request):
         return item
 
     nav = [
-        nav_item('Home', request.route_url('home')),
+        nav_item('Mishmash', request.route_url('home')),
         nav_item('Artists', request.route_url('artists')),
         nav_item('Search', request.route_url('search')),
         nav_item('eyeD3', "http://eyed3.nicfit.net/")

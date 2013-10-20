@@ -99,7 +99,7 @@ class SyncPlugin(LoaderPlugin):
         artists = set([f.tag.artist for f in audio_files if f.tag])
         albums = set([f.tag.album for f in audio_files if f.tag])
         is_album = len(artists) == 1 and len(albums) == 1
-        is_comp = len(artists) > 1 and len(albums) == 1
+        is_various = len(artists) > 1 and len(albums) == 1
 
         session = self.DBSession()
         with session.begin():
@@ -142,7 +142,7 @@ class SyncPlugin(LoaderPlugin):
                     session.add(artist)
                     session.flush()
 
-                album_artist_id = artist.id if not is_comp \
+                album_artist_id = artist.id if not is_various \
                                             else self._comp_artist_id
                 album = None
                 album_rows = session.query(Album)\
@@ -151,20 +151,21 @@ class SyncPlugin(LoaderPlugin):
                 rel_date = tag.release_date
                 rec_date = tag.recording_date
                 or_date = tag.original_release_date
+                album_type = (Album.LP_TYPE if not is_various
+                                            else Album.VARIOUS_TYPE)
 
                 if album_rows:
                     if len(album_rows) > 1:
                         raise NotImplementedError("FIXME")
                     album = album_rows[0]
 
-                    # FIXME
-                    #album.type = 
-
+                    album.type = album_type
                     album.release_date = rel_date
                     album.original_release_date = or_date
                     album.recording_date = rec_date
                 elif tag.album:
                     album = Album(title=tag.album, artist_id=album_artist_id,
+                                  type=album_type,
                                   release_date=rel_date,
                                   original_release_date=or_date,
                                   recording_date=rec_date)
