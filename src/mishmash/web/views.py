@@ -63,6 +63,8 @@ def allArtistsView(request):
 @view_config(route_name="single_artist", renderer="templates/artist.pt",
              layout="main-layout")
 def singleArtistView(request):
+    SINGLE_TYPE = "Single"
+
     session = request.DBSession()
     artists = session.query(Artist)\
                      .filter_by(name=request.matchdict["name"]).all()
@@ -70,26 +72,35 @@ def singleArtistView(request):
     if len(artists) == 1:
         artist = artists[0]
         albums = util.sortAlbums(artist.albums)
+        all_tabs = Album.ALBUM_TYPES + [SINGLE_TYPE]
 
         active_albums = []
+        active_singles = []
         active_tab = request.GET.get("album_tab", None)
         if not active_tab:
             # No album type was requested, try to pick a smart one.
-            for active_tab in Album.ALBUM_TYPES:
-                active_albums = artist.getAlbumsByType(active_tab)
-                if active_albums:
+            for active_tab in all_tabs:
+                if active_tab != SINGLE_TYPE:
+                    active_albums = artist.getAlbumsByType(active_tab)
+                else:
+                    active_singles = artist.getTrackSingles()
+                if active_albums or active_singles:
                     break
         else:
-            active_albums = artist.getAlbumsByType(active_tab)
+            if active_tab != SINGLE_TYPE:
+                active_albums = artist.getAlbumsByType(active_tab)
+            else:
+                active_singles = artist.getTrackSingles()
 
         tabs = []
-        for name in Album.ALBUM_TYPES:
+        for name in all_tabs:
             t = (name, "%ss" % name, active_tab == name)
             tabs.append(t)
 
         return ResponseDict(artist=artists[0],
                             active_tab=active_tab,
                             active_albums=active_albums,
+                            active_singles=active_singles,
                             tabs=tabs,
                             )
     elif len(artists) > 1:
