@@ -11,12 +11,15 @@
 
 <table class="table">
   <tr>
-    <th>Date</th>
-    <th>Title</th>
+    <th tal:condition="active_albums">Date</th>
+    <th tal:condition="active_albums or active_singles">Title</th>
   </tr>
-  <tr tal:repeat="album active_albums">
+  <tr tal:condition="active_albums" tal:repeat="album active_albums">
     <td tal:content="album.getBestDate()">2013.10.19</td>
     <td tal:content="album.title">Album Title</td>
+  </tr>
+  <tr tal:condition="active_singles" tal:repeat="track active_singles">
+    <td tal:content="track.title">Track Title</td>
   </tr>
 </table>
 

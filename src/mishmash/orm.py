@@ -146,8 +146,11 @@ class Artist(Base, OrmObject):
             return [a for a in self.albums if a.type == album_type]
         else:
             albums = set([t.album for t in self.tracks
-                                  if t.album.type == album_type])
+                                  if t.album and t.album.type == album_type])
             return list(albums)
+
+    def getTrackSingles(self):
+        return [t for t in self.tracks if t.album_id is None]
 
 
 class Album(Base, OrmObject):
