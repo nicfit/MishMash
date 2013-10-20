@@ -1,12 +1,12 @@
 <metal:block use-macro="main_template">
   <div metal:fill-slot="content">
 
-    <form method="get" action="${request.url}">
-      <!-- FIXME: javascript to clear default value when clicked first -->
-      <input type="text" id="q" name="q"
-             value="Search artist, albums, and more" />
-      <input type="submit" id="x" value="Go" />
-    </form>
+<form method="get" action="${request.url}">
+  <!-- FIXME: javascript to clear default value when clicked first -->
+  <input type="text" id="q" name="q"
+         value="Search artist, albums, and more" />
+  <input type="submit" class="btn" id="x" value="Go" />
+</form>
 
   </div>
 </metal:block>

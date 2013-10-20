@@ -1,14 +1,15 @@
 <metal:block use-macro="main_template">
   <div metal:fill-slot="content">
 
-    <h2>Welcome to ${project_name}!</h2>
+<div class="page-header">
+  <h2>Welcome to ${project_name}!</h2>
+</div>
 
-    <form method="get" action="${request.url}search">
-      <input type="text" id="q" name="q" value="" />
-      <input type="submit" id="x" value="Go" />
-    </form>
-
-    <a href="${request.url}artists">Artist List</a>
+<div class="container">
+  <ul>
+    <li><a href="${request.url}artists">Artist List</a></li>
+  </ul>
+</div>
 
   </div>
 </metal:block>

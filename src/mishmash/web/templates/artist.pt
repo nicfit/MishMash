@@ -1,13 +1,24 @@
 <metal:block use-macro="main_template">
   <div metal:fill-slot="content">
 
-    <h3>${artist.name}</h3>
+<h3>${artist.name}</h3>
 
-    <ul>
-      <li tal:repeat="album albums">
-      ${album.title} (${album.getBestDate()})
-      </li>
-    </ul>
+<ul class="nav nav-tabs">
+  <li tal:repeat="t tabs" class="${'active' if t[2] else ''}">
+    <a href="${request.path_url}?album_tab=${t[0]}">${t[1]}</a>
+  </li>
+</ul>
+
+<table class="table">
+  <tr>
+    <th>Date</th>
+    <th>Title</th>
+  </tr>
+  <tr tal:repeat="album active_albums">
+    <td tal:content="album.getBestDate()">2013.10.19</td>
+    <td tal:content="album.title">Album Title</td>
+  </tr>
+</table>
 
   </div>
 </metal:block>

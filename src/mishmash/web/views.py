@@ -9,7 +9,7 @@ _vars = {"project_name": NAME,
         }
 
 from .models import DBSession
-from ..orm import Artist
+from ..orm import Artist, Album
 from .. import database
 from .. import util
 
@@ -67,12 +67,27 @@ def singleArtistView(request):
     artists = session.query(Artist)\
                      .filter_by(name=request.matchdict["name"]).all()
 
+    album_types = Album.ALBUM_TYPES
+    active_tab = request.GET.get("album_tab", album_types[0])
+    if active_tab not in album_types:
+        active_tab = album_types[0]
+
+    tabs = []
+    for name in album_types:
+        t = (name, "%ss" % name, active_tab == name)
+        tabs.append(t)
+
     if len(artists) == 1:
         artist = artists[0]
-        # FIXME: begin here
         albums = util.sortAlbums(artist.albums)
+        active_albums = [a for a in albums if a.type == active_tab]
+
         return ResponseDict(artist=artists[0],
-                            albums=albums)
+                            albums=albums,
+                            active_tab=active_tab,
+                            active_albums=active_albums,
+                            tabs=tabs,
+                            )
     elif len(artists) > 1:
         raise NotImplementedError("TODO")
     else:

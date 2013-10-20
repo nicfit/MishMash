@@ -44,8 +44,9 @@ def _configure(settings, DBSession):
     config.add_route('artists', '/artists')
     config.add_route('single_artist', '/artists/{name}')
 
-    config.scan(".views")
+    config.scan(".panels")
     config.scan(".layouts")
+    config.scan(".views")
 
     return config
 

@@ -23,12 +23,13 @@ VERSION_TUPLE   = tuple((int(v) for v in VERSION.split('.')))
 RELEASE         = "@RELEASE@"
 AUTHOR          = "@AUTHOR@"
 URL             = "@URL@"
+YEARS           = "2012-2013"
 VERSION_MSG     = """
-%s %s-%s (C) Copyright 2012-2013 %s
+%(NAME)s %(VERSION)s-%(RELEASE)s (C) Copyright %(AUTHOR)s
 This program comes with ABSOLUTELY NO WARRANTY! See COPYING for details.
 Run with --help/-h for usage information or read the docs at
-%s
-""" % (NAME, VERSION, RELEASE, AUTHOR, URL)
+%(URL)s
+""" % (locals())
 
 LICENCE = """
 		    GNU GENERAL PUBLIC LICENSE
