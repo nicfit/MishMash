@@ -146,15 +146,22 @@ class Album(Base, OrmObject):
     __table_args__ = (sql.UniqueConstraint("title",
                                            "artist_id"), {})
 
+    LP_TYPE = "LP"
+    EP_TYPE = "EP"
+    COMP_TYPE = "Compilation"
+    LIVE_TYPE = "Live Set"
+    ALBUM_TYPES = [LP_TYPE, EP_TYPE, COMP_TYPE, LIVE_TYPE]
+    _types_enum = sql.Enum(*ALBUM_TYPES, name="album_types")
+
     # Columns
     id = sql.Column(sql.Integer, primary_key=True)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
+    type = sql.Column(_types_enum, nullable=False, default=LP_TYPE)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
     _release_date = sql.Column(sql.String(24))
     _original_release_date = sql.Column(sql.String(24))
     _recording_date = sql.Column(sql.String(24))
-    compilation = sql.Column(sql.Boolean(), nullable=False, default=False)
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
@@ -288,13 +295,12 @@ class Label(Base, OrmObject):
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
 
 
-FRONT_COVER_TYPE = "FRONT_COVER"
-BACK_COVER_TYPE = "BACK_COVER"
-IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE]
-
 class Image(Base, OrmObject):
     __tablename__ = "images"
 
+    FRONT_COVER_TYPE = "FRONT_COVER"
+    BACK_COVER_TYPE = "BACK_COVER"
+    IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE]
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
     id = sql.Column(sql.Integer, primary_key=True)
@@ -349,4 +355,4 @@ LABELS = [artist_labels, album_labels, track_labels,
 TABLES = [T.__table__ for T in TYPES] + LABELS
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''
-ENUMS = [Image._types_enum]
+ENUMS = [Image._types_enum, Album._types_enum]

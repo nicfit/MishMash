@@ -35,16 +35,15 @@ from eyed3.utils.console import printError, printMsg, printWarning
 
 from .orm import (Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta,
                   Image)
-from . import orm
 from .log import log
 
 
-ARTWORK_FILENAMES = {orm.FRONT_COVER_TYPE: ["cover-front", "cover", "folder"],
-                     orm.BACK_COVER_TYPE: ["cover-back"],
+ARTWORK_FILENAMES = {Image.FRONT_COVER_TYPE: ["cover-front", "cover", "folder"],
+                     Image.BACK_COVER_TYPE: ["cover-back"],
                     }
 TAG_IMAGE_TYPES_TO_DB_IMG_TYPES = {
-        ImageFrame.FRONT_COVER: orm.FRONT_COVER_TYPE,
-        ImageFrame.BACK_COVER: orm.BACK_COVER_TYPE,
+        ImageFrame.FRONT_COVER: Image.FRONT_COVER_TYPE,
+        ImageFrame.BACK_COVER: Image.BACK_COVER_TYPE,
 }
 
 
@@ -144,7 +143,7 @@ class SyncPlugin(LoaderPlugin):
                     session.flush()
 
                 album_artist_id = artist.id if not is_comp \
-                    else self._comp_artist_id
+                                            else self._comp_artist_id
                 album = None
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
@@ -158,14 +157,14 @@ class SyncPlugin(LoaderPlugin):
                         raise NotImplementedError("FIXME")
                     album = album_rows[0]
 
-                    album.compilation = is_comp
+                    # FIXME
+                    #album.type = 
 
                     album.release_date = rel_date
                     album.original_release_date = or_date
                     album.recording_date = rec_date
                 elif tag.album:
                     album = Album(title=tag.album, artist_id=album_artist_id,
-                                  compilation=is_comp,
                                   release_date=rel_date,
                                   original_release_date=or_date,
                                   recording_date=rec_date)

@@ -1,0 +1,12 @@
+<!--?
+-->
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container">
+    <ul tal:condition='nav' class="nav">
+      <li tal:repeat="item nav"
+          class="${'active' if item['active'] else ''}">
+        <a href="${item['url']}">${item['name']}</a>
+      </li>
+    </ul>
+  </div>
+</div>
