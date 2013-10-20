@@ -9,7 +9,7 @@ _vars = {"project_name": NAME,
         }
 
 from .models import DBSession
-from ..orm import Artist, Album
+from ..orm import Artist, Album, VARIOUS_ARTISTS_NAME
 from .. import database
 from .. import util
 
@@ -67,23 +67,27 @@ def singleArtistView(request):
     artists = session.query(Artist)\
                      .filter_by(name=request.matchdict["name"]).all()
 
-    album_types = Album.ALBUM_TYPES
-    active_tab = request.GET.get("album_tab", album_types[0])
-    if active_tab not in album_types:
-        active_tab = album_types[0]
-
-    tabs = []
-    for name in album_types:
-        t = (name, "%ss" % name, active_tab == name)
-        tabs.append(t)
-
     if len(artists) == 1:
         artist = artists[0]
         albums = util.sortAlbums(artist.albums)
-        active_albums = [a for a in albums if a.type == active_tab]
+
+        active_albums = []
+        active_tab = request.GET.get("album_tab", None)
+        if not active_tab:
+            # No album type was requested, try to pick a smart one.
+            for active_tab in Album.ALBUM_TYPES:
+                active_albums = artist.getAlbumsByType(active_tab)
+                if active_albums:
+                    break
+        else:
+            active_albums = artist.getAlbumsByType(active_tab)
+
+        tabs = []
+        for name in Album.ALBUM_TYPES:
+            t = (name, "%ss" % name, active_tab == name)
+            tabs.append(t)
 
         return ResponseDict(artist=artists[0],
-                            albums=albums,
                             active_tab=active_tab,
                             active_albums=active_albums,
                             tabs=tabs,

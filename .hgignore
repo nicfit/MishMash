@@ -5,3 +5,4 @@ syntax: glob
 build/*
 .tox/*
 .pip-download-cache/*
+test/*
