@@ -17,9 +17,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-
+from eyed3.utils import datePicker
 
 NAME_PREFIXES = [u"the ", u"los ", u"la "]
+
 
 def splitNameByPrefix(s):
     s_lower = s.lower()
@@ -29,9 +30,8 @@ def splitNameByPrefix(s):
     return (s, None)
 
 
-
-def sortAlbums(albums):
+def sortByDate(things, prefer_recording_date=False):
     def _sortkey(a):
-        return a.getBestDate()
-    return sorted(albums, key=_sortkey)
+        return datePicker(a, prefer_recording_date=prefer_recording_date)
+    return sorted(things, key=_sortkey)
 

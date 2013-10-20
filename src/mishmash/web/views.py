@@ -3,6 +3,10 @@ from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
+from eyed3.core import ALBUM_TYPE_IDS
+from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
+                        DEMO_TYPE)
+
 from ..info import NAME, VERSION
 _vars = {"project_name": NAME,
          "project_version": VERSION,
@@ -18,6 +22,18 @@ class ResponseDict(dict):
     def __init__(self, *args, **kwargs):
         super(ResponseDict, self).__init__(*args, **kwargs)
         self.update(_vars)
+
+
+TYPE_DISPLAY_NAMES = {LP_TYPE: "LPs",
+                      EP_TYPE: "EPs",
+                      COMP_TYPE: "Compilations",
+                      VARIOUS_TYPE: "Various Artists",
+                      LIVE_TYPE: "Live",
+                      DEMO_TYPE: "Demos",
+                     }
+# Not in eyeD3
+SINGLE_TYPE = "Single"
+TYPE_DISPLAY_NAMES[SINGLE_TYPE] = "Singles"
 
 
 @view_config(route_name="home", renderer="templates/home.pt",
@@ -63,16 +79,14 @@ def allArtistsView(request):
 @view_config(route_name="single_artist", renderer="templates/artist.pt",
              layout="main-layout")
 def singleArtistView(request):
-    SINGLE_TYPE = "Single"
-
     session = request.DBSession()
     artists = session.query(Artist)\
                      .filter_by(name=request.matchdict["name"]).all()
 
     if len(artists) == 1:
         artist = artists[0]
-        albums = util.sortAlbums(artist.albums)
-        all_tabs = Album.ALBUM_TYPES + [SINGLE_TYPE]
+        albums = list(artist.albums)
+        all_tabs = ALBUM_TYPE_IDS + [SINGLE_TYPE]
 
         active_albums = []
         active_singles = []
@@ -94,8 +108,16 @@ def singleArtistView(request):
 
         tabs = []
         for name in all_tabs:
-            t = (name, "%ss" % name, active_tab == name)
+            t = (name, TYPE_DISPLAY_NAMES[name], active_tab == name)
             tabs.append(t)
+
+        if active_albums:
+            active_albums = util.sortByDate(active_albums,
+                                            active_tab == LIVE_TYPE)
+        else:
+            # Unlike tags, the orm.Track does not have dates so not sorting :/
+            #active_singles = util.sortByDate(active_singles)
+            pass
 
         return ResponseDict(artist=artists[0],
                             active_tab=active_tab,

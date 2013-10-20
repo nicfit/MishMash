@@ -29,6 +29,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from eyed3.utils import guessMimetype
 from eyed3.core import Date as Eyed3Date
+from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
 from .info import VERSION
 
@@ -142,7 +143,7 @@ class Artist(Base, OrmObject):
         session.add(Artist(name=VARIOUS_ARTISTS_NAME))
 
     def getAlbumsByType(self, album_type):
-        if album_type != Album.VARIOUS_TYPE:
+        if album_type != VARIOUS_TYPE:
             return [a for a in self.albums if a.type == album_type]
         else:
             albums = set([t.album for t in self.tracks
@@ -158,18 +159,12 @@ class Album(Base, OrmObject):
     __table_args__ = (sql.UniqueConstraint("title",
                                            "artist_id"), {})
 
-    LP_TYPE = "LP"
-    EP_TYPE = "EP"
-    COMP_TYPE = "Compilation"
-    LIVE_TYPE = "Live Set"
-    VARIOUS_TYPE = "Various Artist"
-    ALBUM_TYPES = [LP_TYPE, EP_TYPE, COMP_TYPE, LIVE_TYPE, VARIOUS_TYPE]
-    _types_enum = sql.Enum(*ALBUM_TYPES, name="album_types")
+    _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
     # Columns
     id = sql.Column(sql.Integer, primary_key=True)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
-    type = sql.Column(_types_enum, nullable=False, default=LP_TYPE)
+    type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
     _release_date = sql.Column(sql.String(24))
@@ -239,9 +234,9 @@ class Album(Base, OrmObject):
             return None
 
     def getBestDate(self):
-        return (self.original_release_date or
-                self.release_date or
-                self.recording_date)
+        from eyed3.utils import datePicker
+        return datePicker(self,
+                          prefer_recording_date=bool(self.type == LIVE_TYPE))
 
 
 class Track(Base, OrmObject):

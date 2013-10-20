@@ -32,6 +32,7 @@ from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils import guessMimetype
 from eyed3.utils.console import printError, printMsg, printWarning
+from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE
 
 from .orm import (Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta,
                   Image)
@@ -101,6 +102,24 @@ class SyncPlugin(LoaderPlugin):
         is_album = len(artists) == 1 and len(albums) == 1
         is_various = len(artists) > 1 and len(albums) == 1
 
+        def type_hint():
+            hints = set()
+            for tag in [f.tag for f in audio_files if f.tag]:
+                hint_frame = tag.user_text_frames.get(TXXX_ALBUM_TYPE)
+                if hint_frame:
+                    hints.add(hint_frame.text)
+            if len(hints) > 1:
+                log.warn("Inconsistent type hints: %s" % str(hints))
+                return None
+            else:
+                return hints.pop() if hints else None
+
+        album_type = type_hint() or LP_TYPE
+        if is_various and album_type not in (None, VARIOUS_TYPE):
+            # is_various overrides
+            log.warn("Using type various despite files saying %s" % album_type)
+        album_type = VARIOUS_TYPE if is_various else album_type
+
         session = self.DBSession()
         with session.begin():
             for audio_file in audio_files:
@@ -151,8 +170,6 @@ class SyncPlugin(LoaderPlugin):
                 rel_date = tag.release_date
                 rec_date = tag.recording_date
                 or_date = tag.original_release_date
-                album_type = (Album.LP_TYPE if not is_various
-                                            else Album.VARIOUS_TYPE)
 
                 if album_rows:
                     if len(album_rows) > 1:
