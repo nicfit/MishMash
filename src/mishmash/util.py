@@ -32,8 +32,6 @@ def splitNameByPrefix(s):
 
 def sortAlbums(albums):
     def _sortkey(a):
-        if isinstance(a.getBestDate(), unicode):
-            import ipdb; ipdb.set_trace()
         return a.getBestDate()
     return sorted(albums, key=_sortkey)
 
