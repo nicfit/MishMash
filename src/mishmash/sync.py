@@ -219,26 +219,34 @@ class SyncPlugin(LoaderPlugin):
 
                 # Tag images
                 for img in tag.images:
-                    if not img.picture_type in TAG_IMAGE_TYPES_TO_DB_IMG_TYPES:
+                    if img.picture_type not in TAG_IMAGE_TYPES_TO_DB_IMG_TYPES:
                         log.warn("Skipping tag image of type: %d" %
                                  img.picture_type)
                         continue
 
                     img_type = TAG_IMAGE_TYPES_TO_DB_IMG_TYPES[img.picture_type]
                     add_image = True
-                    for db_image in album.images:
-                        if (db_image.type == img_type and
-                                db_image.description == img.description):
-                            # FIXME: md5 check to not add the same front a ton
-                            # Update
-                            # TODO
+                    for db_img in album.images:
+                        if (db_img.type == img_type and
+                                db_img.description == img.description):
+
+                            new_img = Image.fromTagFrame(img)
+                            new_img.type = db_img.type
+
+                            if new_img.md5 != db_img.md5:
+                                # Update image
+                                album.images.remove(db_img)
+                                album.images.append(new_img)
+                                session.add(album)
                             add_image = False
-                            break
 
                     if add_image:
-                        # TODO
-                        pass
+                        db_img = Image.fromTagFrame(img)
+                        db_img.type = img_type
+                        album.images.append(db_img)
+                        session.add(album)
 
+            # Directory images.
             for img_file in image_files:
                 basename = os.path.splitext(os.path.basename(img_file))[0]
                 for img_type in ARTWORK_FILENAMES:
@@ -269,11 +277,11 @@ class SyncPlugin(LoaderPlugin):
                 if not album_images or add_image:
                     printWarning("Adding image file %s" % img_file)
 
-                    db_image = Image.fromFile(img_file)
-                    db_image.type = img_type
-                    db_image.description = basename
+                    db_img = Image.fromFile(img_file)
+                    db_img.type = img_type
+                    db_img.description = basename
 
-                    album.images.append(db_image)
+                    album.images.append(db_img)
                     session.add(album)
 
     def handleDone(self):
