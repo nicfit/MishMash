@@ -335,7 +335,8 @@ class Image(Base, OrmObject):
         md5hash = md5()
         md5hash.update(img.image_data)
 
-        return Image(mime_type=img.mime_type,
+        return Image(description=img.description,
+                     mime_type=img.mime_type,
                      md5=md5hash.hexdigest(),
                      size=len(img.image_data),
                      data=img.image_data)
