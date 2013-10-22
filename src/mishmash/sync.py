@@ -127,8 +127,9 @@ class SyncPlugin(LoaderPlugin):
                 info = audio_file.info
                 tag = audio_file.tag
 
-                if not tag:
-                    log.warn("File missing tag/metadata, skipping: %s" % path)
+                if not info or not tag:
+                    log.warn("File missing %s, skipping: %s" %
+                             ("audio" if not info else "tag/metadata", path))
                     continue
                 elif None in (tag.title, tag.artist):
                     log.warn("File missing required artist and/or title "
