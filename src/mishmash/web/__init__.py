@@ -43,6 +43,7 @@ def _configure(settings, DBSession):
 
     config.add_route('artists', '/artists')
     config.add_route('single_artist', '/artists/{name}')
+    config.add_route('images.covers', '/images/covers/{id:\d+|default}')
 
     config.scan(".panels")
     config.scan(".layouts")

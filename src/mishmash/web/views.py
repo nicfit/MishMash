@@ -1,5 +1,9 @@
+import os
+import random
+
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
 
 from sqlalchemy.exc import DBAPIError
 
@@ -13,7 +17,7 @@ _vars = {"project_name": NAME,
         }
 
 from .models import DBSession
-from ..orm import Artist, Album, VARIOUS_ARTISTS_NAME
+from ..orm import Artist, Album, Image, VARIOUS_ARTISTS_NAME
 from .. import database
 from .. import util
 
@@ -119,6 +123,11 @@ def singleArtistView(request):
             #active_singles = util.sortByDate(active_singles)
             pass
 
+        for a in active_albums:
+            covers = [img for img in a.images
+                            if img.type == Image.FRONT_COVER_TYPE]
+            a.cover = random.choice(covers) if covers else None
+
         return ResponseDict(artist=artists[0],
                             active_tab=active_tab,
                             active_albums=active_albums,
@@ -136,3 +145,20 @@ def singleArtistView(request):
 def searchResultsView(request):
     return ResponseDict()
 
+
+@view_config(route_name="images.covers")
+def covers(request):
+    iid = request.matchdict["id"]
+
+    if iid == "default":
+        return Response(content_type="image/png", body=DEFAULT_COVER_DATA)
+    else:
+        session = request.DBSession()
+        image = session.query(Image).filter(Image.id == int(iid)).first()
+        if not image:
+            raise HTTPNotFound()
+        return Response(content_type=image.mime_type.encode("latin1"),
+                        body=image.data)
+
+DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
+                                       "record150.png"), "rb").read()
