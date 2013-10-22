@@ -39,13 +39,17 @@ from .orm import (Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta,
 from .log import log
 
 
-ARTWORK_FILENAMES = {Image.FRONT_COVER_TYPE: ["cover-front", "cover", "folder"],
-                     Image.BACK_COVER_TYPE: ["cover-back"],
-                    }
-TAG_IMAGE_TYPES_TO_DB_IMG_TYPES = {
-        ImageFrame.FRONT_COVER: Image.FRONT_COVER_TYPE,
-        ImageFrame.BACK_COVER: Image.BACK_COVER_TYPE,
+FILE_IMG_TYPE_MAP = {
+        Image.FRONT_COVER_TYPE: ["cover-front", "cover", "folder"],
+        Image.BACK_COVER_TYPE: ["cover-back"],
 }
+'''Maps the orm Image ``type`` to a list of filenames for that type.'''
+
+TAG_IMG_TYPE_MAP = {
+        Image.FRONT_COVER_TYPE: [ImageFrame.FRONT_COVER],
+        Image.BACK_COVER_TYPE:  [ImageFrame.BACK_COVER],
+}
+'''Maps the orm Image ``type`` to a list of ID3 image (APIC) picture types.'''
 
 
 class SyncPlugin(LoaderPlugin):
@@ -220,38 +224,24 @@ class SyncPlugin(LoaderPlugin):
 
                 # Tag images
                 for img in tag.images:
-                    if img.picture_type not in TAG_IMAGE_TYPES_TO_DB_IMG_TYPES:
-                        log.warn("Skipping tag image of type: %d" %
+                    for img_type in TAG_IMG_TYPE_MAP:
+                        if img.picture_type in TAG_IMG_TYPE_MAP[img_type]:
+                            break
+                        img_type = None
+
+                    if img_type is None:
+                        log.warn("Skipping unsupported image type: %s" %
                                  img.picture_type)
                         continue
 
-                    img_type = TAG_IMAGE_TYPES_TO_DB_IMG_TYPES[img.picture_type]
-                    add_image = True
-                    for db_img in album.images:
-                        if (db_img.type == img_type and
-                                db_img.description == img.description):
-
-                            new_img = Image.fromTagFrame(img)
-                            new_img.type = db_img.type
-
-                            if new_img.md5 != db_img.md5:
-                                # Update image
-                                album.images.remove(db_img)
-                                album.images.append(new_img)
-                                session.add(album)
-                            add_image = False
-
-                    if add_image:
-                        db_img = Image.fromTagFrame(img)
-                        db_img.type = img_type
-                        album.images.append(db_img)
-                        session.add(album)
+                    new_img = Image.fromTagFrame(img, img_type)
+                    syncImage(new_img, album, session)
 
             # Directory images.
             for img_file in image_files:
-                basename = os.path.splitext(os.path.basename(img_file))[0]
-                for img_type in ARTWORK_FILENAMES:
-                    if basename in ARTWORK_FILENAMES[img_type]:
+                basename, ext = os.path.splitext(os.path.basename(img_file))
+                for img_type in FILE_IMG_TYPE_MAP:
+                    if basename in FILE_IMG_TYPE_MAP[img_type]:
                         break
                     img_type = None
 
@@ -259,31 +249,9 @@ class SyncPlugin(LoaderPlugin):
                     log.warn("Skipping unrecognized image file: %s" % img_file)
                     continue
 
-                log.debug("Album image: %s %s" % (img_type, img_file))
-
-                add_image = True
-                album_images = [img for img in album.images
-                                if img.type == img_type]
-                for img in album_images:
-                    if img.description == basename:
-                        add_image = False
-                        ctime = datetime.fromtimestamp(getctime(img_file))
-                        size = os.stat(img_file).st_size
-                        if (ctime != img.ctime) or (size != img.size):
-                            # Update
-                            img.update(img_file)
-                            session.add(img)
-                        break
-
-                if not album_images or add_image:
-                    printWarning("Adding image file %s" % img_file)
-
-                    db_img = Image.fromFile(img_file)
-                    db_img.type = img_type
-                    db_img.description = basename
-
-                    album.images.append(db_img)
-                    session.add(album)
+                new_img = Image.fromFile(img_file, img_type)
+                new_img.description = basename + ext
+                syncImage(new_img, album, session)
 
     def handleDone(self):
         t = time.time() - self.start_time
@@ -362,3 +330,23 @@ def deleteOrphans(session):
             found_ids.add(album.id)
 
     return (num_orphaned_tracks, num_orphaned_artists, num_orphaned_albums)
+
+
+def syncImage(img, album, session):
+    '''Add or updated the Image.'''
+    for db_img in album.images:
+        if (db_img.type == img.type and
+                db_img.description == img.description):
+            if img.md5 != db_img.md5:
+                # Update image
+                album.images.remove(db_img)
+                album.images.append(img)
+                session.add(album)
+            img = None
+            break
+
+    if img:
+        # Add image
+        album.images.append(img)
+        session.add(album)
+
