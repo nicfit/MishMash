@@ -316,33 +316,24 @@ class Image(Base, OrmObject):
     mime_type = sql.Column(sql.String(32), nullable=False)
     md5 = sql.Column(sql.String(32), nullable=False)
     size = sql.Column(sql.Integer, nullable=False)
-    ctime = sql.Column(sql.DateTime())
     description = sql.Column(sql.String(1024), nullable=False)
     '''The description will be the base file name when the source if a file.'''
     data = orm.deferred(sql.Column(sql.LargeBinary, nullable=False))
 
-    def update(self, path):
-        new_img = Image.fromFile(path)
-
-        self.mime_type = new_img.mime_type
-        self.md5 = new_img.md5
-        self.ctime = new_img.ctime
-        self.size = new_img.size
-        self.data = new_img.data
-
     @staticmethod
-    def fromTagFrame(img):
+    def fromTagFrame(img, type):
         md5hash = md5()
         md5hash.update(img.image_data)
 
-        return Image(description=img.description,
+        return Image(type=type,
+                     description=img.description,
                      mime_type=img.mime_type,
                      md5=md5hash.hexdigest(),
                      size=len(img.image_data),
                      data=img.image_data)
 
     @staticmethod
-    def fromFile(path):
+    def fromFile(path, type):
         md5hash = md5()
 
         img = open(path, "rb")
@@ -351,10 +342,10 @@ class Image(Base, OrmObject):
 
         md5hash.update(data)
 
-        return Image(mime_type=guessMimetype(path),
+        return Image(type=type,
+                     mime_type=guessMimetype(path),
                      md5=md5hash.hexdigest(),
                      size=len(data),
-                     ctime=datetime.fromtimestamp(os.path.getctime(path)),
                      data=data)
 
 
