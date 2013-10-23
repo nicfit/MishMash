@@ -37,7 +37,9 @@ TYPE_DISPLAY_NAMES = {LP_TYPE: "LPs",
                      }
 # Not in eyeD3
 SINGLE_TYPE = "Single"
+ALL_TYPE = "All"
 TYPE_DISPLAY_NAMES[SINGLE_TYPE] = "Singles"
+TYPE_DISPLAY_NAMES[ALL_TYPE] = "All"
 
 
 @view_config(route_name="home", renderer="templates/home.pt",
@@ -87,10 +89,18 @@ def singleArtistView(request):
     artists = session.query(Artist)\
                      .filter_by(name=request.matchdict["name"]).all()
 
+    def _filterByType(typ, artist, albums):
+        if typ == SINGLE_TYPE:
+            return artist.getTrackSingles()
+        elif typ == ALL_TYPE:
+            return albums
+        else:
+            return artist.getAlbumsByType(typ)
+
     if len(artists) == 1:
         artist = artists[0]
         albums = list(artist.albums)
-        all_tabs = ALBUM_TYPE_IDS + [SINGLE_TYPE]
+        all_tabs = ALBUM_TYPE_IDS + [SINGLE_TYPE, ALL_TYPE]
 
         active_albums = []
         active_singles = []
@@ -98,22 +108,15 @@ def singleArtistView(request):
         if not active_tab:
             # No album type was requested, try to pick a smart one.
             for active_tab in all_tabs:
-                if active_tab != SINGLE_TYPE:
-                    active_albums = artist.getAlbumsByType(active_tab)
-                else:
-                    active_singles = artist.getTrackSingles()
-                if active_albums or active_singles:
+                active_albums = _filterByType(active_tab, artist, albums)
+                if active_albums:
                     break
         else:
-            if active_tab != SINGLE_TYPE:
-                active_albums = artist.getAlbumsByType(active_tab)
-            else:
-                active_singles = artist.getTrackSingles()
+            active_albums = _filterByType(active_tab, artist, albums)
 
-        tabs = []
-        for name in all_tabs:
-            t = (name, TYPE_DISPLAY_NAMES[name], active_tab == name)
-            tabs.append(t)
+        if active_tab == SINGLE_TYPE:
+            active_singles = active_albums
+            active_albums = []
 
         if active_albums:
             active_albums = util.sortByDate(active_albums,
@@ -128,6 +131,10 @@ def singleArtistView(request):
                             if img.type == Image.FRONT_COVER_TYPE]
             a.cover = random.choice(covers) if covers else None
 
+        tabs = []
+        for name in all_tabs:
+            t = (name, TYPE_DISPLAY_NAMES[name], active_tab == name)
+            tabs.append(t)
         return ResponseDict(artist=artists[0],
                             active_tab=active_tab,
                             active_albums=active_albums,
