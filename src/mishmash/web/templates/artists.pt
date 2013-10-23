@@ -5,16 +5,14 @@
   <span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
 </div>
 
-<tal:block>
 <span tal:repeat="L artist_keys"><a id='${L}'><strong>${L}</strong></a>
-    <ul>
-      <li tal:repeat="artist artist_dict[L]">
-        <a href="${request.route_url('single_artist', name=artist.name)}"
-           tal:content="artist.sort_name">Artist</a>
-      </li>
-    </ul>
-  </span>
-</tal:block>
+  <ul>
+    <li tal:repeat="artist artist_dict[L]">
+      <a href="${request.route_url('single_artist', name=artist.name)}"
+         tal:content="artist.sort_name">Artist</a>
+    </li>
+  </ul>
+</span>
 
   </div>
 </metal:block>
