@@ -31,7 +31,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils import guessMimetype
-from eyed3.utils.console import printError, printMsg, printWarning
+from eyed3.utils.console import printMsg
+from eyed3.utils.console import Fore as fg
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE
 
 from .orm import (Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta,
@@ -198,11 +199,11 @@ class SyncPlugin(LoaderPlugin):
                 if not track:
                     track = Track(audio_file=audio_file)
                     self._num_added += 1
-                    printWarning("Adding file %s" % path)
+                    print(fg.green + "Adding track" + fg.reset + ": " + path)
                 else:
                     track.update(audio_file)
                     self._num_modified += 1
-                    printWarning("Updating file %s" % path)
+                    print(fg.yellow + "Updating track" + fg.reset + ": " + path)
 
                 genre = tag.genre
                 label = None
@@ -257,7 +258,6 @@ class SyncPlugin(LoaderPlugin):
         t = time.time() - self.start_time
         session = self.DBSession()
 
-        printMsg("All files sync'd")
         with session.begin():
             session.query(Meta).one().last_sync = datetime.now()
 
