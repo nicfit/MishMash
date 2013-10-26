@@ -24,15 +24,21 @@ import sys
 import getpass
 from datetime import datetime
 
+from sqlalchemy import exc as sql_exceptions
+
 import eyed3
 eyed3.require("0.7.4")
 
 import eyed3.main
-from eyed3.utils.console import printError, printMsg, printWarning
+from eyed3.utils.console import Fore as fg
 
 from .database import MissingSchemaException
 from .log import log, initLogging
 from .commands import makeCmdLineParser
+
+
+def _pErr(subject, msg):
+    print(fg.red + subject + fg.reset + ": %s" % str(msg))
 
 
 def main():
@@ -41,18 +47,24 @@ def main():
 
     # Run command
     args = parser.parse_args()
+
     try:
         retval = args.func(args) or 0
+    except (sql_exceptions.ArgumentError,
+            sql_exceptions.OperationalError) as ex:
+        _pErr("Database error", ex)
+        retval = 1
     except MissingSchemaException as ex:
-        printError("Schema error:")
-        printMsg("The table%s '%s' %s missing from the database schema." %
+        _pErr("Schema error",
+              "The table%s '%s' %s missing from the database schema." %
                  ('s' if len(ex.tables) > 1 else '',
                   ", ".join([str(t) for t in ex.tables]),
-                  "are" if len(ex.tables) > 1 else "is"))
+                  "are" if len(ex.tables) > 1 else "is")
+             )
         retval = 1
     except Exception as ex:
         log.exception(ex)
-        printError("%s: %s" % (ex.__class__.__name__, str(ex)))
+        _pErr(ex.__class__.__name__, str(ex))
         retval = 2
 
     return retval

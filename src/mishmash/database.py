@@ -26,8 +26,6 @@ from . import log
 from .orm import TYPES, TABLES, ENUMS
 from .orm import Artist, Track, Album, VARIOUS_ARTISTS_NAME, Meta
 
-SUPPORTED_DB_TYPES = ["sqlite", "postgresql", "oracle"]
-
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
                        "echo": False,
@@ -87,28 +85,6 @@ def dropAll(engine):
                 dbo.drop(bind=engine)
             except OperationalError as ex:
                 log.debug(str(ex))
-
-
-def makeDbUri(db_type, name, host=None, port=None, username=None,
-              password=None):
-    if not (db_type and name):
-        raise ValueError("Database type and name required")
-
-    uri = None
-    if db_type == "postgresql":
-        port = 5432 if not port else port
-        if not (host and port and username and password):
-            raise ValueError("host, port, username, and password required")
-        uri = "%s://%s:%s@%s:%d/%s" % (db_type, username, password,
-                                       host, int(port), name)
-
-    elif db_type == "sqlite":
-        uri = "%s:///%s" % (db_type, name)
-    else:
-        raise ValueError("Unsupported DB type '%s'. Options are %s" %
-                         (str(db_type), str(SUPPORTED_DB_TYPES)))
-
-    return uri
 
 
 class MissingSchemaException(Exception):

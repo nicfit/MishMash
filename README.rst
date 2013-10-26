@@ -14,20 +14,24 @@ the provided helper script.::
 
 Usage
 -----
-Making an alias called ``mishmash`` is suggested since it saves having to
-type redundant information, like calling the Python interpretor or specifying
-the same database options over and over again. To invoke without an alias
-use the ``-m`` option provided by Python.::
-  
-  $ python -m mishmash --help
+Database URL::
 
-Once you decide on a database you can make an alias. For example, it is easiest
-to start with ``sqlite``.::
+  sqlite:///:memory: (or, sqlite://)
+  sqlite:///relative/path/to/file.db
+  sqlite:////absolute/path/to/file.db
 
-  $ alias mishmash="mishmash --db-type=sqlite --database=${HOME}/mishmash.db"
-  $ alias mishmash="mishmash --db-type=postgresql --database=mishmash --username=travis --password=travis"
+  postgresql://user:passwd@host:5432/mishmash
 
-Inialize the database tables with the ``init`` command.::
+Command line::
+
+  $ mishmash -D ... init
+  $ mishmash --database=... init
+
+Environment::
+
+  $ export MISHMASH_DB=...
+
+Initialize the database tables with the ``init`` command.::
 
   $ mishmash init --help
   $ mishmash init

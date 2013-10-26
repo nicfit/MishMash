@@ -28,10 +28,9 @@ import eyed3
 import eyed3.main
 from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
-from eyed3.utils.console import printError, printMsg, printWarning
+from eyed3.utils.console import printMsg
 
 from . import database
-from .database import makeDbUri
 
 from .orm import Track, Artist, Album, Meta, Label
 from .log import log
@@ -51,10 +50,7 @@ class Command(object):
 
     def run(self, args):
         self.args = args
-        self.args.db_uri = makeDbUri(args.db_type, args.db_name,
-                                     host=args.host, port=args.port,
-                                     username=args.username,
-                                     password=args.password)
+        self.db_engine, self.db_session = database.init(self.args.db_uri)
         return self._run()
 
     def _run(self):
@@ -77,7 +73,7 @@ class Init(Command):
     def _run(self):
         missing_tables = []
 
-        engine, session = database.init(self.args.db_uri)
+        engine, session = self.db_engine, self.db_session
         try:
             database.check(engine)
         except database.MissingSchemaException as ex:
@@ -114,7 +110,6 @@ class Sync(Command):
 
     def _run(self, paths=[], config=None, backup=False, excludes=None,
              fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
-        engine, session = database.init(self.args.db_uri)
 
         if self.args:
             args = self.args
@@ -131,7 +126,7 @@ class Sync(Command):
             args.no_purge = no_purge
 
         args.plugin = self.plugin
-        args.db_engine, args.db_session = engine, session
+        args.db_engine, args.db_session = self.db_engine, self.db_session
 
         return eyed3_main(args, None)
 
@@ -143,19 +138,19 @@ class Info(Command):
             "info", "Show information about music database.", subparsers)
 
     def _run(self):
-        engine, session = database.init(self.args.db_uri)
-        with session.begin():
-            printMsg("\nDatabase:")
-            printMsg("\tURI: %s" % self.args.db_uri)
-            meta = session.query(Meta).one()
-            printMsg("\tVersion: %s" % meta.version)
-            printMsg("\tLast Sync: %s" % meta.last_sync)
+        session = self.db_session
 
-            printMsg("\nMusic:")
-            printMsg("\t%d tracks" % session.query(Track).count())
-            printMsg("\t%d artists" % session.query(Artist).count())
-            printMsg("\t%d albums" % session.query(Album).count())
-            printMsg("\t%d labels" % session.query(Label).count())
+        printMsg("\nDatabase:")
+        printMsg("\tURI: %s" % self.args.db_uri)
+        meta = session.query(Meta).one()
+        printMsg("\tVersion: %s" % meta.version)
+        printMsg("\tLast Sync: %s" % meta.last_sync)
+
+        printMsg("\nMusic:")
+        printMsg("\t%d tracks" % session.query(Track).count())
+        printMsg("\t%d artists" % session.query(Artist).count())
+        printMsg("\t%d albums" % session.query(Album).count())
+        printMsg("\t%d labels" % session.query(Label).count())
 
 
 # random subcommand
@@ -168,7 +163,7 @@ class Random(Command):
     def _run(self):
         from sqlalchemy.sql.expression import func
 
-        engine, session = database.init(self.args.db_uri)
+        session = self.db_session
 
         for track in session.query(Track).order_by(func.random())\
                                          .limit(self.args.count).all():
@@ -183,7 +178,7 @@ class Search(Command):
                                  metavar="SEARCH", help="Search string.")
 
     def _run(self):
-        engine, session = database.init(self.args.db_uri)
+        session = self.db_session
 
         s = self.args.search_pattern
         printMsg("\nSearching for '%s'" % s)
@@ -219,7 +214,7 @@ class List(Command):
                  ','.join(["'%s'" % c for c in list_choices]))
 
     def _run(self):
-        engine, session = database.init(self.args.db_uri)
+        session = self.db_session
 
         if self.args.what == "artists":
             banner = None
@@ -256,7 +251,7 @@ class Relocate(Command):
         self.parser.add_argument("newroot", help="The substitute path.")
 
     def _run(self):
-        engine, session = database.init(self.args.db_uri)
+        session = self.db_session
 
         oldroot, newroot = self.args.oldroot, self.args.newroot
 
@@ -285,28 +280,18 @@ _cmds.extend([Init, Sync, Info, Random, Search, List, Relocate])
 
 def makeCmdLineParser():
     from .info import VERSION_MSG
+    from os.path import expandvars
 
-    parser = ArgumentParser(prog="mishmash", version=VERSION_MSG)
+    parser = ArgumentParser(prog="mishmash", version=VERSION_MSG,
+                            main_logger="mishmash")
 
     db_group = parser.add_argument_group(title="Database settings and options")
 
-    db_group.add_argument("--db-type", dest="db_type", default="sqlite",
-                          help="Database type. Supported types: %s" %
-                               ', '.join(database.SUPPORTED_DB_TYPES))
-    db_group.add_argument("--database", dest="db_name",
-                          default=None,
-                          help="The name of the datbase (path for sqlite).")
-    db_group.add_argument("--username", dest="username",
-                          default=getpass.getuser(),
-                          help="Login name for database. Not used for sqlite. "
-                               "Default is the user login name.")
-    db_group.add_argument("--password", dest="password", default=None,
-                          help="Password for database. Not used for sqlite. ")
-    db_group.add_argument("--host", dest="host", default="localhost",
-                          help="Hostname for database. Not used for sqlite. "
-                               "The default is 'localhost'")
-    db_group.add_argument("--port", dest="port", default=5432,
-                          help="Port for database. Not used for sqlite.")
+    default_uri = os.environ.get("MISHMASH_DB",
+                                 expandvars("sqlite:///$HOME/mishmash.db"))
+    db_group.add_argument("-D", "--database", dest="db_uri", metavar="url",
+            default=default_uri,
+            help="Database URL. The default is '%s'" % default_uri)
 
     subparsers = parser.add_subparsers(
             title="Sub commands",

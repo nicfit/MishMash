@@ -22,7 +22,6 @@ from pyramid.config import Configurator
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from .. import database
-from . import models
 
 
 def _configure(settings, DBSession):
@@ -48,6 +47,7 @@ def _configure(settings, DBSession):
     config.scan(".panels")
     config.scan(".layouts")
     config.scan(".views")
+    config.scan(".events")
 
     return config
 
