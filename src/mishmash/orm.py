@@ -153,6 +153,10 @@ class Artist(Base, OrmObject):
     def getTrackSingles(self):
         return [t for t in self.tracks if t.album_id is None]
 
+    @property
+    def url_name(self):
+        return self.name.replace("/", "%2f")
+
 
 class Album(Base, OrmObject):
     __tablename__ = "albums"
