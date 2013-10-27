@@ -1,5 +1,6 @@
 import os
 import random
+import urllib2
 
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -85,9 +86,10 @@ def allArtistsView(request):
 @view_config(route_name="single_artist", renderer="templates/artist.pt",
              layout="main-layout")
 def singleArtistView(request):
+    # Do the extra unquote to handle / in name, which pyramid never escapes
+    name = urllib2.unquote(request.matchdict["name"])
     session = request.DBSession()
-    artists = session.query(Artist)\
-                     .filter_by(name=request.matchdict["name"]).all()
+    artists = session.query(Artist).filter_by(name=name).all()
 
     def _filterByType(typ, artist, albums):
         if typ == SINGLE_TYPE:
