@@ -12,18 +12,18 @@
 <table class="table table-condensed table-striped">
   <tr>
     <th tal:condition="active_albums"></th>
-    <th tal:condition="active_albums">Date</th>
     <th tal:condition="active_albums or active_singles">Title</th>
+    <th tal:condition="active_albums">Date</th>
   </tr>
   <tr tal:condition="active_albums" tal:repeat="album active_albums">
     <td tal:define="cid album.cover.id if album.cover else 'default';
                     cover_url request.route_url('images.covers', id=cid)">
       <a href="${cover_url}">
-        <img width="64" height="64" src="${cover_url}"/>
+        <img class='shadow' width="64" height="64" src="${cover_url}"/>
       </a>
     </td>
-    <td tal:content="album.getBestDate()">2013.10.19</td>
     <td tal:content="album.title">Album Title</td>
+    <td tal:content="album.getBestDate()">2013.10.19</td>
   </tr>
   <tr tal:condition="active_singles" tal:repeat="track active_singles">
     <td tal:content="track.title">Track Title</td>

@@ -2,3 +2,7 @@ body {
   padding-top: 50px;
   padding-bottom: 20px;
 }
+
+img.shadow {
+    box-shadow: 3px 3px 8px #222;
+}
