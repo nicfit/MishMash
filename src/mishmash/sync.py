@@ -25,6 +25,7 @@ import time
 import logging
 from os.path import getmtime, getctime
 from datetime import datetime
+from fnmatch import fnmatch
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -41,16 +42,44 @@ from .log import log
 
 
 FILE_IMG_TYPE_MAP = {
-        Image.FRONT_COVER_TYPE: ["cover-front", "cover", "folder"],
-        Image.BACK_COVER_TYPE: ["cover-back"],
+        Image.FRONT_COVER_TYPE: ["cover-front", "cover-alternate*", "cover",
+                                 "folder", "front", "cover*-*front", "flier"],
+        Image.BACK_COVER_TYPE: ["cover-back", "cover*-*back"],
+        Image.MISC_COVER_TYPE: ["cover-insert*", "cover-liner*", "cover-disc",
+                                "cover-media*"],
+        Image.LOGO_TYPE: ["logo"],
+        Image.ARTIST_TYPE: ["artist*"],
 }
 '''Maps the orm Image ``type`` to a list of filenames for that type.'''
 
 TAG_IMG_TYPE_MAP = {
-        Image.FRONT_COVER_TYPE: [ImageFrame.FRONT_COVER],
-        Image.BACK_COVER_TYPE:  [ImageFrame.BACK_COVER],
+        Image.FRONT_COVER_TYPE: [ImageFrame.FRONT_COVER, ImageFrame.OTHER,
+                                 ImageFrame.ICON, ImageFrame.LEAFLET],
+        Image.BACK_COVER_TYPE: [ImageFrame.BACK_COVER],
+        Image.MISC_COVER_TYPE: [ImageFrame.MEDIA],
+        Image.LOGO_TYPE: [ImageFrame.BAND_LOGO],
+        Image.ARTIST_TYPE: [ImageFrame.LEAD_ARTIST, ImageFrame.ARTIST,
+                            ImageFrame.BAND],
+        Image.LIVE_TYPE: [ImageFrame.DURING_PERFORMANCE,
+                          ImageFrame.DURING_RECORDING]
 }
 '''Maps the orm Image ``type`` to a list of ID3 image (APIC) picture types.'''
+
+# ID3 image types not mapped above:
+#    OTHER_ICON          = 0x02
+#    CONDUCTOR           = 0x09
+#    COMPOSER            = 0x0B
+#    LYRICIST            = 0x0C
+#    RECORDING_LOCATION  = 0x0D
+#    VIDEO               = 0x10
+#    BRIGHT_COLORED_FISH = 0x11
+#    ILLUSTRATION        = 0x12
+#    PUBLISHER_LOGO      = 0x14
+
+IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
+               "album" : (Image.FRONT_COVER_TYPE, Image.BACK_COVER_TYPE,
+                          Image.MISC_COVER_TYPE),
+              }
 
 
 class SyncPlugin(LoaderPlugin):
@@ -231,18 +260,22 @@ class SyncPlugin(LoaderPlugin):
                         img_type = None
 
                     if img_type is None:
+                        import ipdb; ipdb.set_trace()
                         log.warn("Skipping unsupported image type: %s" %
                                  img.picture_type)
                         continue
 
                     new_img = Image.fromTagFrame(img, img_type)
-                    syncImage(new_img, album, session)
+                    syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
+                                             else album.artist,
+                              session)
 
             # Directory images.
             for img_file in image_files:
                 basename, ext = os.path.splitext(os.path.basename(img_file))
                 for img_type in FILE_IMG_TYPE_MAP:
-                    if basename in FILE_IMG_TYPE_MAP[img_type]:
+                    if True in [fnmatch(basename.lower(), fname)
+                                for fname in FILE_IMG_TYPE_MAP[img_type]]:
                         break
                     img_type = None
 
@@ -252,7 +285,9 @@ class SyncPlugin(LoaderPlugin):
 
                 new_img = Image.fromFile(img_file, img_type)
                 new_img.description = basename + ext
-                syncImage(new_img, album, session)
+                syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
+                                         else album.artist,
+                          session)
 
     def handleDone(self):
         t = time.time() - self.start_time
@@ -332,21 +367,30 @@ def deleteOrphans(session):
     return (num_orphaned_tracks, num_orphaned_artists, num_orphaned_albums)
 
 
-def syncImage(img, album, session):
+def syncImage(img, current, session):
     '''Add or updated the Image.'''
-    for db_img in album.images:
-        if (db_img.type == img.type and
+
+    for db_img in current.images:
+
+        img_info = (img.type, img.md5, img.size)
+        db_img_info = (db_img.type, db_img.md5, db_img.size)
+
+        if db_img_info == img_info:
+            img = None
+            break
+        elif (db_img.type == img.type and
                 db_img.description == img.description):
+
             if img.md5 != db_img.md5:
                 # Update image
-                album.images.remove(db_img)
-                album.images.append(img)
-                session.add(album)
+                current.images.remove(db_img)
+                current.images.append(img)
+                session.add(current)
             img = None
             break
 
     if img:
         # Add image
-        album.images.append(img)
-        session.add(album)
+        current.images.append(img)
+        session.add(current)
 

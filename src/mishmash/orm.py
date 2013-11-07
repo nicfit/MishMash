@@ -312,7 +312,12 @@ class Image(Base, OrmObject):
 
     FRONT_COVER_TYPE = "FRONT_COVER"
     BACK_COVER_TYPE = "BACK_COVER"
-    IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE]
+    MISC_COVER_TYPE = "MISC_COVER"
+    LOGO_TYPE = "LOGO"
+    ARTIST_TYPE = "ARTIST"
+    LIVE_TYPE = "LIVE"
+    IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE, MISC_COVER_TYPE,
+                   LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
     id = sql.Column(sql.Integer, primary_key=True)
