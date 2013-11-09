@@ -4,8 +4,12 @@
 <h3>${artist.name}</h3>
 
 <ul class="nav nav-tabs">
-  <li tal:repeat="t tabs" class="${'active' if t[2] else ''}">
-    <a href="${request.path_url}?album_tab=${t[0]}">${t[1]}</a>
+  <li tal:repeat="t tabs" class="${'active' if t[2]
+                                            else ('' if t[3] else 'disabled')}">
+  
+    <a tal:define="tab_url '%s?album_tab=%s' % (request.path_url, t[0]) if t[3]
+                           else 'javascript: void(0)'"
+       href="${tab_url}">${t[1]}</a>
   </li>
 </ul>
 
@@ -22,7 +26,7 @@
         <img class='shadow' width="64" height="64" src="${cover_url}"/>
       </a>
     </td>
-    <td tal:content="album.title">Album Title</td>
+    <td><a tal:content="album.title" href="#FIXME">Album Title</a></td>
     <td tal:content="album.getBestDate()">2013.10.19</td>
   </tr>
   <tr tal:condition="active_singles" tal:repeat="track active_singles">

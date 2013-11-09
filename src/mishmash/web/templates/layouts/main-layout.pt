@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang='en' xmlns:tal="http://xml.zope.org/namespaces/tal"
+<html lang='en'
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal">
 
 <head>
   <meta charset="utf-8">
   <meta name="keywords" content="python music web application" />
   <meta name="description" content="music library" />
-<!--?
+<!--!
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 -->
   <title>${layout.page_title}</title>
