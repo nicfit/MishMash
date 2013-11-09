@@ -48,9 +48,13 @@ TYPE_DISPLAY_NAMES[ALL_TYPE] = "All"
 def home_view(request):
     return ResponseDict()
 
-@view_config(route_name="artists", renderer="templates/artists.pt",
+@view_config(route_name="all_artists", renderer="templates/artists.pt",
              layout="main-layout")
 def allArtistsView(request):
+    artist_id = request.GET.get("id", None)
+    if artist_id:
+        return singleArtistView(request, artist_id=artist_id)
+
     NUMBER = u"#"
     OTHER = u"Other"
 
@@ -83,13 +87,15 @@ def allArtistsView(request):
                         artist_dict=artist_dict)
 
 
-@view_config(route_name="single_artist", renderer="templates/artist.pt",
+@view_config(route_name="artist", renderer="templates/artist.pt",
              layout="main-layout")
 def singleArtistView(request):
-    # Do the extra unquote to handle / in name, which pyramid never escapes
-    name = urllib2.unquote(request.matchdict["name"])
+    artist_id = int(request.matchdict["id"])
     session = request.DBSession()
-    artists = session.query(Artist).filter_by(name=name).all()
+
+    artist = session.query(Artist).filter_by(id=artist_id).first()
+    if not artist:
+        raise HTTPNotFound()
 
     def _filterByType(typ, artist, albums):
         if typ == SINGLE_TYPE:
@@ -99,54 +105,50 @@ def singleArtistView(request):
         else:
             return artist.getAlbumsByType(typ)
 
-    if len(artists) == 1:
-        artist = artists[0]
-        albums = list(artist.albums)
-        all_tabs = ALBUM_TYPE_IDS + [SINGLE_TYPE, ALL_TYPE]
+    albums = list(artist.albums)
+    all_tabs = ALBUM_TYPE_IDS + [SINGLE_TYPE, ALL_TYPE]
 
-        active_albums = []
-        active_singles = []
-        active_tab = request.GET.get("album_tab", None)
-        if not active_tab:
-            # No album type was requested, try to pick a smart one.
-            for active_tab in all_tabs:
-                active_albums = _filterByType(active_tab, artist, albums)
-                if active_albums:
-                    break
-        else:
+    active_albums = []
+    active_singles = []
+    active_tab = request.GET.get("album_tab", None)
+    if not active_tab:
+        # No album type was requested, try to pick a smart one.
+        for active_tab in all_tabs:
             active_albums = _filterByType(active_tab, artist, albums)
-
-        if active_tab == SINGLE_TYPE:
-            active_singles = active_albums
-            active_albums = []
-
-        if active_albums:
-            active_albums = util.sortByDate(active_albums,
-                                            active_tab == LIVE_TYPE)
-        else:
-            # Unlike tags, the orm.Track does not have dates so not sorting :/
-            #active_singles = util.sortByDate(active_singles)
-            pass
-
-        for a in active_albums:
-            covers = [img for img in a.images
-                            if img.type == Image.FRONT_COVER_TYPE]
-            a.cover = random.choice(covers) if covers else None
-
-        tabs = []
-        for name in all_tabs:
-            t = (name, TYPE_DISPLAY_NAMES[name], active_tab == name)
-            tabs.append(t)
-        return ResponseDict(artist=artists[0],
-                            active_tab=active_tab,
-                            active_albums=active_albums,
-                            active_singles=active_singles,
-                            tabs=tabs,
-                            )
-    elif len(artists) > 1:
-        raise NotImplementedError("TODO")
+            if active_albums:
+                break
     else:
-        raise NotImplementedError("TODO")
+        active_albums = _filterByType(active_tab, artist, albums)
+
+    if active_tab == SINGLE_TYPE:
+        active_singles = active_albums
+        active_albums = []
+
+    if active_albums:
+        active_albums = util.sortByDate(active_albums,
+                                        active_tab == LIVE_TYPE)
+    else:
+        # Unlike tags, the orm.Track does not have dates so not sorting :/
+        #active_singles = util.sortByDate(active_singles)
+        pass
+
+    for a in active_albums:
+        covers = [img for img in a.images
+                        if img.type == Image.FRONT_COVER_TYPE]
+        a.cover = random.choice(covers) if covers else None
+
+    tabs = []
+    for name in all_tabs:
+        t = (name, TYPE_DISPLAY_NAMES[name], active_tab == name,
+             bool(len(_filterByType(name, artist, albums))))
+        tabs.append(t)
+
+    return ResponseDict(artist=artist,
+                        active_tab=active_tab,
+                        active_albums=active_albums,
+                        active_singles=active_singles,
+                        tabs=tabs,
+                        )
 
 
 @view_config(route_name="search", renderer="templates/search_results.pt",
@@ -171,3 +173,4 @@ def covers(request):
 
 DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
                                        "record150.png"), "rb").read()
+
