@@ -8,7 +8,7 @@
 <span tal:repeat="L artist_keys"><a id='${L}'><strong>${L}</strong></a>
   <ul>
     <li tal:repeat="artist artist_dict[L]">
-      <a href="${request.route_url('single_artist', id=artist.id)}"
+      <a href="${request.route_url('artist', id=artist.id)}"
          tal:content="artist.sort_name">Artist</a>
     </li>
   </ul>

@@ -17,8 +17,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+import random
 from pyramid_layout.panel import panel_config
 from .. import info
+from .. import orm
 
 #from .layouts import Thing1, Thing2, LittleCat
 
@@ -35,9 +37,8 @@ def navbar(context, request):
         return item
 
     nav = [
-        nav_item('Artists', request.route_url('artists')),
-        nav_item('Search', request.route_url('search')),
-        nav_item('eyeD3', "http://eyed3.nicfit.net/")
+        nav_item('Artists', request.route_url('all_artists')),
+        nav_item('New Music', request.route_url("new_music"))
         ]
     return {
         'title': 'Mishmash',
@@ -52,4 +53,18 @@ def footer(context, request):
                  VERSION=info.VERSION,
                  YEARS=info.YEARS))
 
+
+@panel_config(name='album_cover')
+def album_cover(context, request, album, size=None):
+    front_covers = [img for img in album.images
+                        if img.type == orm.Image.FRONT_COVER_TYPE]
+    cover_id = random.choice(front_covers).id if front_covers else "default"
+    cover_url = request.route_url("images.covers", id=cover_id)
+    width = str(size or "100%")
+    height = str(size or "100%")
+
+    img_tag = ("<img class='shadow' width='%s' height='%s' src='%s'/>" %
+               (width, height, cover_url))
+
+    return img_tag
 

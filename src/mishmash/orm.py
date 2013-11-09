@@ -181,7 +181,8 @@ class Album(Base, OrmObject):
 
     # Relations
     artist = orm.relation("Artist")
-    tracks = orm.relation("Track", cascade="all")
+    tracks = orm.relation("Track", order_by="Track.track_num",
+                          cascade="all")
     labels = orm.relation("Label", secondary=album_labels)
     images = orm.relation("Image", secondary=album_images, cascade="all")
     '''one-to-many album images.'''
@@ -241,6 +242,10 @@ class Album(Base, OrmObject):
         from eyed3.utils import datePicker
         return datePicker(self,
                           prefer_recording_date=bool(self.type == LIVE_TYPE))
+
+    @property
+    def duration(self):
+        return sum([t.time_secs for t in self.tracks])
 
 
 class Track(Base, OrmObject):
