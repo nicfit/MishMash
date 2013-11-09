@@ -36,13 +36,14 @@ def _configure(settings, DBSession):
 
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    config.add_route('pyramid', '/pyramid')
-    config.add_route('home', '/')
-    config.add_route('search', '/search')
-
     config.add_route('all_artists', '/artists')
     config.add_route('artist', '/artist/{id:\d+}')
     config.add_route('images.covers', '/images/covers/{id:\d+|default}')
+    # FIXME: In progress
+    config.add_route('home', '/')
+    config.add_route('search', '/search')
+    config.add_route('new_music', '/new')
+    config.add_route('album', '/album/{id:\d+}')
 
     config.scan(".panels")
     config.scan(".layouts")

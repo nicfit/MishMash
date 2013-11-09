@@ -2,7 +2,6 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-
 <!--! end content -->
   </div>
 </metal:block>

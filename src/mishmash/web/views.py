@@ -8,6 +8,7 @@ from pyramid.httpexceptions import HTTPNotFound
 
 from sqlalchemy.exc import DBAPIError
 
+from eyed3.utils import formatTime
 from eyed3.core import ALBUM_TYPE_IDS
 from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
                         DEMO_TYPE)
@@ -51,10 +52,6 @@ def home_view(request):
 @view_config(route_name="all_artists", renderer="templates/artists.pt",
              layout="main-layout")
 def allArtistsView(request):
-    artist_id = request.GET.get("id", None)
-    if artist_id:
-        return singleArtistView(request, artist_id=artist_id)
-
     NUMBER = u"#"
     OTHER = u"Other"
 
@@ -89,7 +86,7 @@ def allArtistsView(request):
 
 @view_config(route_name="artist", renderer="templates/artist.pt",
              layout="main-layout")
-def singleArtistView(request):
+def artistView(request):
     artist_id = int(request.matchdict["id"])
     session = request.DBSession()
 
@@ -151,12 +148,6 @@ def singleArtistView(request):
                         )
 
 
-@view_config(route_name="search", renderer="templates/search_results.pt",
-             layout="main-layout")
-def searchResultsView(request):
-    return ResponseDict()
-
-
 @view_config(route_name="images.covers")
 def covers(request):
     iid = request.matchdict["id"]
@@ -174,3 +165,31 @@ def covers(request):
 DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
                                        "record150.png"), "rb").read()
 
+
+@view_config(route_name="new_music", renderer="templates/new_music.pt",
+             layout="main-layout")
+def newMusicView(request):
+    # FIXME
+    return ResponseDict()
+
+
+@view_config(route_name="album", renderer="templates/album.pt",
+             layout="main-layout")
+def albumView(request):
+    album_id = int(request.matchdict["id"])
+    session = request.DBSession()
+
+    album = session.query(Album).filter_by(id=album_id).first()
+    if not album:
+        raise HTTPNotFound()
+    return ResponseDict(album=album,
+                        formatTime=formatTime,
+                       )
+
+
+@view_config(route_name="search", renderer="templates/search_results.pt",
+             layout="main-layout")
+def searchView(request):
+    query = request.POST["q"]
+    # FIXME
+    return ResponseDict()
