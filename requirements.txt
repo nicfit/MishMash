@@ -1,5 +1,5 @@
 paver==1.2.1
-eyeD3==0.7.3
+eyeD3>=0.7.4
 
 SQLAlchemy==0.8.2
 psycopg2==2.5.1
