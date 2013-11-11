@@ -1,5 +1,6 @@
 <metal:block use-macro="main_template">
   <div metal:fill-slot="content">
+<!--! begin content -->
 
 <div align="center">
   <span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
@@ -14,5 +15,6 @@
   </ul>
 </span>
 
+<!--! end content -->
   </div>
 </metal:block>

@@ -48,7 +48,9 @@ def navbar(context, request):
 
 @panel_config(name='footer')
 def footer(context, request):
-    return ("<p align='right'>%(NAME)s %(VERSION)s &copy; %(YEARS)s" %
+    return ("<footer>"
+            "<p align='right'>%(NAME)s %(VERSION)s &copy; %(YEARS)s"
+            "</footer>" %
             dict(NAME=info.NAME,
                  VERSION=info.VERSION,
                  YEARS=info.YEARS))

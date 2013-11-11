@@ -1,10 +1,12 @@
 <metal:block use-macro="main_template">
   <div metal:fill-slot="content">
+<!--! begin content -->
 
 <div class="page-header">
   <h2>Welcome to ${project_name}!</h2>
 </div>
 
+<!--! end content -->
   </div>
 </metal:block>
 

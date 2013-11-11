@@ -2,59 +2,57 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12" align="left">
-      <h3 tal:define="is_various album.type == 'various'">
-        <a tal:condition="not is_various"
-           href="${request.route_url('artist', id=album.artist.id)}">
-          ${album.artist.name}
-        </a>
-        <span tal:condition="not is_various"> - </span>
-        ${album.title}
-      </h3>
+<div class="row">
+  <div class="col-md-12" align="left">
+    <h3 tal:define="is_various album.type == 'various'">
+      <a tal:condition="not is_various"
+         href="${request.route_url('artist', id=album.artist.id)}">
+        ${album.artist.name}
+      </a>
+      <span tal:condition="not is_various"> - </span>
+      ${album.title}
+    </h3>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    ${panel('album_cover', album, size=300)}
+    <div class="container" style="padding-top:20px">
+      <div tal:condition="album.release_date">
+        <strong>Released:</strong> ${album.release_date}<br/>
+      </div>
+      <div tal:condition="album.original_release_date and
+                           album.release_date != album.original_release_date">
+        <strong>Originally released:</strong> ${album.original_release_date}
+        <br/>
+      </div>
+      <div tal:condition="album.recording_date">
+        <strong>Recorded:</strong> ${album.recording_date}<br/>
+      </div>
+      <strong>Duration:</strong> <span tal:replace="formatTime(album.duration)"/>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-4">
-      ${panel('album_cover', album, size=300)}
-      <div class="container" style="padding-top:20px">
-        <div tal:condition="album.release_date">
-          <strong>Released:</strong> ${album.release_date}<br/>
-        </div>
-        <div tal:condition="album.original_release_date and
-                             album.release_date != album.original_release_date">
-          <strong>Originally released:</strong> ${album.original_release_date}
-          <br/>
-        </div>
-        <div tal:condition="album.recording_date">
-          <strong>Recorded:</strong> ${album.recording_date}<br/>
-        </div>
-        <strong>Duration:</strong> <span tal:replace="formatTime(album.duration)"/>
-      </div>
-    </div>
-    <div class="col-md-8" style="padding-left:30px">
-      <h4>Track list:</h4>
-      <table class="table table-condensed table-striped">
-        <tr>
-          <th></th>
-          <th>Title</th>
-          <th tal:condition="album.type == 'various'">Artist</th>
-          <th>Length</th>
-        </tr>
-        <tr tal:repeat="track album.tracks">
-          <td tal:content="track.track_num">#</td>
-          <td tal:content="track.title">Track Title</td>
-          <td tal:condition="album.type == 'various'">
-            <a tal:content="track.artist.name"
-               href="${request.route_url('artist', id=track.artist.id)}">
-              Artist
-            </a>
-          </td>
-          <td tal:content="formatTime(track.time_secs)">04:20</td>
-        </tr>
-      </table>
-    </div>
+  <div class="col-md-8" style="padding-left:30px">
+    <h4>Track list:</h4>
+    <table class="table table-condensed table-striped">
+      <tr>
+        <th></th>
+        <th>Title</th>
+        <th tal:condition="album.type == 'various'">Artist</th>
+        <th>Length</th>
+      </tr>
+      <tr tal:repeat="track album.tracks">
+        <td tal:content="track.track_num">#</td>
+        <td tal:content="track.title">Track Title</td>
+        <td tal:condition="album.type == 'various'">
+          <a tal:content="track.artist.name"
+             href="${request.route_url('artist', id=track.artist.id)}">
+            Artist
+          </a>
+        </td>
+        <td tal:content="formatTime(track.time_secs)">04:20</td>
+      </tr>
+    </table>
   </div>
 </div>
 

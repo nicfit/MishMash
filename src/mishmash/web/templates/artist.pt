@@ -1,5 +1,6 @@
 <metal:block use-macro="main_template">
   <div metal:fill-slot="content">
+<!--! begin content -->
 
 <h3>${artist.name}</h3>
 
@@ -31,5 +32,6 @@
   </tr>
 </table>
 
+<!--! end content -->
   </div>
 </metal:block>

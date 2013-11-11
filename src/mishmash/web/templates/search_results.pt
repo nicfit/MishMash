@@ -2,32 +2,32 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-  <div tal:condition="artists">
-    <h2>Artists:</h2>
-    <ul>
-      <li tal:repeat="artist artists">
-        <a href="${request.route_url('artist', id=artist.id)}"
-           tal:content="artist.name">Artist</a>
-      </li>
-    </ul>
-  </div>
+<div tal:condition="artists">
+  <h2>Artists:</h2>
+  <ul>
+    <li tal:repeat="artist artists">
+      <a href="${request.route_url('artist', id=artist.id)}"
+         tal:content="artist.name">Artist</a>
+    </li>
+  </ul>
+</div>
 
-  <div tal:condition="albums">
-    <h2>Albums:</h2>
-    <ul>
-      <li tal:repeat="album albums">
-        <a href="${request.route_url('album', id=album.id)}"
-           tal:content="album.title">Album</a>
-      </li>
-    </ul>
-  </div>
+<div tal:condition="albums">
+  <h2>Albums:</h2>
+  <ul>
+    <li tal:repeat="album albums">
+      <a href="${request.route_url('album', id=album.id)}"
+         tal:content="album.title">Album</a>
+    </li>
+  </ul>
+</div>
 
-  <div tal:condition="tracks">
-    <h2>Tracks:</h2>
-    <ul>
-      <li tal:repeat="track tracks" tal:content="track.title">Track</li>
-    </ul>
-  </div>
+<div tal:condition="tracks">
+  <h2>Tracks:</h2>
+  <ul>
+    <li tal:repeat="track tracks" tal:content="track.title">Track</li>
+  </ul>
+</div>
 
 <!--! end content -->
   </div>
