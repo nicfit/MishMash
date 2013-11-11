@@ -18,7 +18,7 @@
 ################################################################################
 import os
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -92,3 +92,19 @@ class MissingSchemaException(Exception):
         super(MissingSchemaException, self).__init__("missing tables")
         self.tables = missing_tables
 
+
+def search(session, query):
+    flat_query = u"".join(query.split())
+
+    artists = session.query(Artist).filter(
+            or_(Artist.name.ilike(u"%%%s%%" % query),
+                Artist.name.ilike(u"%%%s%%" % flat_query))
+               ).all()
+    albums = session.query(Album).filter(
+            Album.title.ilike(u"%%%s%%" % query)).all()
+    tracks = session.query(Track).filter(
+            Track.title.ilike(u"%%%s%%" % query)).all()
+
+    return dict(artists=artists,
+                albums=albums,
+                tracks=tracks)

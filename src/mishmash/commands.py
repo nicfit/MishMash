@@ -183,20 +183,19 @@ class Search(Command):
         s = self.args.search_pattern
         printMsg("\nSearching for '%s'" % s)
 
+        results = database.search(session, s)
+
         printMsg("Artists:")
-        for artist in session.query(Artist).filter(
-                Artist.name.ilike(u"%%%s%%" % s)).all():
+        for artist in results["artists"]:
             printMsg(u"\t%s (id: %d)" % (artist.name, artist.id))
 
         printMsg("Albums:")
-        for album in session.query(Album).filter(
-                Album.title.ilike(u"%%%s%%" % s)).all():
+        for album in results["albums"]:
             printMsg(u"\t%s (id: %d) (artist: %s)" % (album.title, album.id,
                                                       album.artist.name))
 
         printMsg("Tracks:")
-        for track in session.query(Track).filter(
-                Track.title.ilike(u"%%%s%%" % s)).all():
+        for track in results["tracks"]:
             printMsg(u"\t%s (id: %d) (artist: %s) (album: %s)" %
                      (track.title, track.id,
                       track.artist.name,
