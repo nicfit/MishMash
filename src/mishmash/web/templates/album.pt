@@ -5,7 +5,14 @@
 <div class="container">
   <div class="row">
     <div class="col-md-12" align="left">
-      <h3><a href="${request.route_url('artist', id=album.artist.id)}">${album.artist.name}</a> - ${album.title}</h3>
+      <h3 tal:define="is_various album.type == 'various'">
+        <a tal:condition="not is_various"
+           href="${request.route_url('artist', id=album.artist.id)}">
+          ${album.artist.name}
+        </a>
+        <span tal:condition="not is_various"> - </span>
+        ${album.title}
+      </h3>
     </div>
   </div>
   <div class="row">
@@ -32,11 +39,18 @@
         <tr>
           <th></th>
           <th>Title</th>
+          <th tal:condition="album.type == 'various'">Artist</th>
           <th>Length</th>
         </tr>
         <tr tal:repeat="track album.tracks">
           <td tal:content="track.track_num">#</td>
           <td tal:content="track.title">Track Title</td>
+          <td tal:condition="album.type == 'various'">
+            <a tal:content="track.artist.name"
+               href="${request.route_url('artist', id=track.artist.id)}">
+              Artist
+            </a>
+          </td>
           <td tal:content="formatTime(track.time_secs)">04:20</td>
         </tr>
       </table>
