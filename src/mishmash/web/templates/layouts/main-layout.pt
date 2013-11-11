@@ -25,9 +25,9 @@
   <div class="container">
 
     <metal:content define-slot="content"/>
-    <hr/>
-    <footer>${panel('footer')}</footer>
 
+    <hr/>
+    ${panel('footer')}
   </div> <!-- /container -->
 
 </body>
