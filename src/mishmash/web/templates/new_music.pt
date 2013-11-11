@@ -2,6 +2,20 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
+<table tal:define="num_cols 5;
+                   num_rows int(ceil(len(albums) / float(num_cols)))"
+       cellpadding="10">
+
+  <tr tal:repeat="row range(num_rows)">
+    <td tal:repeat="col range(num_cols)">
+      <div tal:define="i (row * 4) + row + col" tal:condition="i < len(albums)"
+           tal:omit-tag="">
+      ${panel('album_cover', albums[i], size=128, link=True)}
+      </div>
+    </td>
+  </tr>
+</table>
+
 <!--! end content -->
   </div>
 </metal:block>

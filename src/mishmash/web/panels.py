@@ -55,7 +55,7 @@ def footer(context, request):
 
 
 @panel_config(name='album_cover')
-def album_cover(context, request, album, size=None):
+def album_cover(context, request, album, size=None, link=False):
     front_covers = [img for img in album.images
                         if img.type == orm.Image.FRONT_COVER_TYPE]
     cover_id = random.choice(front_covers).id if front_covers else "default"
@@ -63,8 +63,14 @@ def album_cover(context, request, album, size=None):
     width = str(size or "100%")
     height = str(size or "100%")
 
-    img_tag = ("<img class='shadow' width='%s' height='%s' src='%s'/>" %
-               (width, height, cover_url))
+    panel = (
+        u"<img class='shadow' width='%s' height='%s' src='%s' title='%s'/>" %
+        (width, height, cover_url, "%s - %s" % (album.artist.name, album.title))
+    )
 
-    return img_tag
+    if link:
+        panel = u"<a href='%s'>%s</a>" % \
+                (request.route_url('album', id=album.id), panel)
+
+    return panel
 
