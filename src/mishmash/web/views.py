@@ -169,8 +169,10 @@ DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
 @view_config(route_name="new_music", renderer="templates/new_music.pt",
              layout="main-layout")
 def newMusicView(request):
-    # FIXME
-    return ResponseDict()
+    from math import ceil
+    session = request.DBSession()
+    albums = session.query(Album).order_by("date_added").limit(25).all()
+    return ResponseDict(albums=albums, ceil=ceil)
 
 
 @view_config(route_name="album", renderer="templates/album.pt",
@@ -191,5 +193,5 @@ def albumView(request):
              layout="main-layout")
 def searchView(request):
     query = request.POST["q"]
-    # FIXME
-    return ResponseDict()
+    results = database.search(request.DBSession(), query)
+    return ResponseDict(**results)

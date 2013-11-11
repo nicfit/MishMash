@@ -20,7 +20,7 @@
     <th tal:condition="active_albums">Date</th>
   </tr>
   <tr tal:condition="active_albums" tal:repeat="album active_albums">
-    <td>${panel('album_cover', album, size=64)}</td>
+    <td>${panel('album_cover', album, size=64, link=True)}</td>
     <td><a tal:content="album.title"
            href="${request.route_url('album', id=album.id)}">Album Title</a>
     </td>
