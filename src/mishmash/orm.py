@@ -22,9 +22,9 @@ from datetime import datetime
 from hashlib import md5
 
 import sqlalchemy as sql
-from sqlalchemy import orm, event
+from sqlalchemy import orm, event, types
 from sqlalchemy.engine import Engine
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.declarative import declarative_base
 
 from eyed3.utils import guessMimetype
@@ -158,6 +158,24 @@ class Artist(Base, OrmObject):
         return self.name.replace("/", "%2f")
 
 
+class AlbumDate(TypeDecorator):
+    '''Custom column type for eyed3.core.Date objects. That is, dates than
+    can have empty rather than default date fields. For example, 1994 with no
+    month and day is different than 1994-01-01, as datetime provides.'''
+    impl = types.String(24)
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, Eyed3Date):
+            return str(value)
+        elif value:
+            return str(Eyed3Date.parse(value))
+        else:
+            return None
+
+    def process_result_value(self, value, dialect):
+        return Eyed3Date.parse(value) if value else None
+
+
 class Album(Base, OrmObject):
     __tablename__ = "albums"
     __table_args__ = (sql.UniqueConstraint("title",
@@ -171,9 +189,9 @@ class Album(Base, OrmObject):
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    _release_date = sql.Column("release_date", sql.String(24))
-    _original_release_date = sql.Column("original_release_date", sql.String(24))
-    _recording_date = sql.Column("recording_date", sql.String(24))
+    release_date = sql.Column(AlbumDate)
+    original_release_date = sql.Column(AlbumDate)
+    recording_date = sql.Column(AlbumDate)
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
@@ -186,57 +204,6 @@ class Album(Base, OrmObject):
     labels = orm.relation("Label", secondary=album_labels)
     images = orm.relation("Image", secondary=album_images, cascade="all")
     '''one-to-many album images.'''
-
-    def __init__(self, **kwargs):
-        # The use of @hybrid_property means that we don't get keyword args for
-        # the non _ prefixed column names, so...
-        def _pop(key):
-            val = None
-            if key in kwargs:
-                val = kwargs[key]
-                del kwargs[key]
-            return val
-
-        self.release_date = _pop("release_date")
-        self.original_release_date = _pop("original_release_date")
-        self.recording_date = _pop("recording_date")
-
-        super(Album, self).__init__(**kwargs)
-
-    @hybrid_property
-    def recording_date(self):
-        return self._dateGetter(self._recording_date)
-
-    @recording_date.setter
-    def recording_date(self, d):
-        self._recording_date = self._dateSetter(d)
-
-    @hybrid_property
-    def release_date(self):
-        return self._dateGetter(self._release_date)
-
-    @release_date.setter
-    def release_date(self, d):
-        self._release_date = self._dateSetter(d)
-
-    @hybrid_property
-    def original_release_date(self):
-        return self._dateGetter(self._original_release_date)
-
-    @original_release_date.setter
-    def original_release_date(self, d):
-        self._original_release_date = self._dateSetter(d)
-
-    def _dateGetter(self, d):
-        return Eyed3Date.parse(d) if d else None
-
-    def _dateSetter(self, d):
-        if isinstance(d, Eyed3Date):
-            return str(d)
-        elif d:
-            return str(Eyed3Date.parse(d))
-        else:
-            return None
 
     def getBestDate(self):
         from eyed3.utils import datePicker
@@ -370,3 +337,5 @@ TABLES = [T.__table__ for T in TYPES] + LABELS
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''
 ENUMS = [Image._types_enum, Album._types_enum]
+
+
