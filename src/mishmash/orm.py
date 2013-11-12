@@ -171,9 +171,9 @@ class Album(Base, OrmObject):
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    _release_date = sql.Column(sql.String(24))
-    _original_release_date = sql.Column(sql.String(24))
-    _recording_date = sql.Column(sql.String(24))
+    _release_date = sql.Column("release_date", sql.String(24))
+    _original_release_date = sql.Column("original_release_date", sql.String(24))
+    _recording_date = sql.Column("recording_date", sql.String(24))
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
