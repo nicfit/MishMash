@@ -111,10 +111,10 @@ class Meta(Base, OrmObject):
         session.add(Meta(version=VERSION))
 
 
-def _getSortName(context):
+def _getSortName(name):
     from . import util
-    name, prefix = util.splitNameByPrefix(context.current_parameters["name"])
-    return u"%s, %s" % (name, prefix) if prefix else name
+    suffix, prefix = util.splitNameByPrefix(name)
+    return u"%s, %s" % (suffix, prefix) if prefix else name
 
 
 class Artist(Base, OrmObject):
@@ -128,8 +128,7 @@ class Artist(Base, OrmObject):
     # Columns
     id = sql.Column(sql.Integer, primary_key=True)
     name = sql.Column(sql.Unicode(128), nullable=False, index=True)
-    sort_name = sql.Column(sql.Unicode(128), nullable=False,
-                           default=_getSortName, onupdate=_getSortName)
+    sort_name = sql.Column(sql.Unicode(128), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
     origin_city = sql.Column(sql.Unicode(32))
@@ -172,6 +171,14 @@ class Artist(Base, OrmObject):
             if o:
                 origins.append(o)
         return u", ".join(origins)
+
+    @orm.validates("name")
+    def _set_name(self, key, value):
+        '''This exists merely to keep sort_name in sync.'''
+        if not value:
+            raise ValueError("Artist.name is not nullable")
+        self.sort_name = _getSortName(value)
+        return value
 
 
 class AlbumDate(TypeDecorator):
