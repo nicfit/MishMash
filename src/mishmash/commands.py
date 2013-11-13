@@ -28,7 +28,8 @@ import eyed3
 import eyed3.main
 from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
-from eyed3.utils.console import printMsg
+from eyed3.utils.console import printMsg, Style
+from eyed3.utils.prompt import prompt
 
 from . import database
 
@@ -38,6 +39,8 @@ from .log import log
 
 _cmds = []
 
+def _bold(s):
+    return Style.BRIGHT + s + Style.RESET_BRIGHT
 
 class Command(object):
     cmds = {}
@@ -274,7 +277,86 @@ class Relocate(Command):
                  (num_relocates, oldroot, newroot))
 
 
-_cmds.extend([Init, Sync, Info, Random, Search, List, Relocate])
+class SplitArtists(Command):
+    def __init__(self, subparsers=None):
+        super(SplitArtists, self).__init__(
+                "split-artists",
+                "Split a single artist name into N distinct artists.",
+                subparsers)
+        self.parser.add_argument("artist", type=unicode,
+                                 help="The name of the artist.")
+
+    def _run(self):
+        session = self.db_session
+
+        artists = session.query(Artist)\
+                         .filter(Artist.name == self.args.artist).all()
+        if not artists:
+            printMsg(u"Artist not found: %s" % self.args.artist)
+            return 1
+        elif len(artists) > 1:
+            # User needs to choose which artist to split on.
+            raise NotImplementedError("FIXME")
+        else:
+            artist = artists[0]
+
+        albums = session.query(Album)\
+                        .filter(Album.artist_id == artist.id).all()
+        if len(albums) < 2:
+            # Does not appear to be a multiple artist scenario
+            raise NotImplementedError("FIXME")
+
+        printMsg(u"Found the following albums by %s" % _bold(artist.name))
+        for alb in albums:
+            printMsg(u"%s %s" % (str(alb.getBestDate()).center(17), alb.title))
+
+        n = prompt("\nNumber of distinct artists", type_=int)
+        new_artists = []
+        with session.begin():
+            for i in range(1, n + 1):
+                printMsg(_bold(u"\n%s #%d") % (artist.name, i))
+
+                # Reuse original artist for first
+                a = artist if i == 1 else Artist(name=artist.name,
+                                                 date_added=artist.date_added)
+                a.origin_city = prompt("Origin city", required=False)
+                a.origin_state = prompt("Origin state", required=False)
+                a.origin_country = prompt("Origin country", required=False)
+
+                new_artists.append(a)
+                session.add(a)
+
+        printMsg(_bold("\nAssign albums to the correct artist."))
+        for i, artist in enumerate(new_artists):
+            printMsg("Enter %d for %s from %s" %
+                     (i, artist.name, artist.origin))
+        print("")
+        album_map = {}
+        for alb in albums:
+            a = prompt(alb.title, type_=int, choices=range(len(new_artists)))
+            a = new_artists[a]
+
+            if a not in album_map:
+                album_map[a] = []
+            album_map[a].append(alb)
+
+        for artist in album_map:
+            for alb in album_map[artist]:
+                alb.artist_id = artist.id
+
+        with session.begin():
+            # Add new artists, flush changed values.
+            for artist in new_artists:
+                if artist.id is None:
+                    session.add(artist)
+            session.flush()
+
+        # FIXME: begin here
+        # TODO: reflect the origins in all tags
+
+
+
+_cmds.extend([Init, Sync, Info, Random, Search, List, Relocate, SplitArtists])
 
 
 def makeCmdLineParser():

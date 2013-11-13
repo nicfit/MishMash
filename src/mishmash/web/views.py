@@ -58,7 +58,7 @@ def allArtistsView(request):
     buckets = set()
     artist_dict = {}
 
-    def _bucket(name):
+    def _whichBucket(name):
         l = name[0].upper()
         if not l.isalpha():
             l = NUMBER if l.isnumeric() else OTHER
@@ -69,10 +69,24 @@ def allArtistsView(request):
     for artist in session.query(Artist)\
                          .order_by(Artist.sort_name).all():
 
-        bucket = _bucket(artist.sort_name)
+        bucket = _whichBucket(artist.sort_name)
         if bucket not in artist_dict:
             artist_dict[bucket] = []
-        artist_dict[bucket].append(artist)
+
+        curr_list = artist_dict[bucket]
+
+        if curr_list:
+            # Adding show_origin member to the instance here. True for
+            # dup artists, false otherwise.
+            if curr_list[-1].name == artist.name:
+                curr_list[-1].show_origin = True
+                artist.show_origin = True
+            else:
+                artist.show_origin = False
+        else:
+            artist.show_origin = False
+
+        curr_list.append(artist)
 
     buckets = list(buckets)
     buckets.sort()

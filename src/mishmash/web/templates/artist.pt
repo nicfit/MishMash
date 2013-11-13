@@ -2,7 +2,10 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<h3>${artist.name}</h3>
+<div style="padding-bottom:25px">
+  <h3>${artist.name}</h3>
+  <span tal:condition="artist.origin">from ${artist.origin}</span>
+</div>
 
 <ul class="nav nav-tabs">
   <li tal:repeat="t tabs" class="${'active' if t[2]
