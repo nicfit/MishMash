@@ -119,6 +119,11 @@ def _getSortName(context):
 
 class Artist(Base, OrmObject):
     __tablename__ = "artists"
+    __table_args__ = (sql.UniqueConstraint("name",
+                                           "origin_city",
+                                           "origin_state",
+                                           "origin_country",
+                                           name="artist_uniq_constraint"), {})
 
     # Columns
     id = sql.Column(sql.Integer, primary_key=True)
@@ -127,6 +132,9 @@ class Artist(Base, OrmObject):
                            default=_getSortName, onupdate=_getSortName)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
+    origin_city = sql.Column(sql.Unicode(32))
+    origin_state = sql.Column(sql.Unicode(32))
+    origin_country = sql.Column(sql.Unicode(32))
 
     # Relations
     albums = orm.relation("Album", cascade="all")
@@ -156,6 +164,14 @@ class Artist(Base, OrmObject):
     @property
     def url_name(self):
         return self.name.replace("/", "%2f")
+
+    @property
+    def origin(self):
+        origins = []
+        for o in [self.origin_city, self.origin_state, self.origin_country]:
+            if o:
+                origins.append(o)
+        return u", ".join(origins)
 
 
 class AlbumDate(TypeDecorator):
