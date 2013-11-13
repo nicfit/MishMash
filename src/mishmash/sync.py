@@ -189,6 +189,7 @@ class SyncPlugin(LoaderPlugin):
                                                    .all()
                 if artist_rows:
                     if len(artist_rows) > 1:
+                        # Mulptiple artists with the same name.
                         raise NotImplementedError("FIXME")
                     artist = artist_rows[0]
                 else:
@@ -208,6 +209,8 @@ class SyncPlugin(LoaderPlugin):
 
                 if album_rows:
                     if len(album_rows) > 1:
+                        # This artist has more than one album with the same
+                        # title.
                         raise NotImplementedError("FIXME")
                     album = album_rows[0]
 
@@ -260,7 +263,6 @@ class SyncPlugin(LoaderPlugin):
                         img_type = None
 
                     if img_type is None:
-                        import ipdb; ipdb.set_trace()
                         log.warn("Skipping unsupported image type: %s" %
                                  img.picture_type)
                         continue

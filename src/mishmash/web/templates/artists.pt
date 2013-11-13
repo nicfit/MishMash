@@ -11,6 +11,7 @@
     <li tal:repeat="artist artist_dict[L]">
       <a href="${request.route_url('artist', id=artist.id)}"
          tal:content="artist.sort_name">Artist</a>
+      <span tal:condition="artist.show_origin">(${artist.origin})</span>
     </li>
   </ul>
 </span>
