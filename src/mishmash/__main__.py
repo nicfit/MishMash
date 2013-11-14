@@ -27,7 +27,7 @@ from datetime import datetime
 from sqlalchemy import exc as sql_exceptions
 
 import eyed3
-eyed3.require("0.7.4")
+eyed3.require("0.7.5")
 
 import eyed3.main
 from eyed3.utils.console import Fore as fg
