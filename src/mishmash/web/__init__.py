@@ -18,6 +18,7 @@
 #
 ################################################################################
 import sys
+from ConfigParser import SafeConfigParser as ConfigParser
 from pyramid.config import Configurator
 from zope.sqlalchemy import ZopeTransactionExtension
 
@@ -53,22 +54,25 @@ def _configure(settings, DBSession):
     return config
 
 
-def main(global_config, **settings):
+def main(global_config, **main_settings):
+    config_file = ConfigParser()
+    config_file.read(global_config["__file__"])
+    mm_settings = config_file._sections["mishmash"]
 
     engine_args = dict(database.DEFAULT_ENGINE_ARGS)
     pfix, plen = "sqlalchemy.", len("sqlalchemy.")
     # Strip prefix and remove url value
     sql_ini_args = {
-            name[plen:]: settings[name]
-                for name in settings if name.startswith(pfix) and
-                                        not name.endswith(".url")
+            name[plen:]: mm_settings[name]
+                for name in mm_settings if name.startswith(pfix) and
+                                           not name.endswith(".url")
             }
     engine_args.update(sql_ini_args)
 
     session_args = {"extension": ZopeTransactionExtension()}
 
     (engine,
-     DBSession) = database.init(settings["%surl" % pfix],
+     DBSession) = database.init(mm_settings["%surl" % pfix],
                                 engine_args=engine_args,
                                 session_args=session_args)
 
@@ -80,6 +84,6 @@ def main(global_config, **settings):
         sys.exit(1)
 
 
-    config = _configure(settings, DBSession)
+    config = _configure(main_settings, DBSession)
 
     return config.make_wsgi_app()
