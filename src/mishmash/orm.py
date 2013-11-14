@@ -21,6 +21,8 @@ import os
 from datetime import datetime
 from hashlib import md5
 
+from countrycode import countrycode
+
 import sqlalchemy as sql
 from sqlalchemy import orm, event, types
 from sqlalchemy.engine import Engine
@@ -35,6 +37,7 @@ from .info import VERSION
 
 
 VARIOUS_ARTISTS_NAME = u"Various Artists"
+VARIOUS_ARTISTS_ID = 1
 
 
 @event.listens_for(Engine, "connect")
@@ -133,7 +136,7 @@ class Artist(Base, OrmObject):
                             default=datetime.now)
     origin_city = sql.Column(sql.Unicode(32))
     origin_state = sql.Column(sql.Unicode(32))
-    origin_country = sql.Column(sql.Unicode(32))
+    origin_country = sql.Column(sql.String(3))
 
     # Relations
     albums = orm.relation("Album", cascade="all")
@@ -147,7 +150,11 @@ class Artist(Base, OrmObject):
 
     @staticmethod
     def initTable(session):
-        session.add(Artist(name=VARIOUS_ARTISTS_NAME))
+        va = Artist(name=VARIOUS_ARTISTS_NAME)
+        session.add(va)
+        session.flush()
+        if va.id != VARIOUS_ARTISTS_ID:
+            raise RuntimeError("Unable to provision various artists")
 
     def getAlbumsByType(self, album_type):
         if album_type != VARIOUS_TYPE:
@@ -173,12 +180,19 @@ class Artist(Base, OrmObject):
         return u", ".join(origins)
 
     @orm.validates("name")
-    def _set_name(self, key, value):
+    def _setName(self, key, value):
         '''This exists merely to keep sort_name in sync.'''
         if not value:
             raise ValueError("Artist.name is not nullable")
         self.sort_name = _getSortName(value)
         return value
+
+    @orm.validates("origin_country")
+    def _setOriginCountry(self, key, value):
+        from .util import normalizeCountry
+        if value is None:
+            return None
+        return normalizeCountry(value, target="iso3c")
 
 
 class AlbumDate(TypeDecorator):
