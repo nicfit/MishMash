@@ -17,9 +17,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+from countrycode import countrycode
 from eyed3.utils import datePicker
 
-NAME_PREFIXES = [u"the ", u"los ", u"la "]
+NAME_PREFIXES = [u"the ", u"los ", u"la ", u"el "]
 
 
 def splitNameByPrefix(s):
@@ -34,4 +35,40 @@ def sortByDate(things, prefer_recording_date=False):
     def _sortkey(a):
         return datePicker(a, prefer_recording_date=prefer_recording_date)
     return sorted(things, key=_sortkey)
+
+
+def normalizeCountry(country_str, target="iso3c"):
+    '''Return a normalized name/code for country in ``country_str``.
+    The input can be a code or name, the ``target`` determines output value.
+    3 character ISO code is the default (iso3c), 'country_name', and 'iso2c'
+    are common also. See ``countrycode.countrycode`` for details and other
+    options. Raises ``ValueError`` if the country is unrecognized.'''
+
+    iso2 = "iso2c"
+    iso3 = "iso3c"
+    raw = "country_name"
+
+    if type(country_str) is unicode:
+        # XXX https://github.com/vincentarelbundock/pycountrycode/issues/1
+        country_str = country_str.encode('latin1')
+
+    if len(country_str) == 2:
+        cc = countrycode(country_str.upper(), origin=iso2, target=target)
+        if not cc:
+            cc = countrycode(country_str, origin=raw, target=target)
+    elif len(country_str) == 3:
+        cc = countrycode(country_str.upper(), origin=iso3, target=target)
+        if not cc:
+            cc = countrycode(country_str, origin=raw, target=target)
+    else:
+        cc = countrycode(country_str, origin=raw, target=target)
+
+    # Still need to validate because origin=raw will return whatever is
+    # input if not match is found.
+    cc = countrycode(cc, origin=target, target=target) if cc else None
+    if not cc:
+        raise ValueError("Country not found: %s" % (country_str))
+    return cc
+
+
 
