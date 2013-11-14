@@ -54,6 +54,10 @@ PACKAGE_DATA = paver.setuputils.find_package_data("src/mishmash",
                                                   only_in_packages=True,
                                                   )
 
+from pip.req import parse_requirements
+install_reqs = parse_requirements("requirements.txt")
+DEPS = [str(ir.req) for ir in install_reqs]
+
 options(
     minilib=Bunch(
         # XXX: the explicit inclusion of 'version' is a workaround for:
@@ -94,6 +98,7 @@ options(
         [paste.app_factory]
         main = mishmash.web:main
         """,
+        install_requires=DEPS,
     ),
 
     sdist=Bunch(
