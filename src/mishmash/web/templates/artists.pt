@@ -2,7 +2,7 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<div align="center">
+<div align="center" style="padding-top:10px">
   <span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
 </div>
 

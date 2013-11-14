@@ -19,7 +19,7 @@ _vars = {"project_name": NAME,
         }
 
 from .models import DBSession
-from ..orm import Artist, Album, Image, VARIOUS_ARTISTS_NAME
+from ..orm import Artist, Album, Image
 from .. import database
 from .. import util
 

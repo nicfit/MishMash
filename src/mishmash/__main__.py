@@ -50,6 +50,8 @@ def main():
 
     try:
         retval = args.func(args) or 0
+    except KeyboardInterrupt:
+        retval = 0
     except (sql_exceptions.ArgumentError,
             sql_exceptions.OperationalError) as ex:
         _pErr("Database error", ex)
