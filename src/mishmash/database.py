@@ -24,7 +24,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from . import log
 from .orm import TYPES, TABLES, ENUMS
-from .orm import Artist, Track, Album, VARIOUS_ARTISTS_NAME, Meta
+from .orm import Artist, Track, Album
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
