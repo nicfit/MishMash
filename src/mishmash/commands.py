@@ -30,11 +30,13 @@ from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
 from eyed3.utils.console import printMsg, Style
 from eyed3.utils.prompt import prompt
+from eyed3.core import VARIOUS_TYPE
 
 from . import database
 
 from .orm import Track, Artist, Album, Meta, Label
 from .log import log
+from .util import normalizeCountry
 
 
 _cmds = []
@@ -262,8 +264,6 @@ class Relocate(Command):
         if newroot[-1] != os.sep:
             newroot += os.sep
 
-        # FIXME: warn if relocated path value does not exist
-
         num_relocates = 0
         with session.begin():
 
@@ -300,15 +300,29 @@ class SplitArtists(Command):
         else:
             artist = artists[0]
 
-        albums = session.query(Album)\
-                        .filter(Album.artist_id == artist.id).all()
+        # Albums by artist
+        albums = list(artist.albums) + artist.getAlbumsByType(VARIOUS_TYPE)
         if len(albums) < 2:
             # Does not appear to be a multiple artist scenario
             raise NotImplementedError("FIXME")
 
-        printMsg(u"Found the following albums by %s" % _bold(artist.name))
-        for alb in albums:
-            printMsg(u"%s %s" % (str(alb.getBestDate()).center(17), alb.title))
+        if albums:
+            printMsg(u"Found the following albums by %s" % _bold(artist.name))
+            for alb in albums:
+                printMsg(u"%s %s" % (str(alb.getBestDate()).center(17),
+                                     alb.title))
+
+        # Track singles by artist
+        singles = artist.getTrackSingles()
+
+        if singles:
+            printMsg(u"And the following single tracks by %s" %
+                     _bold(artist.name))
+            for s in singles:
+                printMsg(u"\t%s" % (s.title))
+
+        # FIXME: using 2 transactions below, use 1 so a rollback of artist
+        # changes could occur if error occus later down
 
         n = prompt("\nNumber of distinct artists", type_=int)
         new_artists = []
@@ -321,7 +335,8 @@ class SplitArtists(Command):
                                                  date_added=artist.date_added)
                 a.origin_city = prompt("Origin city", required=False)
                 a.origin_state = prompt("Origin state", required=False)
-                a.origin_country = prompt("Origin country", required=False)
+                a.origin_country = prompt("Origin country", required=False,
+                                          type_=normalizeCountry)
 
                 new_artists.append(a)
                 session.add(a)
@@ -330,6 +345,7 @@ class SplitArtists(Command):
         for i, artist in enumerate(new_artists):
             printMsg("Enter %d for %s from %s" %
                      (i, artist.name, artist.origin))
+        # FIXME: need to be careful to set only the right bits for type=various
         print("")
         album_map = {}
         for alb in albums:
@@ -341,8 +357,12 @@ class SplitArtists(Command):
             album_map[a].append(alb)
 
         for artist in album_map:
+            # FIXME: reflect the origins in all tags
             for alb in album_map[artist]:
                 alb.artist_id = artist.id
+                for trk in alb.tracks:
+                    trk.artist_id = artist.id
+            # FIXME: process singles tracks that need to be updated
 
         with session.begin():
             # Add new artists, flush changed values.
@@ -350,10 +370,6 @@ class SplitArtists(Command):
                 if artist.id is None:
                     session.add(artist)
             session.flush()
-
-        # FIXME: begin here
-        # TODO: reflect the origins in all tags
-
 
 
 _cmds.extend([Init, Sync, Info, Random, Search, List, Relocate, SplitArtists])
