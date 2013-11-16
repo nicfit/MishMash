@@ -17,6 +17,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+import os
 from countrycode import countrycode
 from eyed3.utils import datePicker
 
@@ -71,4 +72,6 @@ def normalizeCountry(country_str, target="iso3c"):
     return cc
 
 
+def commonDirectoryPrefix(*args):
+    return os.path.commonprefix(args).rpartition(os.path.sep)[0]
 
