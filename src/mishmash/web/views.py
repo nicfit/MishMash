@@ -6,6 +6,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 
+from sqlalchemy import desc
 from sqlalchemy.exc import DBAPIError
 
 from eyed3.utils import formatTime
@@ -185,7 +186,8 @@ DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
 def newMusicView(request):
     from math import ceil
     session = request.DBSession()
-    albums = session.query(Album).order_by("date_added").limit(25).all()
+    albums = session.query(Album).order_by(desc("date_added")).limit(25).all()
+    # FIXME: handle new singles here, make sure this works for various
     return ResponseDict(albums=albums, ceil=ceil)
 
 
