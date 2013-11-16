@@ -23,7 +23,7 @@ import os
 import sys
 import time
 import logging
-from os.path import getmtime, getctime
+from os.path import getctime
 from datetime import datetime
 from fnmatch import fnmatch
 
@@ -36,8 +36,8 @@ from eyed3.utils.console import printMsg
 from eyed3.utils.console import Fore as fg
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE
 
-from .orm import (Track, Artist, Album, VARIOUS_ARTISTS_NAME, Label, Meta,
-                  Image)
+from .orm import (Track, Artist, Album, Label, Meta, Image,
+                  VARIOUS_ARTISTS_ID)
 from .log import log
 
 
@@ -93,7 +93,6 @@ class SyncPlugin(LoaderPlugin):
         self._num_added = 0
         self._num_modified = 0
         self._num_deleted = 0
-        self._comp_artist_id = None
         self.DBSession = None
         self._dir_images = []
 
@@ -101,13 +100,6 @@ class SyncPlugin(LoaderPlugin):
         super(SyncPlugin, self).start(args, config)
         self.start_time = time.time()
         self.DBSession = args.db_session
-
-        session = self.DBSession()
-        with session.begin():
-            # Get the compilation artist, its ID will be used for compilations
-            self._comp_artist_id = session.query(Artist)\
-                                          .filter_by(name=VARIOUS_ARTISTS_NAME)\
-                                          .one().id
 
     def handleFile(self, f, *args, **kwargs):
         super(SyncPlugin, self).handleFile(f, *args, **kwargs)
@@ -126,6 +118,8 @@ class SyncPlugin(LoaderPlugin):
 
         if not audio_files:
             return
+
+        d_datetime = datetime.fromtimestamp(getctime(d))
 
         # This directory of files can be:
         # 1) an album by a single artist (tag.artist and tag.album all equal)
@@ -189,16 +183,17 @@ class SyncPlugin(LoaderPlugin):
                                                    .all()
                 if artist_rows:
                     if len(artist_rows) > 1:
-                        # Mulptiple artists with the same name.
-                        raise NotImplementedError("FIXME")
-                    artist = artist_rows[0]
+                        # FIXME
+                        raise NotImplementedError("Go interactive, or bail")
+                    else:
+                        artist = artist_rows[0]
                 else:
                     artist = Artist(name=tag.artist)
                     session.add(artist)
                     session.flush()
 
                 album_artist_id = artist.id if not is_various \
-                                            else self._comp_artist_id
+                                            else VARIOUS_ARTISTS_ID
                 album = None
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
@@ -223,7 +218,8 @@ class SyncPlugin(LoaderPlugin):
                                   type=album_type,
                                   release_date=rel_date,
                                   original_release_date=or_date,
-                                  recording_date=rec_date)
+                                  recording_date=rec_date,
+                                  date_added=d_datetime)
                     session.add(album)
 
                 session.flush()
@@ -336,7 +332,7 @@ def deleteOrphans(session):
     # Artists
     found_ids.clear()
     for artist in session.query(Artist).all():
-        if (artist.name == VARIOUS_ARTISTS_NAME or
+        if (artist.id == VARIOUS_ARTISTS_ID or
                 artist.id in found_ids):
             continue
 
