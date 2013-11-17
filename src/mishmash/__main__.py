@@ -30,6 +30,7 @@ import eyed3
 eyed3.require("0.7.5")
 
 import eyed3.main
+from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
 
 from .database import MissingSchemaException
@@ -47,6 +48,8 @@ def main():
 
     # Run command
     args = parser.parse_args()
+
+    AnsiCodes.init(True)
 
     try:
         retval = args.func(args) or 0
