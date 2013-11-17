@@ -321,9 +321,6 @@ class SplitArtists(Command):
             for s in singles:
                 printMsg(u"\t%s" % (s.title))
 
-        # FIXME: using 2 transactions below, use 1 so a rollback of artist
-        # changes could occur if error occus later down
-
         n = prompt("\nNumber of distinct artists", type_=int)
         new_artists = []
         with session.begin():
@@ -341,30 +338,32 @@ class SplitArtists(Command):
                 new_artists.append(a)
                 session.add(a)
 
-        printMsg(_bold("\nAssign albums to the correct artist."))
-        for i, artist in enumerate(new_artists):
-            printMsg("Enter %d for %s from %s" %
-                     (i, artist.name, artist.origin))
-        # FIXME: need to be careful to set only the right bits for type=various
-        print("")
-        album_map = {}
-        for alb in albums:
-            a = prompt(alb.title, type_=int, choices=range(len(new_artists)))
-            a = new_artists[a]
+            printMsg(_bold("\nAssign albums to the correct artist."))
+            for i, artist in enumerate(new_artists):
+                printMsg("Enter %d for %s from %s" %
+                         (i, artist.name, artist.origin))
+            # FIXME: need to be careful to set only the right bits for
+            # type=various
+            print("")
+            album_map = {}
+            for alb in albums:
+                a = prompt(alb.title, type_=int,
+                           choices=range(len(new_artists)))
+                a = new_artists[a]
 
-            if a not in album_map:
-                album_map[a] = []
-            album_map[a].append(alb)
+                if a not in album_map:
+                    album_map[a] = []
+                album_map[a].append(alb)
 
-        for artist in album_map:
-            # FIXME: reflect the origins in all tags
-            for alb in album_map[artist]:
-                alb.artist_id = artist.id
-                for trk in alb.tracks:
-                    trk.artist_id = artist.id
-            # FIXME: process singles tracks that need to be updated
+            for artist in album_map:
+                # FIXME: reflect the origins in all tags
+                for alb in album_map[artist]:
+                    alb.artist_id = artist.id
+                    for trk in alb.tracks:
+                        trk.artist_id = artist.id
+                # FIXME: process singles tracks that need to be updated
 
-        with session.begin():
+            raise ValueError("remove me, testing rollback")
             # Add new artists, flush changed values.
             for artist in new_artists:
                 if artist.id is None:
