@@ -227,11 +227,11 @@ class SyncPlugin(LoaderPlugin):
                 if not track:
                     track = Track(audio_file=audio_file)
                     self._num_added += 1
-                    print(fg.green + "Adding track" + fg.reset + ": " + path)
+                    print(fg.GREEN + "Adding track" + fg.RESET + ": " + path)
                 else:
                     track.update(audio_file)
                     self._num_modified += 1
-                    print(fg.yellow + "Updating track" + fg.reset + ": " + path)
+                    print(fg.YELLOW + "Updating track" + fG.RESET + ": " + path)
 
                 genre = tag.genre
                 label = None

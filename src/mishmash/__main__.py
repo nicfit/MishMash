@@ -39,7 +39,7 @@ from .commands import makeCmdLineParser
 
 
 def _pErr(subject, msg):
-    print(fg.red + subject + fg.reset + ": %s" % str(msg))
+    print(fg.red(subject) + ": %s" % str(msg))
 
 
 def main():
