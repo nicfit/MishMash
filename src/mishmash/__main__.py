@@ -37,6 +37,11 @@ from .database import MissingSchemaException
 from .log import log, initLogging
 from .commands import makeCmdLineParser
 
+try:
+    import ipdb as pdb
+except ImportError:
+    import pdb
+
 
 def _pErr(subject, msg):
     print(fg.red(subject) + ": %s" % str(msg))
@@ -45,6 +50,13 @@ def _pErr(subject, msg):
 def main():
     initLogging()
     parser = makeCmdLineParser()
+    parser.add_argument("--pdb", action="store_true", dest="debug_pdb",
+                        help="Drop into 'pdb' when errors occur.")
+    def _pdb(_args):
+        '''used to optionally break into pdb'''
+        if _args.debug_pdb:
+            e, m, tb = sys.exc_info()
+            pdb.post_mortem(tb)
 
     # Run command
     args = parser.parse_args()
@@ -58,6 +70,7 @@ def main():
     except (sql_exceptions.ArgumentError,
             sql_exceptions.OperationalError) as ex:
         _pErr("Database error", ex)
+        _pdb(args)
         retval = 1
     except MissingSchemaException as ex:
         _pErr("Schema error",
@@ -70,6 +83,7 @@ def main():
     except Exception as ex:
         log.exception(ex)
         _pErr(ex.__class__.__name__, str(ex))
+        _pdb(args)
         retval = 2
 
     return retval
