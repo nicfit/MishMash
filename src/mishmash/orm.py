@@ -171,12 +171,16 @@ class Artist(Base, OrmObject):
     def url_name(self):
         return self.name.replace("/", "%2f")
 
-    @property
-    def origin(self):
-        origins = []
-        for o in [self.origin_city, self.origin_state, self.origin_country]:
-            if o:
-                origins.append(o)
+    def origin(self, n=3, country_code="country_name", title_case=True):
+        from .util import normalizeCountry
+        origins = [o for o in [normalizeCountry(self.origin_country,
+                                                target=country_code,
+                                                title_case=title_case),
+                               self.origin_state,
+                               self.origin_city]
+                     if o]
+        origins = origins[:n]
+        origins.reverse()
         return u", ".join(origins)
 
     @orm.validates("name")
@@ -192,7 +196,7 @@ class Artist(Base, OrmObject):
         from .util import normalizeCountry
         if value is None:
             return None
-        return normalizeCountry(value, target="iso3c")
+        return normalizeCountry(value, target="iso3c", title_case=False)
 
 
 class AlbumDate(TypeDecorator):
