@@ -38,7 +38,7 @@ def sortByDate(things, prefer_recording_date=False):
     return sorted(things, key=_sortkey)
 
 
-def normalizeCountry(country_str, target="iso3c"):
+def normalizeCountry(country_str, target="iso3c", title_case=False):
     '''Return a normalized name/code for country in ``country_str``.
     The input can be a code or name, the ``target`` determines output value.
     3 character ISO code is the default (iso3c), 'country_name', and 'iso2c'
@@ -48,6 +48,9 @@ def normalizeCountry(country_str, target="iso3c"):
     iso2 = "iso2c"
     iso3 = "iso3c"
     raw = "country_name"
+
+    if country_str is None:
+        return u''
 
     if type(country_str) is unicode:
         # XXX https://github.com/vincentarelbundock/pycountrycode/issues/1
@@ -69,7 +72,8 @@ def normalizeCountry(country_str, target="iso3c"):
     cc = countrycode(cc, origin=target, target=target) if cc else None
     if not cc:
         raise ValueError("Country not found: %s" % (country_str))
-    return cc
+
+    return cc.title() if title_case else cc
 
 
 def commonDirectoryPrefix(*args):
