@@ -29,6 +29,7 @@ import eyed3.main
 from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
 from eyed3.utils.console import printMsg, Style
+from eyed3.utils.console import Fore as fg, Back as bg
 from eyed3.utils.prompt import prompt
 from eyed3.core import VARIOUS_TYPE
 
@@ -41,8 +42,6 @@ from .util import normalizeCountry
 
 _cmds = []
 
-def _bold(s):
-    return Style.BRIGHT + s + Style.RESET_BRIGHT
 
 class Command(object):
     cmds = {}
@@ -286,6 +285,20 @@ class SplitArtists(Command):
         self.parser.add_argument("artist", type=unicode,
                                  help="The name of the artist.")
 
+    def _displayArtistMusic(self, artist, albums, singles):
+        if albums:
+            printMsg(u"%d albums by %s:" % (len(albums),
+                                            Style.bright(fg.blue(artist.name))))
+            for alb in albums:
+                printMsg(u"%s %s" % (str(alb.getBestDate()).center(17),
+                                     alb.title))
+
+        if singles:
+            printMsg(u"%d single tracks by %s" %
+                     (len(singles), Style.bright(fg.blue(artist.name))))
+            for s in singles:
+                printMsg(u"\t%s" % (s.title))
+
     def _run(self):
         session = self.db_session
 
@@ -302,30 +315,18 @@ class SplitArtists(Command):
 
         # Albums by artist
         albums = list(artist.albums) + artist.getAlbumsByType(VARIOUS_TYPE)
-        if len(albums) < 2:
+        # Singles by artist and compilations the artist appears on
+        singles = artist.getTrackSingles()
+        if len(albums) < 2 and len(singles) < 2:
             # Does not appear to be a multiple artist scenario
             raise NotImplementedError("FIXME")
+        self._displayArtistMusic(artist, albums, singles)
 
-        if albums:
-            printMsg(u"Found the following albums by %s" % _bold(artist.name))
-            for alb in albums:
-                printMsg(u"%s %s" % (str(alb.getBestDate()).center(17),
-                                     alb.title))
-
-        # Track singles by artist
-        singles = artist.getTrackSingles()
-
-        if singles:
-            printMsg(u"And the following single tracks by %s" %
-                     _bold(artist.name))
-            for s in singles:
-                printMsg(u"\t%s" % (s.title))
-
-        n = prompt("\nNumber of distinct artists", type_=int)
+        n = prompt("\nEnter the number of distinct artists", type_=int)
         new_artists = []
         with session.begin():
             for i in range(1, n + 1):
-                printMsg(_bold(u"\n%s #%d") % (artist.name, i))
+                printMsg(Style.bright(u"\n%s #%d") % (fg.blue(artist.name), i))
 
                 # Reuse original artist for first
                 a = artist if i == 1 else Artist(name=artist.name,
@@ -338,36 +339,34 @@ class SplitArtists(Command):
                 new_artists.append(a)
                 session.add(a)
 
-            printMsg(_bold("\nAssign albums to the correct artist."))
-            for i, artist in enumerate(new_artists):
+            # New Artist objects need IDs
+            session.flush()
+
+            printMsg(Style.bright("\nAssign albums to the correct artist."))
+            for i, a in enumerate(new_artists):
                 printMsg("Enter %d for %s from %s" %
-                         (i, artist.name, artist.origin))
-            # FIXME: need to be careful to set only the right bits for
-            # type=various
+                         (i + 1, a.name, a.origin()))
+
+            # prompt for correct artists
+            def _promptForArtist(_text):
+                a = prompt(_text, type_=int,
+                           choices=range(1, len(new_artists) + 1))
+                return new_artists[a - 1]
+
             print("")
-            album_map = {}
             for alb in albums:
-                a = prompt(alb.title, type_=int,
-                           choices=range(len(new_artists)))
-                a = new_artists[a]
+                a = _promptForArtist(alb.title)
+                if alb.type != "various":
+                    alb.artist_id = a.id
+                for track in alb.tracks:
+                    if track.artist_id == artist.id:
+                        track.artist_id = a.id
 
-                if a not in album_map:
-                    album_map[a] = []
-                album_map[a].append(alb)
+            print("")
+            for track in singles:
+                a = _promptForArtist(track.title)
+                track.artist_id = a.id
 
-            for artist in album_map:
-                # FIXME: reflect the origins in all tags
-                for alb in album_map[artist]:
-                    alb.artist_id = artist.id
-                    for trk in alb.tracks:
-                        trk.artist_id = artist.id
-                # FIXME: process singles tracks that need to be updated
-
-            raise ValueError("remove me, testing rollback")
-            # Add new artists, flush changed values.
-            for artist in new_artists:
-                if artist.id is None:
-                    session.add(artist)
             session.flush()
 
 
