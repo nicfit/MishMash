@@ -19,7 +19,7 @@
 ################################################################################
 from __future__ import print_function
 
-import os
+import os, sys
 import getpass
 from argparse import Namespace
 
@@ -34,6 +34,7 @@ from eyed3.utils.prompt import prompt
 from eyed3.core import VARIOUS_TYPE
 
 from . import database
+from . import console
 
 from .orm import Track, Artist, Album, Meta, Label
 from .log import log
@@ -308,8 +309,7 @@ class SplitArtists(Command):
             printMsg(u"Artist not found: %s" % self.args.artist)
             return 1
         elif len(artists) > 1:
-            # User needs to choose which artist to split on.
-            raise NotImplementedError("FIXME")
+            artist = console.promptArtist(choices=artists)
         else:
             artist = artists[0]
 
@@ -317,26 +317,39 @@ class SplitArtists(Command):
         albums = list(artist.albums) + artist.getAlbumsByType(VARIOUS_TYPE)
         # Singles by artist and compilations the artist appears on
         singles = artist.getTrackSingles()
+
         if len(albums) < 2 and len(singles) < 2:
-            # Does not appear to be a multiple artist scenario
-            raise NotImplementedError("FIXME")
+            print("%d albums and %d singles found for '%s', nothing to do." %
+                    (len(albums), len(singles), artist.name))
+            return 0
+
         self._displayArtistMusic(artist, albums, singles)
 
-        n = prompt("\nEnter the number of distinct artists", type_=int)
+        def _validN(_n):
+            return _n > 1 and _n <= len(albums)
+        n = prompt("\nEnter the number of distinct artists", type_=int,
+                   validate=_validN)
         new_artists = []
         with session.begin():
+
             for i in range(1, n + 1):
                 printMsg(Style.bright(u"\n%s #%d") % (fg.blue(artist.name), i))
 
                 # Reuse original artist for first
                 a = artist if i == 1 else Artist(name=artist.name,
                                                  date_added=artist.date_added)
-                a.origin_city = prompt("Origin city", required=False)
-                a.origin_state = prompt("Origin state", required=False)
-                a.origin_country = prompt("Origin country", required=False,
+                a.origin_city = prompt("   City", required=False)
+                a.origin_state = prompt("   State", required=False)
+                a.origin_country = prompt("   Country", required=False,
                                           type_=normalizeCountry)
 
                 new_artists.append(a)
+
+            if not Artist.checkUnique(new_artists):
+                print(fg.red("Artists must be unique."))
+                return 1
+
+            for a in new_artists:
                 session.add(a)
 
             # New Artist objects need IDs

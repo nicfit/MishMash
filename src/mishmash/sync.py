@@ -33,12 +33,14 @@ from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils import guessMimetype
 from eyed3.utils.console import printMsg
-from eyed3.utils.console import Fore as fg
+from eyed3.utils.console import Fore as fg, Style as st
+from eyed3.utils.prompt import PromptExit
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE
 
 from .orm import (Track, Artist, Album, Label, Meta, Image,
                   VARIOUS_ARTISTS_ID)
 from .log import log
+from . import console
 
 
 FILE_IMG_TYPE_MAP = {
@@ -90,6 +92,10 @@ class SyncPlugin(LoaderPlugin):
     def __init__(self, arg_parser):
         super(SyncPlugin, self).__init__(arg_parser, cache_files=True)
 
+        self.arg_group.add_argument(
+                "--no-prompt", action="store_true", dest="no_prompt",
+                help="Skip files that require user input.")
+
         self._num_added = 0
         self._num_modified = 0
         self._num_deleted = 0
@@ -97,6 +103,9 @@ class SyncPlugin(LoaderPlugin):
         self._dir_images = []
 
     def start(self, args, config):
+        import eyed3.utils.prompt
+        eyed3.utils.prompt.DISABLE_PROMPT = "raise" if args.no_prompt else None
+
         super(SyncPlugin, self).start(args, config)
         self.start_time = time.time()
         self.DBSession = args.db_session
@@ -148,6 +157,9 @@ class SyncPlugin(LoaderPlugin):
             log.warn("Using type various despite files saying %s" % album_type)
         album_type = VARIOUS_TYPE if is_various else album_type
 
+        # Used when a duplicate artist is resolved for the entire directory.
+        resolved_artist = None
+
         session = self.DBSession()
         with session.begin():
             for audio_file in audio_files:
@@ -182,12 +194,26 @@ class SyncPlugin(LoaderPlugin):
                 artist_rows = session.query(Artist).filter_by(name=tag.artist)\
                                                    .all()
                 if artist_rows:
-                    if len(artist_rows) > 1:
-                        # FIXME
-                        raise NotImplementedError("Go interactive, or bail")
+                    if len(artist_rows) > 1 and resolved_artist:
+                        # Use previously resolved artist for this directory.
+                        artist = resolved_artist
+                    elif len(artist_rows) > 1:
+                        # Resolve artist
+                        try:
+                            artist = console.promptArtist(choices=artist_rows)
+                        except PromptExit:
+                            log.warn("Duplicate artist requires user "
+                                     "intervention to resolve.")
+                            continue
+                        if artist not in artist_rows:
+                            session.add(artist)
+                            session.flush()
+                        resolved_artist = artist
                     else:
+                        # Artist match
                         artist = artist_rows[0]
                 else:
+                    # New artist
                     artist = Artist(name=tag.artist)
                     session.add(artist)
                     session.flush()
@@ -231,7 +257,7 @@ class SyncPlugin(LoaderPlugin):
                 else:
                     track.update(audio_file)
                     self._num_modified += 1
-                    print(fg.YELLOW + "Updating track" + fG.RESET + ": " + path)
+                    print(fg.yellow("Updating track") + ": " + path)
 
                 genre = tag.genre
                 label = None
@@ -391,4 +417,5 @@ def syncImage(img, current, session):
         # Add image
         current.images.append(img)
         session.add(current)
+
 
