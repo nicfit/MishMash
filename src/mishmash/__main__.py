@@ -32,6 +32,7 @@ eyed3.require("0.7.5")
 import eyed3.main
 from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
+from eyed3.utils.prompt import PromptExit
 
 from .database import MissingSchemaException
 from .log import log, initLogging
@@ -65,7 +66,8 @@ def main():
 
     try:
         retval = args.func(args) or 0
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, PromptExit) as ex:
+        # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
     except (sql_exceptions.ArgumentError,
             sql_exceptions.OperationalError) as ex:
