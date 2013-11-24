@@ -198,6 +198,17 @@ class Artist(Base, OrmObject):
             return None
         return normalizeCountry(value, target="iso3c", title_case=False)
 
+    @staticmethod
+    def checkUnique(artists):
+        vals = []
+        for a in artists:
+            v = (a.name, a.origin_city, a.origin_state, a.origin_country)
+            if v in vals:
+                return False
+            vals.append(v)
+        return True
+
+
 
 class AlbumDate(TypeDecorator):
     '''Custom column type for eyed3.core.Date objects. That is, dates than
