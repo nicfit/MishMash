@@ -199,16 +199,23 @@ class SyncPlugin(LoaderPlugin):
                         artist = resolved_artist
                     elif len(artist_rows) > 1:
                         # Resolve artist
+                        # FIXME: color and heading
+                        # FIXME: show direcory, otherwise no way to choose
                         try:
-                            artist = console.promptArtist(choices=artist_rows)
+                            heading = "Multiple artists names '%s'" % \
+                                      artist_rows[0].name
+                            artist = console.selectArtist(fg.blue(heading),
+                                                          choices=artist_rows,
+                                                          allow_create=True)
                         except PromptExit:
                             log.warn("Duplicate artist requires user "
                                      "intervention to resolve.")
-                            continue
-                        if artist not in artist_rows:
-                            session.add(artist)
-                            session.flush()
-                        resolved_artist = artist
+                            artist = None
+                        else:
+                            if artist not in artist_rows:
+                                session.add(artist)
+                                session.flush()
+                            resolved_artist = artist
                     else:
                         # Artist match
                         artist = artist_rows[0]
@@ -218,9 +225,13 @@ class SyncPlugin(LoaderPlugin):
                     session.add(artist)
                     session.flush()
 
+                album = None
+                if artist is None:
+                    # see PromptExit
+                    continue
+
                 album_artist_id = artist.id if not is_various \
                                             else VARIOUS_ARTISTS_ID
-                album = None
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
                                                artist_id=album_artist_id).all()
@@ -253,7 +264,7 @@ class SyncPlugin(LoaderPlugin):
                 if not track:
                     track = Track(audio_file=audio_file)
                     self._num_added += 1
-                    print(fg.GREEN + "Adding track" + fg.RESET + ": " + path)
+                    print(fg.green("Adding track") + ": " + path)
                 else:
                     track.update(audio_file)
                     self._num_modified += 1
@@ -294,24 +305,29 @@ class SyncPlugin(LoaderPlugin):
                                              else album.artist,
                               session)
 
-            # Directory images.
-            for img_file in image_files:
-                basename, ext = os.path.splitext(os.path.basename(img_file))
-                for img_type in FILE_IMG_TYPE_MAP:
-                    if True in [fnmatch(basename.lower(), fname)
-                                for fname in FILE_IMG_TYPE_MAP[img_type]]:
-                        break
-                    img_type = None
+            if not album:
+                # Might not have this is not dups could be resolved.
+                pass
+            else:
+                # Directory images.
+                for img_file in image_files:
+                    basename, ext = os.path.splitext(os.path.basename(img_file))
+                    for img_type in FILE_IMG_TYPE_MAP:
+                        if True in [fnmatch(basename.lower(), fname)
+                                    for fname in FILE_IMG_TYPE_MAP[img_type]]:
+                            break
+                        img_type = None
 
-                if img_type is None:
-                    log.warn("Skipping unrecognized image file: %s" % img_file)
-                    continue
+                    if img_type is None:
+                        log.warn("Skipping unrecognized image file: %s" %
+                                  img_file)
+                        continue
 
-                new_img = Image.fromFile(img_file, img_type)
-                new_img.description = basename + ext
-                syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
-                                         else album.artist,
-                          session)
+                    new_img = Image.fromFile(img_file, img_type)
+                    new_img.description = basename + ext
+                    syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
+                                             else album.artist,
+                              session)
 
     def handleDone(self):
         t = time.time() - self.start_time

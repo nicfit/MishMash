@@ -79,3 +79,13 @@ def normalizeCountry(country_str, target="iso3c", title_case=False):
 def commonDirectoryPrefix(*args):
     return os.path.commonprefix(args).rpartition(os.path.sep)[0]
 
+
+def mostCommon(lst):
+    '''Choose the most common item from the list, or the first item if all
+    items are unique.'''
+    # This elegant solution from: http://stackoverflow.com/a/1518632/1760218
+    lst = [l for l in lst if l]
+    if lst:
+        return max(set(lst), key=lst.count)
+    else:
+        return None
