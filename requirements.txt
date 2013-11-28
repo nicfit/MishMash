@@ -1,4 +1,5 @@
-eyeD3>=0.7.5
+#eyeD3>=0.7.5
+hg+https://nicfit@bitbucket.org/nicfit/eyed3
 countrycode
 
 SQLAlchemy==0.8.3
