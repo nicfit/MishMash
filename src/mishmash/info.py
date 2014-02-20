@@ -1,5 +1,5 @@
 ################################################################################
-#  Copyright (C) 2013  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2013-2014  Travis Shirk <travis@pobox.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,13 +17,13 @@
 #
 ################################################################################
 
-NAME            = "@PROJECT@"
-VERSION         = "@VERSION@"
+NAME            = "mishmash"
+VERSION         = "0.3.0"
 VERSION_TUPLE   = tuple((int(v) for v in VERSION.split('.')))
-RELEASE         = "@RELEASE@"
-AUTHOR          = "@AUTHOR@"
-URL             = "@URL@"
-YEARS           = "2012-2013"
+RELEASE         = "alpha"
+AUTHOR          = "Travis Shirk"
+URL             = "http://mishmash.nicfit.net/"
+YEARS           = "2012-2014"
 VERSION_MSG     = """
 %(NAME)s %(VERSION)s-%(RELEASE)s (C) Copyright %(AUTHOR)s
 This program comes with ABSOLUTELY NO WARRANTY! See COPYING for details.

@@ -20,6 +20,7 @@
 from __future__ import print_function
 import os
 import re
+import sys
 from paver.easy import *
 from paver.path import path
 import paver.setuputils
@@ -32,20 +33,29 @@ try:
 except:
     paverutils = None
 
-PROJECT = u"mishmash"
-VERSION = "0.3.0-alpha"
+from os.path import dirname, abspath
+
+sys.path.insert(0, os.path.join(dirname(abspath(__file__)), "src"))
+from mishmash import info
+
+PROJECT = info.NAME
+VERSION = info.VERSION
+RELEASE = info.RELEASE
+FULL_VERSION = "%s%s" % (VERSION,
+                         "-%s" % RELEASE if (RELEASE and RELEASE != "final")
+                                         else "")
 
 LICENSE = open("COPYING", "r").read().strip('\n')
 DESCRIPTION = "Music database using Python and SQLAlchemy"
 LONG_DESCRIPTION = """
 FIXME
 """
-URL = "http://mishmash.nicfit.net"
-AUTHOR = "Travis Shirk"
+URL = info.URL
+AUTHOR = info.AUTHOR
 AUTHOR_EMAIL = "travis@pobox.com"
-SRC_DIST_TGZ = "%s-%s.tgz" % (PROJECT, VERSION)
+SRC_DIST_TGZ = "%s-%s.tgz" % (PROJECT, FULL_VERSION)
 SRC_DIST_ZIP = "%s.zip" % os.path.splitext(SRC_DIST_TGZ)[0]
-DOC_DIST = "%s_docs-%s.tgz" % (PROJECT, VERSION)
+DOC_DIST = "%s_docs-%s.tgz" % (PROJECT, FULL_VERSION)
 MD5_DIST = "%s.md5" % os.path.splitext(SRC_DIST_TGZ)[0]
 DOC_BUILD_D = "docs/_build"
 
@@ -65,7 +75,7 @@ options(
         extra_files=['doctools', "version"]
     ),
     setup=Bunch(
-        name=PROJECT, version=VERSION,
+        name=PROJECT, version=FULL_VERSION,
         description=DESCRIPTION, long_description=LONG_DESCRIPTION,
         author=AUTHOR, maintainer=AUTHOR,
         author_email=AUTHOR_EMAIL, maintainer_email=AUTHOR_EMAIL,
@@ -134,37 +144,8 @@ options(
     ),
 )
 
-
 @task
-@no_help
-def info_module():
-    '''Convert src/mishmash//info.py.in to src/mishmash//info.py'''
-    src = path("./src/mishmash//info.py.in")
-    target = path("./src/mishmash//info.py")
-    if target.exists() and not src.exists():
-        return
-    elif not src.exists():
-        raise Exception("Missing src/mishmash//info.py.in")
-    elif not target.exists() or src.ctime > target.ctime:
-        src_file = src.open("r")
-        target_file = target.open("w")
-
-        src_data = re.sub("@PROJECT@", PROJECT, src_file.read())
-        src_data = re.sub("@VERSION@", VERSION.split('-')[0], src_data)
-        src_data = re.sub("@AUTHOR@", AUTHOR, src_data)
-        src_data = re.sub("@URL@", URL, src_data)
-        if '-' in VERSION:
-            src_data = re.sub("@RELEASE@", VERSION.split('-')[1], src_data)
-        else:
-            src_data = re.sub("@RELEASE@", "final", src_data)
-
-        target_file.write(src_data)
-        target_file.close()
-
-
-@task
-@needs("info_module",
-       "generate_setup",
+@needs("generate_setup",
        "minilib",
        "setuptools.command.build")
 def build():
@@ -244,7 +225,6 @@ def docs(options):
 
 @task
 @needs("distclean",
-       "info_module",
        "generate_setup",
        "minilib",
        "setuptools.command.sdist",
@@ -383,7 +363,7 @@ def release(options):
     # Ensure we're on stable branch
     sh("test $(hg branch) = 'stable'")
 
-    if not prompt("Is version *%s* correct?" % VERSION):
+    if not prompt("Is version *%s* correct?" % FULL_VERSION):
         print("Fix VERSION")
         return
 
@@ -409,8 +389,8 @@ def release(options):
     uncog()
     test_dist()
 
-    if prompt("Tag release 'v%s'?" % VERSION) and not testing:
-        sh("hg tag v%s" % VERSION)
+    if prompt("Tag release 'v%s'?" % FULL_VERSION) and not testing:
+        sh("hg tag v%s" % FULL_VERSION)
         # non-zero returned for success, it appears, ignore. but why not above?
         sh("hg commit -m 'tagged release'", ignore_error=True)
 
@@ -489,8 +469,6 @@ __builtins__["cog_pluginHelp"] = cog_pluginHelp
 # XXX: modified from paver.doctools._runcog to add includers
 def _runcog(options, uncog=False):
     '''Common function for the cog and runcog tasks.'''
-
-    info_module()
 
     import cogapp
     options.order('cog', 'sphinx', add_rest=True)
