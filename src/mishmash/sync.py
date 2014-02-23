@@ -118,6 +118,43 @@ class SyncPlugin(LoaderPlugin):
             if mt and mt.startswith("image/"):
                 self._dir_images.append(f)
 
+    def _getArtist(self, session, name, resolved_artist):
+        artist_rows = session.query(Artist).filter_by(name=name).all()
+        if artist_rows:
+            if len(artist_rows) > 1 and resolved_artist:
+                # Use previously resolved artist for this directory.
+                artist = resolved_artist
+            elif len(artist_rows) > 1:
+                # FIXME
+                import ipdb; ipdb.set_trace()
+                # Resolve artist
+                # FIXME: color and heading
+                try:
+                    heading = "Multiple artists names '%s'" % \
+                              artist_rows[0].name
+                    artist = console.selectArtist(fg.blue(heading),
+                                                  choices=artist_rows,
+                                                  allow_create=True)
+                except PromptExit:
+                    log.warn("Duplicate artist requires user "
+                             "intervention to resolve.")
+                    artist = None
+                else:
+                    if artist not in artist_rows:
+                        session.add(artist)
+                        session.flush()
+                    resolved_artist = artist
+            else:
+                # Artist match
+                artist = artist_rows[0]
+        else:
+            # New artist
+            artist = Artist(name=name)
+            session.add(artist)
+            session.flush()
+
+        return artist, resolved_artist
+
     def handleDirectory(self, d, _):
         audio_files = list(self._file_cache)
         self._file_cache = []
@@ -131,13 +168,21 @@ class SyncPlugin(LoaderPlugin):
         d_datetime = datetime.fromtimestamp(getctime(d))
 
         # This directory of files can be:
-        # 1) an album by a single artist (tag.artist and tag.album all equal)
+        # 1) an album by a single artist (tag.artist, or tag.albun_srtist and
+        #    tag.album all equal)
         # 2) a comp (tag.album equal, tag.artist differ)
         # 3) not associated with a collection (tag.artist and tag.album differ)
         artists = set([f.tag.artist for f in audio_files if f.tag])
+        album_artists = set([f.tag.album_artist for f in audio_files if f.tag])
         albums = set([f.tag.album for f in audio_files if f.tag])
-        is_album = len(artists) == 1 and len(albums) == 1
-        is_various = len(artists) > 1 and len(albums) == 1
+        for s in artists, album_artists, albums:
+            if None in s:
+                s.remove(None)
+
+        is_album = (len(artists) == 1 or
+                    len(album_artists) == 1) and len(albums) == 1
+        is_various = (len(artists) > 1 and len(album_artists) == 0 and
+                      len(albums) == 1)
 
         def type_hint():
             hints = set()
@@ -159,6 +204,7 @@ class SyncPlugin(LoaderPlugin):
 
         # Used when a duplicate artist is resolved for the entire directory.
         resolved_artist = None
+        resolved_album_artist = None
 
         session = self.DBSession()
         with session.begin():
@@ -191,47 +237,23 @@ class SyncPlugin(LoaderPlugin):
                 # Either adding the track (track == None)
                 # or modifying (track != None)
 
-                artist_rows = session.query(Artist).filter_by(name=tag.artist)\
-                                                   .all()
-                if artist_rows:
-                    if len(artist_rows) > 1 and resolved_artist:
-                        # Use previously resolved artist for this directory.
-                        artist = resolved_artist
-                    elif len(artist_rows) > 1:
-                        # Resolve artist
-                        # FIXME: color and heading
-                        # FIXME: show direcory, otherwise no way to choose
-                        try:
-                            heading = "Multiple artists names '%s'" % \
-                                      artist_rows[0].name
-                            artist = console.selectArtist(fg.blue(heading),
-                                                          choices=artist_rows,
-                                                          allow_create=True)
-                        except PromptExit:
-                            log.warn("Duplicate artist requires user "
-                                     "intervention to resolve.")
-                            artist = None
-                        else:
-                            if artist not in artist_rows:
-                                session.add(artist)
-                                session.flush()
-                            resolved_artist = artist
-                    else:
-                        # Artist match
-                        artist = artist_rows[0]
+                artist, resolved_artist = self._getArtist(session, tag.artist,
+                                                          resolved_artist)
+
+                if tag.album_artist and tag.artist != tag.album_artist:
+                    album_artist, resolved_album_artist = \
+                            self._getArtist(session, tag.album_artist,
+                                            resolved_album_artist)
                 else:
-                    # New artist
-                    artist = Artist(name=tag.artist)
-                    session.add(artist)
-                    session.flush()
+                    album_artist = artist
 
                 album = None
                 if artist is None:
                     # see PromptExit
                     continue
 
-                album_artist_id = artist.id if not is_various \
-                                            else VARIOUS_ARTISTS_ID
+                album_artist_id = album_artist.id if not is_various \
+                                                  else VARIOUS_ARTISTS_ID
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
                                                artist_id=album_artist_id).all()

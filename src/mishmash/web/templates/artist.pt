@@ -2,7 +2,7 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<div id="artist_header">
+<div id="artist-header">
   <h3>${artist.name}</h3>
   <span tal:condition="artist.origin()">formed in ${artist.origin()}</span>
 </div>
@@ -22,6 +22,7 @@
     <th tal:condition="active_albums"></th>
     <th tal:condition="active_albums or active_singles">Title</th>
     <th tal:condition="active_albums">Date</th>
+    <th tal:condition="active_singles">Appears on</th>
   </tr>
   <tr tal:condition="active_albums" tal:repeat="album active_albums">
     <td>${panel('album_cover', album, size=64, link=True)}</td>
@@ -32,6 +33,11 @@
   </tr>
   <tr tal:condition="active_singles" tal:repeat="track active_singles">
     <td tal:content="track.title">Track Title</td>
+    <td tal:condition="active_singles">
+      <a tal:condition="track.album"
+         tal:content="track.album.title"
+         href="${request.route_url('album', id=track.album.id)}">Album Title</a>
+    </td>
   </tr>
 </table>
 
