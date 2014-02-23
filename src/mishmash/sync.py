@@ -125,10 +125,7 @@ class SyncPlugin(LoaderPlugin):
                 # Use previously resolved artist for this directory.
                 artist = resolved_artist
             elif len(artist_rows) > 1:
-                # FIXME
-                import ipdb; ipdb.set_trace()
                 # Resolve artist
-                # FIXME: color and heading
                 try:
                     heading = "Multiple artists names '%s'" % \
                               artist_rows[0].name
