@@ -7,6 +7,13 @@ img.shadow {
     box-shadow: 3px 3px 8px #222;
 }
 
+/* artist view (artist.pt) */
 #artist-header {
-    padding-bottom: 25px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/* album view (album.pt) */
+.track-artists {
+    font-size: 0.70;
 }

@@ -43,7 +43,18 @@
       </tr>
       <tr tal:repeat="track album.tracks">
         <td tal:content="track.track_num">#</td>
-        <td tal:content="track.title">Track Title</td>
+        <td>
+          <span tal:replace="track.title">Track Title</span>
+          <tal:block tal:condition="track.artist.id != album.artist.id">
+            (&nbsp;featuring
+            <a class="track-artists"
+               tal:content="track.artist.name"
+               href="${request.route_url('artist', id=track.artist.id)}">
+               Artist
+            </a>
+            &nbsp;)
+          </tal:block>
+        </td>
         <td tal:condition="album.type == 'various'">
           <a tal:content="track.artist.name"
              href="${request.route_url('artist', id=track.artist.id)}">

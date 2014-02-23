@@ -158,14 +158,26 @@ class Artist(Base, OrmObject):
 
     def getAlbumsByType(self, album_type):
         if album_type != VARIOUS_TYPE:
-            return [a for a in self.albums if a.type == album_type]
+            albums = [a for a in self.albums if a.type == album_type]
         else:
             albums = set([t.album for t in self.tracks
                                   if t.album and t.album.type == album_type])
-            return list(albums)
+            albums = list(albums)
+
+        return albums
 
     def getTrackSingles(self):
-        return [t for t in self.tracks if t.album_id is None]
+        tracks = []
+        for t in self.tracks:
+            if t.album_id is None:
+                # Include single files, not associated with an album
+                tracks.append(t)
+            elif t.album and t.album.artist_id != self.id:
+                # Include tracks that the artist appears on.
+                tracks.append(t)
+
+        return tracks
+
 
     @property
     def url_name(self):
