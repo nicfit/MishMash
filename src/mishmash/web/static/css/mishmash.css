@@ -6,3 +6,7 @@ body {
 img.shadow {
     box-shadow: 3px 3px 8px #222;
 }
+
+#artist-header {
+    padding-bottom: 25px;
+}
