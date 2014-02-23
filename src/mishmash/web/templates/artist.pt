@@ -2,9 +2,9 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<div style="padding-bottom:25px">
+<div id="artist_header">
   <h3>${artist.name}</h3>
-  <span tal:condition="artist.origin">formed in ${artist.origin()}</span>
+  <span tal:condition="artist.origin()">formed in ${artist.origin()}</span>
 </div>
 
 <ul class="nav nav-tabs">
