@@ -38,7 +38,7 @@ from .console import promptArtist, selectArtist
 
 from .orm import Track, Artist, Album, Meta, Label
 from .log import log
-from .util import normalizeCountry, mostCommon
+from .util import normalizeCountry, mostCommon, commonDirectoryPrefix
 
 
 _cmds = []
@@ -356,11 +356,14 @@ class SplitArtists(Command):
             # New Artist objects need IDs
             session.flush()
 
-            # FIXME: fix colors 
             printMsg(Style.bright("\nAssign albums to the correct artist."))
             for i, a in enumerate(new_artists):
-                printMsg("Enter %d for %s from %s" %
-                         (i + 1, a.name, a.origin()))
+                printMsg("Enter %s%d%s for %s from %s%s%s" %
+                         (Style.BRIGHT, i + 1, Style.RESET_BRIGHT,
+                          a.name,
+                          Style.BRIGHT, a.origin(country_code="iso3c",
+                                                 title_case=False),
+                          Style.RESET_BRIGHT))
 
             # prompt for correct artists
             def _promptForArtist(_text):
@@ -370,7 +373,11 @@ class SplitArtists(Command):
 
             print("")
             for alb in albums:
-                a = _promptForArtist(alb.title)
+                # Get some of the path to help the decision
+                path = commonDirectoryPrefix(*[t.path for t in alb.tracks])
+                path = os.path.join(*path.split(os.sep)[-2:])
+
+                a = _promptForArtist("%s (%s)" % (alb.title, path))
                 if alb.type != "various":
                     alb.artist_id = a.id
                 for track in alb.tracks:
