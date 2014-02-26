@@ -15,7 +15,8 @@ from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
                         DEMO_TYPE)
 
 from .. import __version__ as VERSION
-_vars = {"project_name": "MishMash",
+from .. import __projectname__ as PROJECT_NAME
+_vars = {"project_name": PROJECT_NAME,
          "project_version": VERSION,
         }
 

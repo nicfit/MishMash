@@ -35,7 +35,7 @@ def find_packages(path, src):
 setup(
     name='mishmash',
     version='0.1.0',
-    description='Python Boilerplate contains all the boilerplate you need to create a Python package.',
+    description='Python music database.',
     long_description=readme + '\n\n' + history,
     author='Travis Shirk',
     author_email='travis@pobox.com',
@@ -47,15 +47,16 @@ setup(
     zip_safe=False,
     keywords='mishmash',
     classifiers=[
+        # FIXME
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GPL License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
+#        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
+#        'Programming Language :: Python :: 3',
+#        'Programming Language :: Python :: 3.3',
     ],
     test_suite='tests',
 )

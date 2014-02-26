@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use mishmash in a project::
+To use MishMash in a project::
 
 	import mishmash
