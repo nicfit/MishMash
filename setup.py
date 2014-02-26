@@ -14,6 +14,13 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 install_requires = []
+with open("requirements.txt") as requirements:
+    for req in requirements:
+        req = req.strip()
+        if req and req[0] not in ('#',):
+            install_requires.append(req)
+print install_requires
+
 
 def find_packages(path, src):
     packages = []
