@@ -36,8 +36,8 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-mishmash could always use more documentation, whether as
-part of the official mishmash docs, in docstrings, or
+MishMash could always use more documentation, whether as
+part of the official MishMash docs, in docstrings, or
 even on the web in blog posts, articles, and such.
 
 Submit Feedback

@@ -19,7 +19,7 @@
 ################################################################################
 import random
 from pyramid_layout.panel import panel_config
-from .. import __version__, __years__
+from .. import __version__, __years__, __projectname__
 from .. import orm
 
 #from .layouts import Thing1, Thing2, LittleCat
@@ -51,9 +51,9 @@ def footer(context, request):
     return ("<footer>"
             "<p align='right'>%(NAME)s %(VERSION)s &copy; %(YEARS)s"
             "</footer>" %
-            dict(NAME="MishMash",
+            dict(NAME=__projectname__,
                  VERSION=__version__,
-                 YEARS=info.__years__))
+                 YEARS=__years__))
 
 
 @panel_config(name='album_cover')

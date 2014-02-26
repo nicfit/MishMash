@@ -12,6 +12,7 @@ MishMash
         :target: https://crate.io/packages/mishmash?version=latest
 
 
+Python music database.
 
 * Free software: GPL license
 * Documentation: http://mishmash.rtfd.org.

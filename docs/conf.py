@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'mishmash'
+project = u'MishMash'
 copyright = u'2014, Travis Shirk'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -198,7 +198,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'mishmash.tex', u'mishmash Documentation',
+  ('index', 'mishmash.tex', u'MishMash Documentation',
    u'Travis Shirk', 'manual'),
 ]
 
@@ -228,7 +228,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'mishmash', u'mishmash Documentation',
+    ('index', 'mishmash', u'MishMash Documentation',
      [u'Travis Shirk'], 1)
 ]
 
@@ -242,7 +242,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'mishmash', u'mishmash Documentation',
+  ('index', 'mishmash', u'MishMash Documentation',
    u'Travis Shirk', 'mishmash', 'One line description of project.',
    'Miscellaneous'),
 ]
