@@ -1,5 +1,6 @@
-paver==1.2.1
-nose
-coverage
-cogapp
+wheel
 tox
+Sphinx
+sphinxcontrib-bitbucket
+flake8
+coverage

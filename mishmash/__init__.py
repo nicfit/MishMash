@@ -17,4 +17,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+
+__author__ = 'Travis Shirk'
+__email__ = 'travis@pobox.com'
+__version__ = '0.1.0'
+__release__ = 'alpha'
+
 from .log import log

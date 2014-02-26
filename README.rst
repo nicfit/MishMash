@@ -1,19 +1,28 @@
+===============================
+MishMash
+===============================
 
-Requirements
-------------
-::
+.. image:: https://badge.fury.io/py/mishmash.png
+    :target: http://badge.fury.io/py/mishmash
 
-  $ pip install -r requirements.txt
+.. image:: https://travis-ci.org/nicfit/mishmash.png?branch=master
+        :target: https://travis-ci.org/nicfit/mishmash
 
-A virtual environment (especially useful for development) can be created with
-the provided helper script.::
-
-  $ ./mkenv.sh mishmash
-  $ workon mishmash
+.. image:: https://pypip.in/d/mishmash/badge.png
+        :target: https://crate.io/packages/mishmash?version=latest
 
 
-Usage
------
+
+* Free software: GPL license
+* Documentation: http://mishmash.rtfd.org.
+
+Features
+--------
+FIXME
+
+Misc Notes:
+~~~~~~~~~~~
+
 Database URL::
 
   sqlite:///:memory: (or, sqlite://)
@@ -39,16 +48,11 @@ Initialize the database tables with the ``init`` command.::
 
 
 postgresql
-----------
+~~~~~~~~~~
 ::
 
   $ su - postgres
   $ createuser -d -P <USER>
   $ exit
   $ createdb -U <USER> -T template0 -E UTF8 mishmash
-
-
-mishmash.web
-------------
-
 
