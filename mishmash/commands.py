@@ -474,7 +474,7 @@ _cmds.extend([Init, Sync, Info, Random, Search, List, Relocate,
 
 
 def makeCmdLineParser():
-    from .info import VERSION_MSG
+    from . import __version_txt__ as VERSION_MSG
     from os.path import expandvars
 
     parser = ArgumentParser(prog="mishmash", version=VERSION_MSG,

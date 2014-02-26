@@ -33,7 +33,7 @@ from eyed3.utils import guessMimetype
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
-from .info import VERSION
+from . import __version__ as VERSION
 
 
 VARIOUS_ARTISTS_NAME = u"Various Artists"
