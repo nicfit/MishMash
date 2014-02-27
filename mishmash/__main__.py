@@ -22,6 +22,7 @@ from __future__ import print_function
 import os
 import sys
 import getpass
+import logging
 from datetime import datetime
 
 from sqlalchemy import exc as sql_exceptions
@@ -50,6 +51,8 @@ def _pErr(subject, msg):
 
 def main():
     initLogging()
+    log.setLevel(logging.ERROR)
+
     parser = makeCmdLineParser()
     parser.add_argument("--pdb", action="store_true", dest="debug_pdb",
                         help="Drop into 'pdb' when errors occur.")
