@@ -5,6 +5,8 @@ import sys
 
 from setuptools import setup
 
+import mishmash
+
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -19,8 +21,6 @@ with open("requirements.txt") as requirements:
         req = req.strip()
         if req and req[0] not in ('#',):
             install_requires.append(req)
-print install_requires
-
 
 def find_packages(path, src):
     packages = []
@@ -32,14 +32,16 @@ def find_packages(path, src):
                 packages.append(".".join(tokens))
     return packages
 
-setup(
-    name='mishmash',
-    version='0.1.0',
+# FIXME
+import ipdb; ipdb.set_trace()
+dist = setup(
+    name=mishmash.__projectname__,
+    version=mishmash.__version__,
     description='Python music database.',
     long_description=readme + '\n\n' + history,
-    author='Travis Shirk',
-    author_email='travis@pobox.com',
-    url='https://bitbucket.org/nicfit/mishmash',
+    author=mishmash.__author__,
+    author_email=mishmash.__email__,
+    url=mishmash.__web__,
     packages=find_packages('.','mishmash'),
     include_package_data=True,
     install_requires=install_requires,
@@ -60,3 +62,4 @@ setup(
     ],
     test_suite='tests',
 )
+
