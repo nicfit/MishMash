@@ -16,7 +16,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-import os
 
 from sqlalchemy import create_engine, or_
 from sqlalchemy.exc import OperationalError
@@ -72,6 +71,7 @@ def create(session, tables=None):
             if T.__tablename__ == table.name:
                 with session.begin():
                     T.initTable(session)
+
 
 def dropAll(engine):
 

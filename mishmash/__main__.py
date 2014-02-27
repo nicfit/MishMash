@@ -19,18 +19,14 @@
 ################################################################################
 from __future__ import print_function
 
-import os
 import sys
-import getpass
 import logging
-from datetime import datetime
 
 from sqlalchemy import exc as sql_exceptions
 
 import eyed3
 eyed3.require("0.7.5")
 
-import eyed3.main
 from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
@@ -56,6 +52,7 @@ def main():
     parser = makeCmdLineParser()
     parser.add_argument("--pdb", action="store_true", dest="debug_pdb",
                         help="Drop into 'pdb' when errors occur.")
+
     def _pdb(_args):
         '''used to optionally break into pdb'''
         if _args.debug_pdb:

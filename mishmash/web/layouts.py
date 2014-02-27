@@ -23,7 +23,7 @@ from pyramid_layout.layout import layout_config
 @layout_config(
     name='main-layout',
     template='mishmash.web:templates/layouts/main-layout.pt'
-    )
+)
 class AppLayout(object):
 
     def __init__(self, context, request):

@@ -21,8 +21,6 @@ import os
 from datetime import datetime
 from hashlib import md5
 
-from countrycode import countrycode
-
 import sqlalchemy as sql
 from sqlalchemy import orm, event, types
 from sqlalchemy.engine import Engine
@@ -178,7 +176,6 @@ class Artist(Base, OrmObject):
 
         return tracks
 
-
     @property
     def url_name(self):
         return self.name.replace("/", "%2f")
@@ -219,7 +216,6 @@ class Artist(Base, OrmObject):
                 return False
             vals.append(v)
         return True
-
 
 
 class AlbumDate(TypeDecorator):
@@ -394,12 +390,10 @@ class Image(Base, OrmObject):
                      data=data)
 
 
-TYPES  = [Meta, Label, Artist, Album, Track, Image]
+TYPES = [Meta, Label, Artist, Album, Track, Image]
 LABELS = [artist_labels, album_labels, track_labels,
           artist_images, album_images]
 TABLES = [T.__table__ for T in TYPES] + LABELS
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''
 ENUMS = [Image._types_enum, Album._types_enum]
-
-

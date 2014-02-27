@@ -19,13 +19,15 @@
 ################################################################################
 import logging
 
+log = logging.getLogger("mishmash")
+
+
 class DefaultFormatter(logging.Formatter):
     DEFAULT_FORMAT = '<%(name)s> [%(levelname)s]: %(message)s'
 
     def __init__(self):
         logging.Formatter.__init__(self, self.DEFAULT_FORMAT)
 
-log = logging.getLogger("mishmash")
 
 def initLogging():
     console_handler = logging.StreamHandler()
