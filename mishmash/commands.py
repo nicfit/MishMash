@@ -19,8 +19,7 @@
 ################################################################################
 from __future__ import print_function
 
-import os, sys
-import getpass
+import os
 from argparse import Namespace
 
 import eyed3

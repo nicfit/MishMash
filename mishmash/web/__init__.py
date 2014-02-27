@@ -82,7 +82,6 @@ def main(global_config, **main_settings):
         print("\nRun `mishmash init`")
         sys.exit(1)
 
-
     config = _configure(main_settings, DBSession)
 
     return config.make_wsgi_app()

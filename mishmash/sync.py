@@ -20,9 +20,7 @@
 from __future__ import print_function
 
 import os
-import sys
 import time
-import logging
 from os.path import getctime
 from datetime import datetime
 from fnmatch import fnmatch
@@ -79,8 +77,8 @@ TAG_IMG_TYPE_MAP = {
 #    PUBLISHER_LOGO      = 0x14
 
 IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
-               "album" : (Image.FRONT_COVER_TYPE, Image.BACK_COVER_TYPE,
-                          Image.MISC_COVER_TYPE),
+               "album": (Image.FRONT_COVER_TYPE, Image.BACK_COVER_TYPE,
+                         Image.MISC_COVER_TYPE),
               }
 
 
@@ -398,7 +396,7 @@ def deleteOrphans(session):
                 artist.id in found_ids):
             continue
 
-        any_track = session.query(Track).filter(Track.artist_id==artist.id)\
+        any_track = session.query(Track).filter(Track.artist_id == artist.id) \
                                         .first()
         if not any_track:
             log.warn("Deleting artist: %s" % str(artist))
@@ -415,7 +413,7 @@ def deleteOrphans(session):
         if album.id in found_ids:
             continue
 
-        any_track = session.query(Track).filter(Track.album_id==album.id)\
+        any_track = session.query(Track).filter(Track.album_id == album.id) \
                                         .first()
         if not any_track:
             log.warn("Deleting album: %s" % str(album))
@@ -453,5 +451,3 @@ def syncImage(img, current, session):
         # Add image
         current.images.append(img)
         session.add(current)
-
-

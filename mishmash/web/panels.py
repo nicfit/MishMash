@@ -36,14 +36,12 @@ def navbar(context, request):
                    )
         return item
 
-    nav = [
-        nav_item('Artists', request.route_url('all_artists')),
-        nav_item('New Music', request.route_url("new_music"))
-        ]
-    return {
-        'title': 'Mishmash',
-        'nav': nav,
-        }
+    nav = [nav_item('Artists', request.route_url('all_artists')),
+           nav_item('New Music', request.route_url("new_music")),
+          ]
+    return {'title': 'Mishmash',
+            'nav': nav,
+           }
 
 
 @panel_config(name='footer')
@@ -75,4 +73,3 @@ def album_cover(context, request, album, size=None, link=False):
                 (request.route_url('album', id=album.id), panel)
 
     return panel
-

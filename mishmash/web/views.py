@@ -1,6 +1,5 @@
 import os
 import random
-import urllib2
 
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -20,7 +19,6 @@ _vars = {"project_name": PROJECT_NAME,
          "project_version": VERSION,
         }
 
-from .models import DBSession
 from ..orm import Artist, Album, Image
 from .. import database
 from .. import util
@@ -50,6 +48,7 @@ TYPE_DISPLAY_NAMES[ALL_TYPE] = "All"
              layout="main-layout")
 def home_view(request):
     return ResponseDict()
+
 
 @view_config(route_name="all_artists", renderer="templates/artists.pt",
              layout="main-layout")

@@ -20,7 +20,8 @@
 from pyramid.events import subscriber
 from pyramid.events import ApplicationCreated
 
+
 @subscriber(ApplicationCreated)
 def appCreated(event):
-    # Initialize, or upgrade, the database
+    # TODO: Initialize, or upgrade, the database
     print('FIXME...')
