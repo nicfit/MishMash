@@ -1,5 +1,5 @@
 .PHONY: clean-pyc clean-build clean-patch docs clean help lint test test-all \
-        coverage docs release dist 
+        coverage docs release dist tags
 
 help:
 	@echo "clean-build - remove build artifacts"
@@ -12,6 +12,7 @@ help:
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
 	@echo "dist - package"
+	@echo "tags - generate source code tags index"
 
 clean: clean-build clean-pyc clean-patch
 	rm -fr htmlcov/
@@ -62,3 +63,6 @@ dist: clean
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
+
+tags:
+	ctags -R ./mishmash ./tests
