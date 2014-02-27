@@ -384,9 +384,10 @@ def deleteOrphans(session):
     # Tracks
     for track in session.query(Track).all():
         if not os.path.exists(track.path):
-            log.warn("Deleting track: %s" % str(track))
+            print(fg.red("Removing track") + ": " + track.path)
             session.delete(track)
             num_orphaned_tracks += 1
+            log.warn("Deleting track: %s" % str(track))
 
     session.flush()
 
