@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ################################################################################
-#  Copyright (C) 2013  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2013-2014  Travis Shirk <travis@pobox.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,10 +18,7 @@
 #
 ################################################################################
 from eyed3.utils.prompt import prompt, parseIntList
-from eyed3.utils.console import (
-        Fore as fg,
-        Style as st,
-        )
+from eyed3.utils.console import Fore as fg
 from .orm import Artist
 
 
