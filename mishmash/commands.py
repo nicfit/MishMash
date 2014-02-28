@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ################################################################################
-#  Copyright (C) 2013  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2013-2014  Travis Shirk <travis@pobox.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ import eyed3.main
 from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
 from eyed3.utils.console import printMsg, Style
-from eyed3.utils.console import Fore as fg, Back as bg
+from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import prompt
 from eyed3.core import VARIOUS_TYPE
 
@@ -36,7 +36,6 @@ from . import database
 from .console import promptArtist, selectArtist
 
 from .orm import Track, Artist, Album, Meta, Label
-from .log import log
 from .util import normalizeCountry, mostCommon, commonDirectoryPrefix
 
 

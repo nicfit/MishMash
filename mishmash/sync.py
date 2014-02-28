@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ################################################################################
-#  Copyright (C) 2013  Travis Shirk <travis@pobox.com>
+#  Copyright (C) 2013-2014  Travis Shirk <travis@pobox.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils import guessMimetype
 from eyed3.utils.console import printMsg
-from eyed3.utils.console import Fore as fg, Style as st
+from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE
 
@@ -174,8 +174,6 @@ class SyncPlugin(LoaderPlugin):
             if None in s:
                 s.remove(None)
 
-        is_album = (len(artists) == 1 or
-                    len(album_artists) == 1) and len(albums) == 1
         is_various = (len(artists) > 1 and len(album_artists) == 0 and
                       len(albums) == 1)
 
