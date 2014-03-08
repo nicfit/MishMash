@@ -29,7 +29,7 @@ from sqlalchemy import desc
 from eyed3.utils import formatTime
 from eyed3.core import ALBUM_TYPE_IDS
 from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
-                        DEMO_TYPE)
+                        DEMO_TYPE, SINGLE_TYPE)
 
 from .. import __version__ as VERSION
 from .. import __projectname__ as PROJECT_NAME
@@ -54,11 +54,10 @@ TYPE_DISPLAY_NAMES = {LP_TYPE: "LPs",
                       VARIOUS_TYPE: "Various Artists",
                       LIVE_TYPE: "Live",
                       DEMO_TYPE: "Demos",
+                      SINGLE_TYPE: "Singles",
                      }
 # Not in eyeD3
-SINGLE_TYPE = "Single"
 ALL_TYPE = "All"
-TYPE_DISPLAY_NAMES[SINGLE_TYPE] = "Singles"
 TYPE_DISPLAY_NAMES[ALL_TYPE] = "All"
 
 
@@ -136,7 +135,7 @@ def artistView(request):
             return artist.getAlbumsByType(typ)
 
     albums = list(artist.albums)
-    all_tabs = ALBUM_TYPE_IDS + [SINGLE_TYPE, ALL_TYPE]
+    all_tabs = ALBUM_TYPE_IDS + [ALL_TYPE]
 
     active_albums = []
     active_singles = []

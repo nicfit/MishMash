@@ -155,12 +155,12 @@ class Artist(Base, OrmObject):
             raise RuntimeError("Unable to provision various artists")
 
     def getAlbumsByType(self, album_type):
-        if album_type != VARIOUS_TYPE:
-            albums = [a for a in self.albums if a.type == album_type]
-        else:
+        if album_type == VARIOUS_TYPE:
             albums = set([t.album for t in self.tracks
                                   if t.album and t.album.type == album_type])
             albums = list(albums)
+        else:
+            albums = [a for a in self.albums if a.type == album_type]
 
         return albums
 
