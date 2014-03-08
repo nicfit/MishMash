@@ -33,7 +33,7 @@ from eyed3.utils import guessMimetype
 from eyed3.utils.console import printMsg
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
-from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE
+from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
 from .orm import (Track, Artist, Album, Label, Meta, Image,
                   VARIOUS_ARTISTS_ID)
@@ -232,49 +232,52 @@ class SyncPlugin(LoaderPlugin):
 
                 artist, resolved_artist = self._getArtist(session, tag.artist,
                                                           resolved_artist)
-
-                if tag.album_artist and tag.artist != tag.album_artist:
-                    album_artist, resolved_album_artist = \
-                            self._getArtist(session, tag.album_artist,
-                                            resolved_album_artist)
-                else:
-                    album_artist = artist
-
                 album = None
-                if artist is None:
-                    # see PromptExit
-                    continue
 
-                album_artist_id = album_artist.id if not is_various \
-                                                  else VARIOUS_ARTISTS_ID
-                album_rows = session.query(Album)\
-                                    .filter_by(title=tag.album,
-                                               artist_id=album_artist_id).all()
-                rel_date = tag.release_date
-                rec_date = tag.recording_date
-                or_date = tag.original_release_date
+                if tag.album_type != SINGLE_TYPE:
+                    if tag.album_artist and tag.artist != tag.album_artist:
+                        album_artist, resolved_album_artist = \
+                                self._getArtist(session, tag.album_artist,
+                                                resolved_album_artist)
+                    else:
+                        album_artist = artist
 
-                if album_rows:
-                    if len(album_rows) > 1:
-                        # This artist has more than one album with the same
-                        # title.
-                        raise NotImplementedError("FIXME")
-                    album = album_rows[0]
+                    if artist is None:
+                        # see PromptExit
+                        continue
 
-                    album.type = album_type
-                    album.release_date = rel_date
-                    album.original_release_date = or_date
-                    album.recording_date = rec_date
-                elif tag.album:
-                    album = Album(title=tag.album, artist_id=album_artist_id,
-                                  type=album_type,
-                                  release_date=rel_date,
-                                  original_release_date=or_date,
-                                  recording_date=rec_date,
-                                  date_added=d_datetime)
-                    session.add(album)
+                    album_artist_id = album_artist.id if not is_various \
+                                                      else VARIOUS_ARTISTS_ID
+                    album_rows = session.query(Album)\
+                                        .filter_by(title=tag.album,
+                                                   artist_id=album_artist_id)\
+                                        .all()
+                    rel_date = tag.release_date
+                    rec_date = tag.recording_date
+                    or_date = tag.original_release_date
 
-                session.flush()
+                    if album_rows:
+                        if len(album_rows) > 1:
+                            # This artist has more than one album with the same
+                            # title.
+                            raise NotImplementedError("FIXME")
+                        album = album_rows[0]
+
+                        album.type = album_type
+                        album.release_date = rel_date
+                        album.original_release_date = or_date
+                        album.recording_date = rec_date
+                    elif tag.album:
+                        album = Album(title=tag.album,
+                                      artist_id=album_artist_id,
+                                      type=album_type,
+                                      release_date=rel_date,
+                                      original_release_date=or_date,
+                                      recording_date=rec_date,
+                                      date_added=d_datetime)
+                        session.add(album)
+
+                    session.flush()
 
                 if not track:
                     track = Track(audio_file=audio_file)
@@ -303,27 +306,26 @@ class SyncPlugin(LoaderPlugin):
                     track.labels.append(label)
                 session.add(track)
 
-                # Tag images
-                for img in tag.images:
-                    for img_type in TAG_IMG_TYPE_MAP:
-                        if img.picture_type in TAG_IMG_TYPE_MAP[img_type]:
-                            break
-                        img_type = None
+                if album:
+                    # Tag images
+                    for img in tag.images:
+                        for img_type in TAG_IMG_TYPE_MAP:
+                            if img.picture_type in TAG_IMG_TYPE_MAP[img_type]:
+                                break
+                            img_type = None
 
-                    if img_type is None:
-                        log.warn("Skipping unsupported image type: %s" %
-                                 img.picture_type)
-                        continue
+                        if img_type is None:
+                            log.warn("Skipping unsupported image type: %s" %
+                                     img.picture_type)
+                            continue
 
-                    new_img = Image.fromTagFrame(img, img_type)
-                    syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
-                                             else album.artist,
-                              session)
+                        new_img = Image.fromTagFrame(img, img_type)
+                        syncImage(new_img,
+                                  album if img_type in IMAGE_TYPES["album"]
+                                        else album.artist,
+                                  session)
 
-            if not album:
-                # Might not have this is not dups could be resolved.
-                pass
-            else:
+            if album:
                 # Directory images.
                 for img_file in image_files:
                     basename, ext = os.path.splitext(os.path.basename(img_file))

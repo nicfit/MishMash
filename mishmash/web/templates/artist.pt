@@ -19,7 +19,7 @@
 
 <table class="table table-condensed table-striped">
   <tr>
-    <th tal:condition="active_albums"></th>
+    <th tal:condition="active_albums"></th> <!-- Album art column -->
     <th tal:condition="active_albums or active_singles">Title</th>
     <th tal:condition="active_albums">Date</th>
     <th tal:condition="active_singles">Appears on</th>
