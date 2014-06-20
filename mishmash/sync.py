@@ -29,7 +29,6 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
-from eyed3.utils import guessMimetype
 from eyed3.utils.console import printMsg
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
@@ -88,7 +87,8 @@ class SyncPlugin(LoaderPlugin):
     DESCRIPTION = u""
 
     def __init__(self, arg_parser):
-        super(SyncPlugin, self).__init__(arg_parser, cache_files=True)
+        super(SyncPlugin, self).__init__(arg_parser, cache_files=True,
+                                         track_images=True)
 
         self.arg_group.add_argument(
                 "--no-prompt", action="store_true", dest="no_prompt",
@@ -98,7 +98,6 @@ class SyncPlugin(LoaderPlugin):
         self._num_modified = 0
         self._num_deleted = 0
         self.DBSession = None
-        self._dir_images = []
 
     def start(self, args, config):
         import eyed3.utils.prompt
@@ -107,14 +106,6 @@ class SyncPlugin(LoaderPlugin):
         super(SyncPlugin, self).start(args, config)
         self.start_time = time.time()
         self.DBSession = args.db_session
-
-    def handleFile(self, f, *args, **kwargs):
-        super(SyncPlugin, self).handleFile(f, *args, **kwargs)
-
-        if self.audio_file is None:
-            mt = guessMimetype(f)
-            if mt and mt.startswith("image/"):
-                self._dir_images.append(f)
 
     def _getArtist(self, session, name, resolved_artist):
         artist_rows = session.query(Artist).filter_by(name=name).all()
