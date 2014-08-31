@@ -53,7 +53,13 @@ postgresql
 ::
 
   $ su - postgres
-  $ createuser -d -P <USER>
+  $ createuser -d -P mishmash
   $ exit
-  $ createdb -U <USER> -T template0 -E UTF8 mishmash
+  $ createdb -U mishmash -T template0 -E UTF8 mishmash
+
+pserve
+~~~~~~
+::
+
+  $ pserve etc/development.ini
 
