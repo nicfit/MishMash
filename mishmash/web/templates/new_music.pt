@@ -2,9 +2,9 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<table tal:define="num_cols 5;
-                   num_rows int(ceil(len(albums) / float(num_cols)))"
-       cellpadding="10">
+<table class='table-unstyled table-condensed'
+       tal:define="num_cols 5;
+                   num_rows int(ceil(len(albums) / float(num_cols)))">
 
   <tr tal:repeat="row range(num_rows)">
     <td tal:repeat="col range(num_cols)">

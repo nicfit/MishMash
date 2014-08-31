@@ -3,7 +3,7 @@
 <!--! begin content -->
 
 <div class="row">
-  <div class="col-md-12" align="left">
+  <div class="col-md-12 text-center">
     <h3 tal:define="is_various album.type == 'various'">
       <a tal:condition="not is_various"
          href="${request.route_url('artist', id=album.artist.id)}">
@@ -33,7 +33,6 @@
     </div>
   </div>
   <div class="col-md-8" style="padding-left:30px">
-    <h4>Track list:</h4>
     <table class="table table-condensed table-striped">
       <tr>
         <th></th>

@@ -2,12 +2,15 @@
   <div metal:fill-slot="content">
 <!--! begin content -->
 
-<div align="center" style="padding-top:10px">
-  <span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
+<div class="row text-center">
+  <div class="col-xs-12">
+    <span tal:repeat="L artist_keys"><a href="#${L}">${L}</a>&nbsp;</span>
+  </div>
 </div>
 
-<span tal:repeat="L artist_keys"><a id='${L}'><strong>${L}</strong></a>
-  <ul>
+<span tal:repeat="L artist_keys">
+  <h3><a id='${L}'><strong>${L}</strong></a></h3>
+  <ul class='list-unstyled'>
     <li tal:repeat="artist artist_dict[L]">
       <a href="${request.route_url('artist', id=artist.id)}"
          tal:content="artist.sort_name">Artist</a>
