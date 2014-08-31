@@ -22,12 +22,13 @@ from __future__ import print_function
 import os
 from argparse import Namespace
 
-import eyed3
+from sqlalchemy.exc import ProgrammingError
 
+import eyed3
 import eyed3.main
 from eyed3.main import main as eyed3_main
 from eyed3.utils import ArgumentParser
-from eyed3.utils.console import printMsg, Style
+from eyed3.utils.console import printMsg, printError, Style
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import prompt
 from eyed3.core import VARIOUS_TYPE
@@ -57,7 +58,7 @@ class Command(object):
         return self._run()
 
     def _run(self):
-        raise Exception("Must implement the run() function")
+        raise NotImplementedError("Must implement the run() function")
 
     @staticmethod
     def initAll(subparsers):
@@ -145,7 +146,13 @@ class Info(Command):
 
         printMsg("\nDatabase:")
         printMsg("\tURI: %s" % self.args.db_uri)
-        meta = session.query(Meta).one()
+        try:
+            meta = session.query(Meta).one()
+        except ProgrammingError as ex:
+            printError("Error querying metadata. Database may not be "
+                       "imitialized (i.e. run 'mishmash init').")
+            return 1
+
         printMsg("\tVersion: %s" % meta.version)
         printMsg("\tLast Sync: %s" % meta.last_sync)
 
