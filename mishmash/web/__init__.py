@@ -35,7 +35,7 @@ def _configure(settings, DBSession):
         return DBSession
     config.add_request_method(_DBSession, name="DBSession", reify=True)
 
-    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('static', 'mishmash.web:static', cache_max_age=3600)
 
     config.add_route('all_artists', '/artists')
     config.add_route('artist', '/artist/{id:\d+}')
