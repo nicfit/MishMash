@@ -1,4 +1,4 @@
-eyeD3>=0.7.5
+eyeD3>=0.7.6
 #hg+https://bitbucket.org/nicfit/eyed3@stable#egg=eyeD3
 countrycode
 
