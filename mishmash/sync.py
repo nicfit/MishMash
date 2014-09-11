@@ -27,6 +27,7 @@ from fnmatch import fnmatch
 
 from sqlalchemy.orm.exc import NoResultFound
 
+from eyed3.utils import art
 from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils.console import printMsg
@@ -39,41 +40,6 @@ from .orm import (Track, Artist, Album, Label, Meta, Image,
 from .log import log
 from . import console
 
-
-FILE_IMG_TYPE_MAP = {
-        Image.FRONT_COVER_TYPE: ["cover-front", "cover-alternate*", "cover",
-                                 "folder", "front", "cover*-*front", "flier"],
-        Image.BACK_COVER_TYPE: ["cover-back", "cover*-*back"],
-        Image.MISC_COVER_TYPE: ["cover-insert*", "cover-liner*", "cover-disc",
-                                "cover-media*"],
-        Image.LOGO_TYPE: ["logo"],
-        Image.ARTIST_TYPE: ["artist*"],
-}
-'''Maps the orm Image ``type`` to a list of filenames for that type.'''
-
-TAG_IMG_TYPE_MAP = {
-        Image.FRONT_COVER_TYPE: [ImageFrame.FRONT_COVER, ImageFrame.OTHER,
-                                 ImageFrame.ICON, ImageFrame.LEAFLET],
-        Image.BACK_COVER_TYPE: [ImageFrame.BACK_COVER],
-        Image.MISC_COVER_TYPE: [ImageFrame.MEDIA],
-        Image.LOGO_TYPE: [ImageFrame.BAND_LOGO],
-        Image.ARTIST_TYPE: [ImageFrame.LEAD_ARTIST, ImageFrame.ARTIST,
-                            ImageFrame.BAND],
-        Image.LIVE_TYPE: [ImageFrame.DURING_PERFORMANCE,
-                          ImageFrame.DURING_RECORDING]
-}
-'''Maps the orm Image ``type`` to a list of ID3 image (APIC) picture types.'''
-
-# ID3 image types not mapped above:
-#    OTHER_ICON          = 0x02
-#    CONDUCTOR           = 0x09
-#    COMPOSER            = 0x0B
-#    LYRICIST            = 0x0C
-#    RECORDING_LOCATION  = 0x0D
-#    VIDEO               = 0x10
-#    BRIGHT_COLORED_FISH = 0x11
-#    ILLUSTRATION        = 0x12
-#    PUBLISHER_LOGO      = 0x14
 
 IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
                "album": (Image.FRONT_COVER_TYPE, Image.BACK_COVER_TYPE,
@@ -90,6 +56,11 @@ class SyncPlugin(LoaderPlugin):
         super(SyncPlugin, self).__init__(arg_parser, cache_files=True,
                                          track_images=True)
 
+        self.arg_group.add_argument(
+                "--no-purge", action="store_true", dest="no_purge",
+                help="Do not purge orphaned data (tracks, artists, albums, "
+                     "etc.). This will make for a faster sync, and useful when "
+                     "files were only added to a library.")
         self.arg_group.add_argument(
                 "--no-prompt", action="store_true", dest="no_prompt",
                 help="Skip files that require user input.")
@@ -129,6 +100,7 @@ class SyncPlugin(LoaderPlugin):
                     if artist not in artist_rows:
                         session.add(artist)
                         session.flush()
+                        print(fg.yellow("Updating artist") + ": " + name)
                     resolved_artist = artist
             else:
                 # Artist match
@@ -138,6 +110,7 @@ class SyncPlugin(LoaderPlugin):
             artist = Artist(name=name)
             session.add(artist)
             session.flush()
+            print(fg.green("Adding artist") + ": " + name)
 
         return artist, resolved_artist
 
@@ -258,6 +231,7 @@ class SyncPlugin(LoaderPlugin):
                         album.release_date = rel_date
                         album.original_release_date = or_date
                         album.recording_date = rec_date
+                        print(fg.yellow("Updating album") + ": " + album.title)
                     elif tag.album:
                         album = Album(title=tag.album,
                                       artist_id=album_artist_id,
@@ -267,6 +241,7 @@ class SyncPlugin(LoaderPlugin):
                                       recording_date=rec_date,
                                       date_added=d_datetime)
                         session.add(album)
+                        print(fg.green("Adding album") + ": " + album.title)
 
                     session.flush()
 
@@ -300,8 +275,8 @@ class SyncPlugin(LoaderPlugin):
                 if album:
                     # Tag images
                     for img in tag.images:
-                        for img_type in TAG_IMG_TYPE_MAP:
-                            if img.picture_type in TAG_IMG_TYPE_MAP[img_type]:
+                        for img_type in art.ID3_ART_TYPES:
+                            if img.picture_type in art.ID3_ART_TYPES[img_type]:
                                 break
                             img_type = None
 
@@ -319,20 +294,14 @@ class SyncPlugin(LoaderPlugin):
             if album:
                 # Directory images.
                 for img_file in image_files:
-                    basename, ext = os.path.splitext(os.path.basename(img_file))
-                    for img_type in FILE_IMG_TYPE_MAP:
-                        if True in [fnmatch(basename.lower(), fname)
-                                    for fname in FILE_IMG_TYPE_MAP[img_type]]:
-                            break
-                        img_type = None
-
+                    img_type = art.matchArtFile(img_file)
                     if img_type is None:
                         log.warn("Skipping unrecognized image file: %s" %
                                   img_file)
                         continue
 
                     new_img = Image.fromFile(img_file, img_type)
-                    new_img.description = basename + ext
+                    new_img.description = os.path.basename(img_file)
                     syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
                                              else album.artist,
                               session)
@@ -358,10 +327,11 @@ class SyncPlugin(LoaderPlugin):
             printMsg("%d files sync'd" % self._num_loaded)
             printMsg("%d tracks added" % self._num_added)
             printMsg("%d tracks modified" % self._num_modified)
-            printMsg("%d orphaned tracks deleted" % self._num_deleted)
-            printMsg("%d orphaned artists deleted" % num_orphaned_artists)
-            printMsg("%d orphaned albums deleted" % num_orphaned_albums)
-            printMsg("%fs time (%f/s)" % (t, self._num_loaded / t))
+            if not self.args.no_purge:
+                printMsg("%d orphaned tracks deleted" % self._num_deleted)
+                printMsg("%d orphaned artists deleted" % num_orphaned_artists)
+                printMsg("%d orphaned albums deleted" % num_orphaned_albums)
+            printMsg("%fs time (%f files/s)" % (t, self._num_loaded / t))
 
 
 def deleteOrphans(session):
@@ -389,7 +359,9 @@ def deleteOrphans(session):
 
         any_track = session.query(Track).filter(Track.artist_id == artist.id) \
                                         .first()
-        if not any_track:
+        any_album = session.query(Album).filter(Album.artist_id == artist.id) \
+                                        .first()
+        if not any_track and not any_album:
             log.warn("Deleting artist: %s" % str(artist))
             session.delete(artist)
             num_orphaned_artists += 1
@@ -418,9 +390,10 @@ def deleteOrphans(session):
 
 def syncImage(img, current, session):
     '''Add or updated the Image.'''
+    def _img_str(i):
+        return "%s - %s" % (i.type, i.description)
 
     for db_img in current.images:
-
         img_info = (img.type, img.md5, img.size)
         db_img_info = (db_img.type, db_img.md5, db_img.size)
 
@@ -435,6 +408,7 @@ def syncImage(img, current, session):
                 current.images.remove(db_img)
                 current.images.append(img)
                 session.add(current)
+                print(fg.green("Updating image") + ": " + _img_str(img))
             img = None
             break
 
@@ -442,3 +416,4 @@ def syncImage(img, current, session):
         # Add image
         current.images.append(img)
         session.add(current)
+        print(fg.green("Adding image") + ": " + _img_str(img))
