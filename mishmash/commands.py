@@ -22,7 +22,7 @@ from __future__ import print_function
 import os
 from argparse import Namespace
 
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, OperationalError
 
 import eyed3
 import eyed3.main
@@ -101,11 +101,6 @@ class Sync(Command):
     def __init__(self, subparsers=None):
         super(Sync, self).__init__("sync", "Syncronize music and database.",
                                    subparsers)
-        self.parser.add_argument(
-                "--no-purge", action="store_true", dest="no_purge",
-                help="Do not purge orphaned data (tracks, artists, albums, "
-                     "etc.). This will make for a faster sync, and useful when "
-                     "files were only added to a library.")
 
         from . import sync
         self.parser = eyed3.main.makeCmdLineParser(self.parser)
@@ -148,8 +143,8 @@ class Info(Command):
         printMsg("\tURI: %s" % self.args.db_uri)
         try:
             meta = session.query(Meta).one()
-        except ProgrammingError as ex:
-            printError("Error querying metadata. Database may not be "
+        except (ProgrammingError, OperationalError) as ex:
+            printError("\nError querying metadata. Database may not be "
                        "imitialized (i.e. run 'mishmash init').")
             return 1
 
