@@ -28,6 +28,7 @@ from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.declarative import declarative_base
 
 from eyed3.utils import guessMimetype
+from eyed3.utils import art
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
@@ -342,12 +343,12 @@ class Label(Base, OrmObject):
 class Image(Base, OrmObject):
     __tablename__ = "images"
 
-    FRONT_COVER_TYPE = "FRONT_COVER"
-    BACK_COVER_TYPE = "BACK_COVER"
-    MISC_COVER_TYPE = "MISC_COVER"
-    LOGO_TYPE = "LOGO"
-    ARTIST_TYPE = "ARTIST"
-    LIVE_TYPE = "LIVE"
+    FRONT_COVER_TYPE = art.FRONT_COVER
+    BACK_COVER_TYPE = art.BACK_COVER
+    MISC_COVER_TYPE = art.MISC_COVER
+    LOGO_TYPE = art.LOGO
+    ARTIST_TYPE = art.ARTIST
+    LIVE_TYPE = art.LIVE
     IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE, MISC_COVER_TYPE,
                    LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
