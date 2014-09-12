@@ -13,6 +13,7 @@ Details
 
    installation
    usage
+   modules
    contributing
    authors
    history

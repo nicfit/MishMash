@@ -15,8 +15,7 @@ Or, if you have virtualenvwrapper installed::
 
 Using a source distribution
 -----------------------------
-
-At the command line
+At the command line:
 
 .. parsed-literal::
 
@@ -26,7 +25,6 @@ At the command line
 
 From BitBucket
 --------------
-
 At the command line::
 
     $ hg clone https://bitbucket.org/nicfit/mishmash
@@ -36,3 +34,10 @@ At the command line::
 Additional dependencies should be installed if developing MishMish::
 
     $ pip install -r dev-requirements.txt
+
+Dependencies
+-------------
+All the required software dependencies are installed using either 
+``requirements.txt`` files or by ``python install setup.py``, including the
+Postgresql adapter ``psycopg2``. To try a different SQLAlchemy engine you must
+install it separately.
