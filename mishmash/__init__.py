@@ -26,7 +26,7 @@ __web__ = 'http://mishmash.nicfit.net/'
 __version__ = '0.1.0'
 __version_info__ = tuple((int(v) for v in __version__.split('.')))
 __release__ = 'alpha'
-__years__ = '2012-2014'
+__years__ = '2014'
 
 __version_txt__ = """
 %(__projectname__)s %(__version__)s-%(__release__)s (C) Copyright %(__author__)s

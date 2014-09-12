@@ -35,7 +35,7 @@ def find_packages(path, src):
 dist = setup(
     name=mishmash.__projectname__,
     version=mishmash.__version__,
-    description='Python music database.',
+    description='A music database using Python and SQLAlchemy.',
     long_description=readme + '\n\n' + history,
     author=mishmash.__author__,
     author_email=mishmash.__email__,
