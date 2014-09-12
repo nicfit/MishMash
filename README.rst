@@ -1,65 +1,20 @@
-===============================
-MishMash
-===============================
+===================
+Welcome to MishMash
+===================
 
-.. image:: https://badge.fury.io/py/mishmash.png
-    :target: http://badge.fury.io/py/mishmash
-
-.. image:: https://travis-ci.org/nicfit/mishmash.png?branch=master
-        :target: https://travis-ci.org/nicfit/mishmash
-
-.. image:: https://pypip.in/d/mishmash/badge.png
-        :target: https://crate.io/packages/mishmash?version=latest
-
-
-Python music database.
+MishMash is a music database using `Python`_ and `SQLAlchemy`_.
 
 * Free software: GPL license
-* Documentation: http://mishmash.rtfd.org.
+* See the full documentation at http://mishmash.rtfd.org.
 
 Features
---------
-FIXME
+========
 
-Misc Notes:
-~~~~~~~~~~~
+* A command-line tool for building and managing a music database.
+* Uses `eyeD3`_ for reading MP3s and ID3 metadata.
+* Tested with Postgresql and SQLite.
 
-Database URL::
-
-  sqlite:///:memory: (or, sqlite://)
-  sqlite:///relative/path/to/file.db
-  sqlite:////absolute/path/to/file.db
-
-  postgresql://user:passwd@host:5432/mishmash
-
-Command line::
-
-  $ mishmash -D ... init
-  $ mishmash --database=... init
-
-Environment::
-
-  $ export MISHMASH_DB=...
-
-Initialize the database tables with the ``init`` command.::
-
-  $ mishmash init --help
-  $ mishmash init
-  $ mishmash init --drop-all
-
-
-postgresql
-~~~~~~~~~~
-::
-
-  $ su - postgres
-  $ createuser -d -P mishmash
-  $ exit
-  $ createdb -U mishmash -T template0 -E UTF8 mishmash
-
-pserve
-~~~~~~
-::
-
-  $ pserve etc/development.ini
+.. _Python: https://www.python.org/
+.. _SQLAlchemy: http://www.sqlalchemy.org/
+.. _eyeD3: http://eyeD3.nicfit.net/
 
