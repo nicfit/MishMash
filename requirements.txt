@@ -2,7 +2,7 @@ eyeD3>=0.7.6
 #hg+https://bitbucket.org/nicfit/eyed3@stable#egg=eyeD3
 countrycode
 
-SQLAlchemy==0.8.3
+SQLAlchemy
 psycopg2
 
 pyramid==1.5a2

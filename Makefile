@@ -50,7 +50,7 @@ coverage:
 docs:
 	rm -f docs/mishmash.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ mishmash
+	sphinx-apidoc -o docs/ -H "mishmash API" -e mishmash
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	@echo "file://`pwd`/docs/_build/html/index.html"

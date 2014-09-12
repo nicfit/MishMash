@@ -17,6 +17,10 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+
+'''
+Object to relational database mappings for all tables.
+'''
 import os
 from datetime import datetime
 from hashlib import md5
@@ -57,6 +61,8 @@ artist_labels = sql.Table("artist_labels", Base.metadata,
                           sql.Column("label_id", sql.Integer,
                                      sql.ForeignKey("labels.id")),
                          )
+'''Pivot table 'artist_labels' for mapping an artist ID to a value in the
+`labels` table.'''
 
 album_labels = sql.Table("album_labels", Base.metadata,
                          sql.Column("album_id", sql.Integer,
@@ -64,6 +70,8 @@ album_labels = sql.Table("album_labels", Base.metadata,
                          sql.Column("label_id", sql.Integer,
                                     sql.ForeignKey("labels.id")),
                         )
+'''Pivot table 'album_labels' for mapping an album ID to a value in the
+`labels` table.'''
 
 track_labels = sql.Table("track_labels", Base.metadata,
                          sql.Column("track_id", sql.Integer,
@@ -71,6 +79,8 @@ track_labels = sql.Table("track_labels", Base.metadata,
                          sql.Column("label_id", sql.Integer,
                                     sql.ForeignKey("labels.id")),
                         )
+'''Pivot table 'track_labels' for mapping a track ID to a value in the
+`labels` table.'''
 
 artist_images = sql.Table("artist_images", Base.metadata,
                           sql.Column("artist_id", sql.Integer,
@@ -78,6 +88,8 @@ artist_images = sql.Table("artist_images", Base.metadata,
                           sql.Column("img_id", sql.Integer,
                                      sql.ForeignKey("images.id")),
                          )
+'''Pivot table 'artist_images' for mapping an artist ID to a value in the
+`images` table.'''
 
 album_images = sql.Table("album_images", Base.metadata,
                          sql.Column("album_id", sql.Integer,
@@ -85,14 +97,21 @@ album_images = sql.Table("album_images", Base.metadata,
                          sql.Column("img_id", sql.Integer,
                                     sql.ForeignKey("images.id")),
                         )
+'''Pivot table 'album_images' for mapping an album ID to a value in the
+`images` table.'''
 
 
 class OrmObject(object):
+    '''Base classes for all other mishmash.orm classes.'''
+
     @staticmethod
     def initTable(session):
+        '''A hook function called after the table is created allowing for
+        intital table rows or aother other required tweaks.'''
         pass
 
     def __repr__(self):
+        '''Dump the object state and return it as a strings.'''
         attrs = []
         for key in self.__dict__:
             if not key.startswith('_'):
@@ -102,11 +121,16 @@ class OrmObject(object):
 
 
 class Meta(Base, OrmObject):
+    '''Table ``meta`` used for storing dataase schema version, timestamps,
+    and any other metadata about the music collection.'''
+
     __tablename__ = "meta"
 
     # Columns
     version = sql.Column(sql.String(32), nullable=False, primary_key=True)
+    '''The MishMash version defines the database schema.'''
     last_sync = sql.Column(sql.DateTime)
+    '''A timestamp of the last sync operation.'''
 
     @staticmethod
     def initTable(session):

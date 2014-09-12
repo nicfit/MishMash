@@ -12,7 +12,9 @@ Features
 
 * A command-line tool for building and managing a music database.
 * Uses `eyeD3`_ for reading MP3s and ID3 metadata.
-* Tested with Postgresql and SQLite.
+* Support and tested with Python 2.7 and Postgresql. SQLite is periodically  
+  tested with, but future features may not be supported (e.g. full text
+  search).
 
 .. _Python: https://www.python.org/
 .. _SQLAlchemy: http://www.sqlalchemy.org/
