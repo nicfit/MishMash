@@ -25,7 +25,7 @@ import logging
 from sqlalchemy import exc as sql_exceptions
 
 import eyed3
-eyed3.require("0.7.5")
+eyed3.require("0.8")
 
 from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
