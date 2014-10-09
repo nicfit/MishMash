@@ -18,7 +18,7 @@
 #
 ################################################################################
 import sys
-from ConfigParser import SafeConfigParser as ConfigParser
+from configparser import ConfigParser
 from pyramid.config import Configurator
 import transaction
 from zope.sqlalchemy import ZopeTransactionExtension

@@ -148,7 +148,7 @@ class Search(Command):
     def __init__(self, subparsers=None):
         super(Search, self).__init__("search", "Search music database.",
                                      subparsers)
-        self.parser.add_argument("search_pattern", type=unicode,
+        self.parser.add_argument("search_pattern",
                                  metavar="SEARCH", help="Search string.")
 
     def _run(self):
@@ -251,7 +251,7 @@ class SplitArtists(Command):
                 "split-artists",
                 "Split a single artist name into N distinct artists.",
                 subparsers)
-        self.parser.add_argument("artist", type=unicode,
+        self.parser.add_argument("artist",
                                  help="The name of the artist.")
 
     def _displayArtistMusic(self, artist, albums, singles):
@@ -367,7 +367,7 @@ class MergeArtists(Command):
                 "Merge two or more artists into a single artist.",
                 subparsers)
         self.parser.add_argument(
-                "artists", type=unicode, nargs="+",
+                "artists", nargs="+",
                 help="The artist names to merge.")
 
     def _run(self):
