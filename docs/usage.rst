@@ -4,10 +4,10 @@ Usage
 
 Databases
 ---------
-The first requirement a database for MishMash to use. One of the great things
-about SQLAlchemy is its support for a multitude of databases, feel
-free to try whatever you would like but be aware that the only back-ends that
-are tested and supported are::
+The first requirement is deciding a database for MishMash to use. One of the
+great things about SQLAlchemy is its support for a multitude of databases, feel
+free to try whichever you would like but that the only back-ends that are
+currently tested/supported are::
 
 * Postgresql
 * SQLite; limited testing.
