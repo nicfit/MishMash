@@ -83,7 +83,7 @@ def allArtistsView(request):
         buckets.add(l)
         return l
 
-    session = request.DBSession()
+    session = request.DBSession
     for artist in session.query(Artist)\
                          .order_by(Artist.sort_name).all():
 
@@ -120,7 +120,7 @@ def allArtistsView(request):
              layout="main-layout")
 def artistView(request):
     artist_id = int(request.matchdict["id"])
-    session = request.DBSession()
+    session = request.DBSession
 
     artist = session.query(Artist).filter_by(id=artist_id).first()
     if not artist:
@@ -187,7 +187,7 @@ def covers(request):
     if iid == "default":
         return Response(content_type="image/png", body=DEFAULT_COVER_DATA)
     else:
-        session = request.DBSession()
+        session = request.DBSession
         image = session.query(Image).filter(Image.id == int(iid)).first()
         if not image:
             raise HTTPNotFound()
@@ -202,7 +202,7 @@ DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
              layout="main-layout")
 def newMusicView(request):
     from math import ceil
-    session = request.DBSession()
+    session = request.DBSession
     albums = session.query(Album).order_by(desc("date_added")).limit(25).all()
     # FIXME: handle new singles here, make sure this works for various
     return ResponseDict(albums=albums, ceil=ceil)
@@ -212,7 +212,7 @@ def newMusicView(request):
              layout="main-layout")
 def albumView(request):
     album_id = int(request.matchdict["id"])
-    session = request.DBSession()
+    session = request.DBSession
 
     album = session.query(Album).filter_by(id=album_id).first()
     if not album:
@@ -226,5 +226,5 @@ def albumView(request):
              layout="main-layout")
 def searchView(request):
     query = request.POST["q"]
-    results = database.search(request.DBSession(), query)
+    results = database.search(request.DBSession, query)
     return ResponseDict(**results)

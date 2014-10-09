@@ -16,42 +16,79 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-
 from sqlalchemy import create_engine, or_
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+from sqlalchemy_utils.functions import database_exists, create_database
+
 from . import log
 from .orm import TYPES, TABLES, ENUMS
-from .orm import Artist, Track, Album
+from .orm import Base, Artist, Track, Album
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
                        "echo": False,
                       }
-DEFAULT_SESSION_ARGS = {"autocommit": True,
-                        "autoflush": False,
-                       }
+DEFAULT_SESSION_ARGS = {
+        }
 
 
-def init(uri, engine_args=None, session_args=None):
+def init(uri, engine_args=None, session_args=None, drop_all=False,
+         trans_mgr=None):
+    new_db = False
+
+    log.debug("Checking for database '%s'" % uri)
+    if not database_exists(uri):
+        log.debug("Creating database '%s'" % uri)
+        create_database(uri, template="template0")
+        new_db = True
+
     log.debug("Connecting to database '%s'" % uri)
-
     args = engine_args or DEFAULT_ENGINE_ARGS
     engine = create_engine(uri, **args)
     engine.connect()
 
     args = session_args or DEFAULT_SESSION_ARGS
-    Session = scoped_session(sessionmaker(**args))
-    Session.configure(bind=engine)
+    if trans_mgr:
+        import transaction
+        args.update({ "extension": trans_mgr})
+    session = scoped_session(sessionmaker(**args))
+    session.configure(bind=engine)
 
     for T in TYPES:
         T.metadata.bind = engine
 
-    return engine, Session
+    missing_tables = []
+    try:
+        try:
+            log.debug("Checking database schema '%s'" % uri)
+            checkSchema(engine)
+        except MissingSchemaException as ex:
+            log.warn("Missing database schema: %s" % ex.tables)
+
+            log.debug("Creating database schema '%s'" % uri)
+            Base.metadata.create_all(engine)
+            for T in TYPES:
+                # Run extra table initialization
+                T.initTable(session)
+
+        if trans_mgr:
+            transaction.commit()
+        else:
+            session.commit()
+    except Exception as ex:
+        log.exception(ex)
+        if trans_mgr:
+            transaction.abort()
+            raise
+        else:
+            session.rollback()
+
+    return engine, session
 
 
-def check(engine):
+def checkSchema(engine):
     missing_tables = []
     for table in TABLES:
         if not engine.has_table(table.name):
@@ -59,18 +96,6 @@ def check(engine):
 
     if missing_tables:
         raise MissingSchemaException(missing_tables)
-
-
-def create(session, tables=None):
-    tables = tables or TABLES
-
-    for table in tables:
-        log.debug("Creating table '%s'..." % table)
-        table.create()
-        for T in TYPES:
-            if T.__tablename__ == table.name:
-                with session.begin():
-                    T.initTable(session)
 
 
 def dropAll(engine):
