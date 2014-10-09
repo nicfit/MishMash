@@ -107,7 +107,7 @@ class OrmObject(object):
     @staticmethod
     def initTable(session):
         '''A hook function called after the table is created allowing for
-        intital table rows or aother other required tweaks.'''
+        initial table rows or another other required tweaks.'''
         pass
 
     def __repr__(self):
@@ -121,7 +121,7 @@ class OrmObject(object):
 
 
 class Meta(Base, OrmObject):
-    '''Table ``meta`` used for storing dataase schema version, timestamps,
+    '''Table ``meta`` used for storing database schema version, timestamps,
     and any other metadata about the music collection.'''
 
     __tablename__ = "meta"
@@ -413,7 +413,6 @@ class Image(Base, OrmObject):
                      md5=md5hash.hexdigest(),
                      size=len(data),
                      data=data)
-
 
 TYPES = [Meta, Label, Artist, Album, Track, Image]
 LABELS = [artist_labels, album_labels, track_labels,

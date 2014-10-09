@@ -66,37 +66,6 @@ class Command(object):
             cmd(subparsers)
 
 
-# init subcommand
-class Init(Command):
-    def __init__(self, subparsers=None):
-        super(Init, self).__init__("init", "Initialize music database.",
-                                   subparsers)
-        self.parser.add_argument("--drop-all", action="store_true",
-                                 help="Drop all tables and re-init")
-
-    def _run(self):
-        missing_tables = []
-
-        engine, session = self.db_engine, self.db_session
-        try:
-            database.check(engine)
-        except database.MissingSchemaException as ex:
-            missing_tables = ex.tables
-
-        dropped = False
-        if self.args.drop_all:
-            printMsg("Dropping schema...")
-            database.dropAll(engine)
-            dropped = True
-
-        if missing_tables or dropped:
-            printMsg("Creating schema...")
-            database.create(session, None if dropped else missing_tables)
-
-        printMsg("Initialized")
-
-
-# sync subcommand
 class Sync(Command):
     def __init__(self, subparsers=None):
         super(Sync, self).__init__("sync", "Syncronize music and database.",
@@ -145,7 +114,7 @@ class Info(Command):
             meta = session.query(Meta).one()
         except (ProgrammingError, OperationalError) as ex:
             printError("\nError querying metadata. Database may not be "
-                       "imitialized (i.e. run 'mishmash init').")
+                       "initialized.")
             return 1
 
         printMsg("\tVersion: %s" % meta.version)
@@ -265,8 +234,7 @@ class Relocate(Command):
             newroot += os.sep
 
         num_relocates = 0
-        with session.begin():
-
+        with session.begin_nested():
             for track in session.query(Track).filter(
                     Track.path.like(u"%s%%" % oldroot)).all():
                 track.path = track.path.replace(oldroot, newroot)
@@ -332,7 +300,7 @@ class SplitArtists(Command):
         n = prompt("\nEnter the number of distinct artists", type_=int,
                    validate=_validN)
         new_artists = []
-        with session.begin():
+        with session.begin_nested():
             for i in range(1, n + 1):
                 printMsg(Style.bright(u"\n%s #%d") % (fg.blue(artist.name), i))
 
@@ -436,7 +404,7 @@ class MergeArtists(Command):
                                         else "only one artist found"))
             return 1
 
-        with session.begin():
+        with session.begin_nested():
             assert(new_artist in merge_list)
             session.flush()
 
@@ -469,7 +437,7 @@ class MergeArtists(Command):
         # name if it is new.
 
 
-_cmds.extend([Init, Sync, Info, Random, Search, List, Relocate,
+_cmds.extend([Info, Sync, Random, Search, List, Relocate,
               SplitArtists, MergeArtists])
 
 

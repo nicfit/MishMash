@@ -20,6 +20,7 @@
 import sys
 from ConfigParser import SafeConfigParser as ConfigParser
 from pyramid.config import Configurator
+import transaction
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from .. import database
@@ -68,19 +69,10 @@ def main(global_config, **main_settings):
             }
     engine_args.update(sql_ini_args)
 
-    session_args = {"extension": ZopeTransactionExtension()}
-
     (engine,
      DBSession) = database.init(mm_settings["%surl" % pfix],
                                 engine_args=engine_args,
-                                session_args=session_args)
-
-    try:
-        database.check(engine)
-    except database.MissingSchemaException as ex:
-        print("Missing tables: %s" % str(ex.tables))
-        print("\nRun `mishmash init`")
-        sys.exit(1)
+                                trans_mgr=ZopeTransactionExtension())
 
     config = _configure(main_settings, DBSession)
 

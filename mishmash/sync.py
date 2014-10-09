@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import os
 import time
+import transaction
 from os.path import getctime
 from datetime import datetime
 from fnmatch import fnmatch
@@ -68,7 +69,7 @@ class SyncPlugin(LoaderPlugin):
         self._num_added = 0
         self._num_modified = 0
         self._num_deleted = 0
-        self.DBSession = None
+        self._db_session = None
 
     def start(self, args, config):
         import eyed3.utils.prompt
@@ -76,7 +77,7 @@ class SyncPlugin(LoaderPlugin):
 
         super(SyncPlugin, self).start(args, config)
         self.start_time = time.time()
-        self.DBSession = args.db_session
+        self._db_session = args.db_session
 
     def _getArtist(self, session, name, resolved_artist):
         artist_rows = session.query(Artist).filter_by(name=name).all()
@@ -163,164 +164,163 @@ class SyncPlugin(LoaderPlugin):
         resolved_artist = None
         resolved_album_artist = None
 
-        session = self.DBSession()
-        with session.begin():
-            for audio_file in audio_files:
-                path = audio_file.path
-                info = audio_file.info
-                tag = audio_file.tag
+        session = self._db_session
+        for audio_file in audio_files:
+            path = audio_file.path
+            info = audio_file.info
+            tag = audio_file.tag
 
-                if not info or not tag:
-                    log.warn("File missing %s, skipping: %s" %
-                             ("audio" if not info else "tag/metadata", path))
-                    continue
-                elif None in (tag.title, tag.artist):
-                    log.warn("File missing required artist and/or title "
-                             "metadata, skipping: %s" % path)
+            if not info or not tag:
+                log.warn("File missing %s, skipping: %s" %
+                         ("audio" if not info else "tag/metadata", path))
+                continue
+            elif None in (tag.title, tag.artist):
+                log.warn("File missing required artist and/or title "
+                         "metadata, skipping: %s" % path)
+                continue
+
+            try:
+                track = session.query(Track).filter_by(path=path).one()
+            except NoResultFound:
+                track = None
+            else:
+                if datetime.fromtimestamp(getctime(path)) == track.ctime:
+                    # Track is in DB and the file is not modified.
+                    # stash the album though, we'll look for artwork
+                    # updates later
+                    album = track.album
                     continue
 
-                try:
-                    track = session.query(Track).filter_by(path=path).one()
-                except NoResultFound:
-                    track = None
+            # Either adding the track (track == None)
+            # or modifying (track != None)
+
+            artist, resolved_artist = self._getArtist(session, tag.artist,
+                                                      resolved_artist)
+            album = None
+
+            if tag.album_type != SINGLE_TYPE:
+                if tag.album_artist and tag.artist != tag.album_artist:
+                    album_artist, resolved_album_artist = \
+                            self._getArtist(session, tag.album_artist,
+                                            resolved_album_artist)
                 else:
-                    if datetime.fromtimestamp(getctime(path)) == track.ctime:
-                        # Track is in DB and the file is not modified.
-                        # stash the album though, we'll look for artwork
-                        # updates later
-                        album = track.album
-                        continue
+                    album_artist = artist
 
-                # Either adding the track (track == None)
-                # or modifying (track != None)
+                if artist is None:
+                    # see PromptExit
+                    continue
 
-                artist, resolved_artist = self._getArtist(session, tag.artist,
-                                                          resolved_artist)
-                album = None
+                album_artist_id = album_artist.id if not is_various \
+                                                  else VARIOUS_ARTISTS_ID
+                album_rows = session.query(Album)\
+                                    .filter_by(title=tag.album,
+                                               artist_id=album_artist_id)\
+                                    .all()
+                rel_date = tag.release_date
+                rec_date = tag.recording_date
+                or_date = tag.original_release_date
 
-                if tag.album_type != SINGLE_TYPE:
-                    if tag.album_artist and tag.artist != tag.album_artist:
-                        album_artist, resolved_album_artist = \
-                                self._getArtist(session, tag.album_artist,
-                                                resolved_album_artist)
-                    else:
-                        album_artist = artist
+                if album_rows:
+                    if len(album_rows) > 1:
+                        # This artist has more than one album with the same
+                        # title.
+                        raise NotImplementedError("FIXME")
+                    album = album_rows[0]
 
-                    if artist is None:
-                        # see PromptExit
-                        continue
+                    album.type = album_type
+                    album.release_date = rel_date
+                    album.original_release_date = or_date
+                    album.recording_date = rec_date
+                    print(fg.yellow("Updating album") + ": " + album.title)
+                elif tag.album:
+                    album = Album(title=tag.album,
+                                  artist_id=album_artist_id,
+                                  type=album_type,
+                                  release_date=rel_date,
+                                  original_release_date=or_date,
+                                  recording_date=rec_date,
+                                  date_added=d_datetime)
+                    session.add(album)
+                    print(fg.green("Adding album") + ": " + album.title)
 
-                    album_artist_id = album_artist.id if not is_various \
-                                                      else VARIOUS_ARTISTS_ID
-                    album_rows = session.query(Album)\
-                                        .filter_by(title=tag.album,
-                                                   artist_id=album_artist_id)\
-                                        .all()
-                    rel_date = tag.release_date
-                    rec_date = tag.recording_date
-                    or_date = tag.original_release_date
+                session.flush()
 
-                    if album_rows:
-                        if len(album_rows) > 1:
-                            # This artist has more than one album with the same
-                            # title.
-                            raise NotImplementedError("FIXME")
-                        album = album_rows[0]
+            if not track:
+                track = Track(audio_file=audio_file)
+                self._num_added += 1
+                print(fg.green("Adding track") + ": " + path)
+            else:
+                track.update(audio_file)
+                self._num_modified += 1
+                print(fg.yellow("Updating track") + ": " + path)
 
-                        album.type = album_type
-                        album.release_date = rel_date
-                        album.original_release_date = or_date
-                        album.recording_date = rec_date
-                        print(fg.yellow("Updating album") + ": " + album.title)
-                    elif tag.album:
-                        album = Album(title=tag.album,
-                                      artist_id=album_artist_id,
-                                      type=album_type,
-                                      release_date=rel_date,
-                                      original_release_date=or_date,
-                                      recording_date=rec_date,
-                                      date_added=d_datetime)
-                        session.add(album)
-                        print(fg.green("Adding album") + ": " + album.title)
-
+            genre = tag.genre
+            label = None
+            if genre:
+                try:
+                    label = \
+                        session.query(
+                            Label).filter_by(name=genre.name).one()
+                except NoResultFound:
+                    label = Label(name=genre.name)
+                    session.add(label)
                     session.flush()
 
-                if not track:
-                    track = Track(audio_file=audio_file)
-                    self._num_added += 1
-                    print(fg.green("Adding track") + ": " + path)
-                else:
-                    track.update(audio_file)
-                    self._num_modified += 1
-                    print(fg.yellow("Updating track") + ": " + path)
-
-                genre = tag.genre
-                label = None
-                if genre:
-                    try:
-                        label = \
-                            session.query(
-                                Label).filter_by(name=genre.name).one()
-                    except NoResultFound:
-                        label = Label(name=genre.name)
-                        session.add(label)
-                        session.flush()
-
-                track.artist_id = artist.id
-                track.album_id = album.id if album else None
-                if label:
-                    track.labels.append(label)
-                session.add(track)
-
-                if album:
-                    # Tag images
-                    for img in tag.images:
-                        for img_type in art.ID3_ART_TYPES:
-                            if img.picture_type in art.ID3_ART_TYPES[img_type]:
-                                break
-                            img_type = None
-
-                        if img_type is None:
-                            log.warn("Skipping unsupported image type: %s" %
-                                     img.picture_type)
-                            continue
-
-                        new_img = Image.fromTagFrame(img, img_type)
-                        syncImage(new_img,
-                                  album if img_type in IMAGE_TYPES["album"]
-                                        else album.artist,
-                                  session)
+            track.artist_id = artist.id
+            track.album_id = album.id if album else None
+            if label:
+                track.labels.append(label)
+            session.add(track)
 
             if album:
-                # Directory images.
-                for img_file in image_files:
-                    img_type = art.matchArtFile(img_file)
+                # Tag images
+                for img in tag.images:
+                    for img_type in art.TO_ID3_ART_TYPES:
+                        if img.picture_type in \
+                                art.TO_ID3_ART_TYPES[img_type]:
+                            break
+                        img_type = None
+
                     if img_type is None:
-                        log.warn("Skipping unrecognized image file: %s" %
-                                  img_file)
+                        log.warn("Skipping unsupported image type: %s" %
+                                 img.picture_type)
                         continue
 
-                    new_img = Image.fromFile(img_file, img_type)
-                    new_img.description = os.path.basename(img_file)
-                    syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
-                                             else album.artist,
+                    new_img = Image.fromTagFrame(img, img_type)
+                    syncImage(new_img,
+                              album if img_type in IMAGE_TYPES["album"]
+                                    else album.artist,
                               session)
+
+        if album:
+            # Directory images.
+            for img_file in image_files:
+                img_type = art.matchArtFile(img_file)
+                if img_type is None:
+                    log.warn("Skipping unrecognized image file: %s" %
+                              img_file)
+                    continue
+
+                new_img = Image.fromFile(img_file, img_type)
+                new_img.description = os.path.basename(img_file)
+                syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
+                                         else album.artist,
+                          session)
 
     def handleDone(self):
         t = time.time() - self.start_time
-        session = self.DBSession()
+        session = self._db_session
 
-        with session.begin():
-            session.query(Meta).one().last_sync = datetime.now()
+        session.query(Meta).one().last_sync = datetime.now()
 
-            num_orphaned_artists = 0
-            num_orphaned_albums = 0
-            if not self.args.no_purge:
-                printMsg("Purging orphans (tracks, artists, albums) from "
-                         "database...")
-                (self._num_deleted,
-                 num_orphaned_artists,
-                 num_orphaned_albums) = deleteOrphans(session)
+        num_orphaned_artists = 0
+        num_orphaned_albums = 0
+        if not self.args.no_purge:
+            printMsg("Purging orphans (tracks, artists, albums) from "
+                     "database...")
+            (self._num_deleted,
+             num_orphaned_artists,
+             num_orphaned_albums) = deleteOrphans(session)
 
         if self._num_loaded or self._num_deleted:
             printMsg("")
@@ -332,6 +332,9 @@ class SyncPlugin(LoaderPlugin):
                 printMsg("%d orphaned artists deleted" % num_orphaned_artists)
                 printMsg("%d orphaned albums deleted" % num_orphaned_albums)
             printMsg("%fs time (%f files/s)" % (t, self._num_loaded / t))
+
+        session.commit()
+
 
 
 def deleteOrphans(session):
