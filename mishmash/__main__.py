@@ -19,8 +19,11 @@
 ################################################################################
 from __future__ import print_function
 
+import os
 import sys
 import logging
+import warnings
+import logging.config
 
 from sqlalchemy import exc as sql_exceptions
 
@@ -34,11 +37,8 @@ from eyed3.utils.prompt import PromptExit
 from .database import MissingSchemaException
 from .log import log, initLogging
 from .commands import makeCmdLineParser
-
-try:
-    import ipdb as pdb
-except ImportError:
-    import pdb
+from . import config
+from . import __release__
 
 
 def _pErr(subject, msg):
@@ -46,26 +46,33 @@ def _pErr(subject, msg):
 
 
 def main():
-    initLogging()
-    log.setLevel(logging.ERROR)
-
     parser = makeCmdLineParser()
     parser.add_argument("--pdb", action="store_true", dest="debug_pdb",
                         help="Drop into 'pdb' when errors occur.")
 
-    def _pdb(_args):
-        '''used to optionally break into pdb'''
-        if _args.debug_pdb:
+    args = parser.parse_args()
+    if args.debug_pdb:
+        # The import of ipdb MUST be limited to explicit --pdb option
+        # (what follows was at module scope prior) because of
+        # https://github.com/gotcha/ipdb/issues/48. Which --pdb is
+        # used with commands where stdout is captured you will bet extra
+        # leading bytes.
+        try:
+            import ipdb as pdb
+        except ImportError:
+            import pdb
+        def _pdb(args):
             e, m, tb = sys.exc_info()
             pdb.post_mortem(tb)
 
-    # Run command
-    args = parser.parse_args()
+    app_config = config.load(args.config)
+    logging.config.fileConfig(app_config)
 
     AnsiCodes.init(True)
 
     try:
-        retval = args.func(args) or 0
+        # Run command
+        retval = args.func(args, app_config) or 0
     except (KeyboardInterrupt, PromptExit) as ex:
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0

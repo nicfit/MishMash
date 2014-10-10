@@ -20,14 +20,14 @@
 from __future__ import print_function
 
 import os
-from argparse import Namespace
+import sys
+from argparse import Namespace, ArgumentParser
 
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
 import eyed3
 import eyed3.main
 from eyed3.main import main as eyed3_main
-from eyed3.utils import ArgumentParser
 from eyed3.utils.console import printMsg, printError, Style
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import prompt
@@ -52,8 +52,9 @@ class Command(object):
         self.parser.set_defaults(func=self.run)
         Command.cmds[name] = self
 
-    def run(self, args):
+    def run(self, args, config):
         self.args = args
+        self.config = config
         self.db_engine, self.db_session = database.init(self.args.db_uri)
         return self._run()
 
@@ -104,27 +105,33 @@ class Info(Command):
     def __init__(self, subparsers=None):
         super(Info, self).__init__(
             "info", "Show information about music database.", subparsers)
+        self.parser.add_argument("--show-config", action="store_true",
+                                 help="Display current configurion.")
 
     def _run(self):
-        session = self.db_session
+        if self.args.show_config:
+            self.config.write(sys.stdout)
+            self.config.write(open("config.ini", "w"))
+        else:
+            session = self.db_session
 
-        printMsg("\nDatabase:")
-        printMsg("\tURI: %s" % self.args.db_uri)
-        try:
-            meta = session.query(Meta).one()
-        except (ProgrammingError, OperationalError) as ex:
-            printError("\nError querying metadata. Database may not be "
-                       "initialized.")
-            return 1
+            printMsg("\nDatabase:")
+            printMsg("\tURI: %s" % self.args.db_uri)
+            try:
+                meta = session.query(Meta).one()
+            except (ProgrammingError, OperationalError) as ex:
+                printError("\nError querying metadata. Database may not be "
+                           "initialized.")
+                return 1
 
-        printMsg("\tVersion: %s" % meta.version)
-        printMsg("\tLast Sync: %s" % meta.last_sync)
+            printMsg("\tVersion: %s" % meta.version)
+            printMsg("\tLast Sync: %s" % meta.last_sync)
 
-        printMsg("\nMusic:")
-        printMsg("\t%d tracks" % session.query(Track).count())
-        printMsg("\t%d artists" % session.query(Artist).count())
-        printMsg("\t%d albums" % session.query(Album).count())
-        printMsg("\t%d labels" % session.query(Label).count())
+            printMsg("\nMusic:")
+            printMsg("\t%d tracks" % session.query(Track).count())
+            printMsg("\t%d artists" % session.query(Artist).count())
+            printMsg("\t%d albums" % session.query(Album).count())
+            printMsg("\t%d labels" % session.query(Label).count())
 
 
 # random subcommand
@@ -443,16 +450,16 @@ _cmds.extend([Info, Sync, Random, Search, List, Relocate,
 
 def makeCmdLineParser():
     from . import __version_txt__ as VERSION_MSG
-    from os.path import expandvars
+    from .config import default as default_config
 
-    parser = ArgumentParser(prog="mishmash", version=VERSION_MSG,
-                            main_logger="mishmash")
+    parser = ArgumentParser(prog="mishmash")
+    parser.add_argument("--version", action="version", version=VERSION_MSG)
 
-    db_group = parser.add_argument_group(title="Database settings and options")
-
-    default_uri = os.environ.get("MISHMASH_DB",
-                                 expandvars("sqlite:///$HOME/mishmash.db"))
-    db_group.add_argument("-D", "--database", dest="db_uri", metavar="url",
+    group = parser.add_argument_group(title="Settings and options")
+    default_uri = default_config.get("mishmash", "sqlalchemy.url")
+    group.add_argument("-c", "--config", dest="config", metavar="configfile",
+                       help="Configuration file.")
+    group.add_argument("-D", "--database", dest="db_uri", metavar="url",
             default=default_uri,
             help="Database URL. The default is '%s'" % default_uri)
 
