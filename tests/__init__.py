@@ -24,8 +24,6 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         request = testing.DummyRequest()
         self.config = testing.setUp(request=request)
-
-        self.config.add_route('home', '/')
         self.config.add_settings(settings)
 
     def tearDown(self):
