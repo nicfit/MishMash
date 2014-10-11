@@ -34,27 +34,33 @@ class Info(command.Command):
         self.parser.add_argument("-C", "--show-config", action="store_true",
                                  help="Display current configurion.")
 
+    def _config(self):
+        self.config.write(sys.stdout)
+
+    def _info(self):
+        session = self.db_session
+
+        print("\nDatabase:")
+        print("\tURL: %s" % self.config.db_url)
+        try:
+            meta = session.query(Meta).one()
+        except (ProgrammingError, OperationalError) as ex:
+            printError("\nError querying metadata. Database may not be "
+                       "initialized: %s" % str(ex))
+            return 1
+
+        print("\tVersion: %s" % meta.version)
+        print("\tLast Sync: %s" % meta.last_sync)
+
+        print("\nMusic:")
+        print("\t%d tracks" % session.query(Track).count())
+        print("\t%d artists" % session.query(Artist).count())
+        print("\t%d albums" % session.query(Album).count())
+        print("\t%d labels" % session.query(Label).count())
+
     def _run(self):
         if self.args.show_config:
-            self.config.write(sys.stdout)
-            self.config.write(open("config.ini", "w"))
+            self._config()
         else:
-            session = self.db_session
+            self._info()
 
-            print("\nDatabase:")
-            print("\tURL: %s" % self.config.db_url)
-            try:
-                meta = session.query(Meta).one()
-            except (ProgrammingError, OperationalError) as ex:
-                printError("\nError querying metadata. Database may not be "
-                           "initialized: %s" % str(ex))
-                return 1
-
-            print("\tVersion: %s" % meta.version)
-            print("\tLast Sync: %s" % meta.last_sync)
-
-            print("\nMusic:")
-            print("\t%d tracks" % session.query(Track).count())
-            print("\t%d artists" % session.query(Artist).count())
-            print("\t%d albums" % session.query(Album).count())
-            print("\t%d labels" % session.query(Label).count())

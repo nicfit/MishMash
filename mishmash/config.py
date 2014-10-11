@@ -28,30 +28,8 @@ SA_KEY = "sqlalchemy.url"
 
 
 default_str = """
-###
-# app configuration
-# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/environment.html
-###
-
 [mishmash]
 sqlalchemy.url = %(db_url)s
-
-[app:main]
-use = call:mishmash.web:main
-
-pyramid.reload_templates = true
-pyramid.debug_authorization = false
-pyramid.debug_notfound = false
-pyramid.debug_routematch = false
-pyramid.default_locale_name = en
-pyramid.includes =
-    pyramid_debugtoolbar
-    pyramid_tm
-
-[server:main]
-use = egg:waitress#main
-host = 0.0.0.0
-port = 6474
 
 ###
 # logging configuration
@@ -100,6 +78,29 @@ formatter = generic
 
 [formatter_generic]
 format = %(generic_format)s
+
+###
+# app configuration
+# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/environment.html
+###
+
+[app:main]
+use = call:mishmash.web:main
+
+pyramid.reload_templates = true
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+pyramid.includes =
+    pyramid_debugtoolbar
+    pyramid_tm
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6474
+
 """ % {"db_url": expandvars("sqlite:///$HOME/mishmash.db"),
        "generic_format":
          "%(levelname)-5.5s [%(name)s][%(threadName)s]: %(message)s",
