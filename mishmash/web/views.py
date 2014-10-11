@@ -191,8 +191,7 @@ def covers(request):
         image = session.query(Image).filter(Image.id == int(iid)).first()
         if not image:
             raise HTTPNotFound()
-        return Response(content_type=image.mime_type.encode("latin1"),
-                        body=image.data)
+        return Response(content_type=image.mime_type, body=image.data)
 
 DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
                                        "record150.png"), "rb").read()
