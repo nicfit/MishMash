@@ -193,8 +193,11 @@ def covers(request):
             raise HTTPNotFound()
         return Response(content_type=image.mime_type, body=image.data)
 
-DEFAULT_COVER_DATA = open(os.path.join(os.path.dirname(__file__), "static",
-                                       "record150.png"), "rb").read()
+with open(os.path.join(os.path.dirname(__file__),
+                       "static",
+                       "record150.png"), "rb") as _cover_fp:
+    DEFAULT_COVER_DATA = _cover_fp.read()
+del _cover_fp
 
 
 @view_config(route_name="new_music", renderer="templates/new_music.pt",

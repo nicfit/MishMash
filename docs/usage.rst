@@ -86,16 +86,20 @@ show below::
 
     Default <-- -c/--config <-- MISHMASH_CONFIG <-- -D/--database
 
-Items to the left are lower precedence and the direction arrows (``<--``)
-show the order in which the options are merged.
-
-For example, local machine changes (local.ini) could be merged with the
-global site configuration (site.ini) and the PostgreSQL server at
-dbserver.example.com is used regardless then the other files set.
+Items to the left are lower precedence and the direction arrows (``<--``) show
+the order in which the options are merged.  For example, local machine changes
+(local.ini) could be merged with the global site configuration (site.ini) and
+the PostgreSQL server at dbserver.example.com is used regardless then the other
+files set.
 
 .. code-block:: bash
 
     $ MISHMASH_CONFIG=local.ini mishmish -c site.ini -D postgresql://dbserver.example.com:5432/music
+
+The command ``mishmash info --show-default`` will output the default
+configuration with no changes applied. Unlike ``--show-config`` this output
+contains comments which serves as the definitive documentation for all 
+sections and key/value settings.
 
 Databases
 ---------
@@ -154,6 +158,11 @@ TODO
 mishmash sync
 -------------
 The ``sync`` command imports music metadata into the database.
+TODO
+
+mishmash web
+-------------
+The ``web`` command runs the web interface.
 TODO
 
 
