@@ -20,3 +20,4 @@
 
 from . import info                                                # flake8: noqa
 from . import sync                                                # flake8: noqa
+from . import mgmt                                                # flake8: noqa

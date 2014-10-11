@@ -63,4 +63,3 @@ class Info(command.Command):
             self._config()
         else:
             self._info()
-
