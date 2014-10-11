@@ -31,6 +31,10 @@ default_str = """
 [mishmash]
 sqlalchemy.url = %(db_url)s
 
+; Albums that involve a collection of different artists are grouped under
+; this name.
+various_artists_name = Various Artists
+
 ###
 # logging configuration
 # http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/logging.html
@@ -132,9 +136,15 @@ class ConfigParser(configparser.ConfigParser):
         super(ConfigParser, self).__init__(
                 interpolation=configparser.ExtendedInterpolation())
 
+    # XXX: new decorator could simplify these accessors.
+
     @property
     def db_url(self):
         return self.get(MAIN_SECT, SA_KEY)
+
+    @property
+    def various_artists_name(self):
+        return self.get(MAIN_SECT, "various_artists_name")
 
 
 default = ConfigParser()

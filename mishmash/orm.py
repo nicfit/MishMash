@@ -39,7 +39,6 @@ from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 from . import __version__ as VERSION
 
 
-VARIOUS_ARTISTS_NAME = u"Various Artists"
 VARIOUS_ARTISTS_ID = 1
 
 
@@ -105,7 +104,7 @@ class OrmObject(object):
     '''Base classes for all other mishmash.orm classes.'''
 
     @staticmethod
-    def initTable(session):
+    def initTable(session, config):
         '''A hook function called after the table is created allowing for
         initial table rows or another other required tweaks.'''
         pass
@@ -133,7 +132,7 @@ class Meta(Base, OrmObject):
     '''A timestamp of the last sync operation.'''
 
     @staticmethod
-    def initTable(session):
+    def initTable(session, config):
         session.add(Meta(version=VERSION))
 
 
@@ -172,8 +171,8 @@ class Artist(Base, OrmObject):
     '''one-to-many artist images.'''
 
     @staticmethod
-    def initTable(session):
-        va = Artist(name=VARIOUS_ARTISTS_NAME)
+    def initTable(session, config):
+        va = Artist(name=config.various_artists_name)
         session.add(va)
         session.flush()
         if va.id != VARIOUS_ARTISTS_ID:
