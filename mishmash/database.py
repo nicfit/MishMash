@@ -36,13 +36,11 @@ DEFAULT_SESSION_ARGS = {
 
 def init(uri, engine_args=None, session_args=None, drop_all=False,
          trans_mgr=None):
-    new_db = False
 
     log.debug("Checking for database '%s'" % uri)
     if not database_exists(uri):
         log.debug("Creating database '%s'" % uri)
         create_database(uri, template="template0")
-        new_db = True
 
     log.debug("Connecting to database '%s'" % uri)
     args = engine_args or DEFAULT_ENGINE_ARGS
@@ -52,14 +50,13 @@ def init(uri, engine_args=None, session_args=None, drop_all=False,
     args = session_args or DEFAULT_SESSION_ARGS
     if trans_mgr:
         import transaction
-        args.update({ "extension": trans_mgr})
+        args.update({"extension": trans_mgr})
     session = scoped_session(sessionmaker(**args))
     session.configure(bind=engine)
 
     for T in TYPES:
         T.metadata.bind = engine
 
-    missing_tables = []
     try:
         try:
             log.debug("Checking database schema '%s'" % uri)

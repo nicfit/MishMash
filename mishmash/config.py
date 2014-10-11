@@ -19,7 +19,6 @@
 ################################################################################
 import os
 from os.path import expandvars
-from collections import OrderedDict
 import configparser
 
 
@@ -101,12 +100,10 @@ formatter = generic
 
 [formatter_generic]
 format = %(generic_format)s
-""" % \
-{
-    "db_url": expandvars("sqlite:///$HOME/mishmash.db"),
-    "generic_format":
-      "%(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s",
-}
+""" % {"db_url": expandvars("sqlite:///$HOME/mishmash.db"),
+       "generic_format":
+         "%(levelname)-5.5s [%(name)s][%(threadName)s]: %(message)s",
+      }
 
 
 def load(config_file):

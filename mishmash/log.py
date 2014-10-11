@@ -27,12 +27,3 @@ class DefaultFormatter(logging.Formatter):
 
     def __init__(self):
         logging.Formatter.__init__(self, self.DEFAULT_FORMAT)
-
-
-def initLogging():
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(DefaultFormatter())
-    log.addHandler(console_handler)
-
-    log.setLevel(logging.NOTSET)
-    log.propagate = False

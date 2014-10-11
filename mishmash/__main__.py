@@ -19,10 +19,8 @@
 ################################################################################
 from __future__ import print_function
 
-import os
 import sys
 import logging
-import warnings
 import logging.config
 
 from sqlalchemy import exc as sql_exceptions
@@ -35,10 +33,9 @@ from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 
 from .database import MissingSchemaException
-from .log import log, initLogging
+from .log import log
 from .commands import makeCmdLineParser
 from . import config
-from . import __release__
 
 
 def _pErr(subject, msg):
@@ -61,6 +58,7 @@ def main():
             import ipdb as pdb
         except ImportError:
             import pdb
+
         def _pdb():
             e, m, tb = sys.exc_info()
             pdb.post_mortem(tb)

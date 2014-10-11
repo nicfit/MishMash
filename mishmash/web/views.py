@@ -158,7 +158,7 @@ def artistView(request):
                                         active_tab == LIVE_TYPE)
     else:
         # Unlike tags, the orm.Track does not have dates so not sorting :/
-        #active_singles = util.sortByDate(active_singles)
+        # XXX active_singles = util.sortByDate(active_singles)
         pass
 
     for a in active_albums:

@@ -121,7 +121,7 @@ class Info(Command):
                 meta = session.query(Meta).one()
             except (ProgrammingError, OperationalError) as ex:
                 printError("\nError querying metadata. Database may not be "
-                           "initialized.")
+                           "initialized: %s" % str(ex))
                 return 1
 
             printMsg("\tVersion: %s" % meta.version)
