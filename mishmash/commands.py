@@ -105,7 +105,7 @@ class Info(Command):
     def __init__(self, subparsers=None):
         super(Info, self).__init__(
             "info", "Show information about music database.", subparsers)
-        self.parser.add_argument("--show-config", action="store_true",
+        self.parser.add_argument("-c", "--show-config", action="store_true",
                                  help="Display current configurion.")
 
     def _run(self):
