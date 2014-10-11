@@ -34,7 +34,7 @@ class Command(object):
     def run(self, args, config):
         self.args = args
         self.config = config
-        self.db_engine, self.db_session = database.init(self.config.db_url)
+        self.db_engine, self.db_session = database.init(self.config)
         return self._run()
 
     def _run(self):
