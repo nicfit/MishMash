@@ -52,21 +52,30 @@ def main():
 
     args = parser.parse_args()
     if args.debug_pdb:
-        # The import of ipdb MUST be limited to explicit --pdb option
-        # (what follows was at module scope prior) because of
-        # https://github.com/gotcha/ipdb/issues/48. Which --pdb is
-        # used with commands where stdout is captured you will bet extra
-        # leading bytes.
         try:
+            # The import of ipdb MUST be limited to explicit --pdb option
+            # (what follows was at module scope prior) because of
+            # https://github.com/gotcha/ipdb/issues/48. Which --pdb is
+            # used with commands where stdout is captured you will bet extra
+            # leading bytes.
             import ipdb as pdb
         except ImportError:
             import pdb
-        def _pdb(args):
+        def _pdb():
             e, m, tb = sys.exc_info()
             pdb.post_mortem(tb)
+    else:
+        def _pdb():
+            pass
 
     app_config = config.load(args.config)
+
     logging.config.fileConfig(app_config)
+
+    if args.db_url:
+        app_config.set(config.MAIN_SECT, config.SA_KEY, args.db_url)
+        # Don't want commands and such to use this, so reset.
+        args.db_url = None
 
     AnsiCodes.init(True)
 
@@ -79,7 +88,7 @@ def main():
     except (sql_exceptions.ArgumentError,
             sql_exceptions.OperationalError) as ex:
         _pErr("Database error", ex)
-        _pdb(args)
+        _pdb()
         retval = 1
     except MissingSchemaException as ex:
         _pErr("Schema error",
@@ -92,7 +101,7 @@ def main():
     except Exception as ex:
         log.exception(ex)
         _pErr(ex.__class__.__name__, str(ex))
-        _pdb(args)
+        _pdb()
         retval = 2
 
     return retval

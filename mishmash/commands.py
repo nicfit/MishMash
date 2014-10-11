@@ -55,7 +55,7 @@ class Command(object):
     def run(self, args, config):
         self.args = args
         self.config = config
-        self.db_engine, self.db_session = database.init(self.args.db_uri)
+        self.db_engine, self.db_session = database.init(self.config.db_url)
         return self._run()
 
     def _run(self):
@@ -116,7 +116,7 @@ class Info(Command):
             session = self.db_session
 
             printMsg("\nDatabase:")
-            printMsg("\tURI: %s" % self.args.db_uri)
+            printMsg("\tURL: %s" % self.config.db_url)
             try:
                 meta = session.query(Meta).one()
             except (ProgrammingError, OperationalError) as ex:
@@ -450,18 +450,17 @@ _cmds.extend([Info, Sync, Random, Search, List, Relocate,
 
 def makeCmdLineParser():
     from . import __version_txt__ as VERSION_MSG
-    from .config import default as default_config
 
     parser = ArgumentParser(prog="mishmash")
     parser.add_argument("--version", action="version", version=VERSION_MSG)
 
     group = parser.add_argument_group(title="Settings and options")
-    default_uri = default_config.get("mishmash", "sqlalchemy.url")
     group.add_argument("-c", "--config", dest="config", metavar="configfile",
                        help="Configuration file.")
-    group.add_argument("-D", "--database", dest="db_uri", metavar="url",
-            default=default_uri,
-            help="Database URL. The default is '%s'" % default_uri)
+    group.add_argument("-D", "--database", dest="db_url", metavar="url",
+            default=None,
+            help="Database URL. This will override the URL from the config "
+                 "file be it the default of one passed with -c/--config.")
 
     subparsers = parser.add_subparsers(
             title="Sub commands",
