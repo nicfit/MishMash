@@ -32,10 +32,18 @@ class Info(command.Command):
         super(Info, self).__init__("Show information about the database or "
                                    "configuration.", subparsers)
         self.parser.add_argument("-C", "--show-config", action="store_true",
-                                 help="Display current configurion.")
+                                 dest="show_config",
+                                 help="Display current configuration.")
+        self.parser.add_argument("-D", "--show-default", action="store_true",
+                                 dest="show_default",
+                                 help="Display the default configuration.")
 
     def _config(self):
-        self.config.write(sys.stdout)
+        if self.args.show_default:
+            from .. import config
+            print(config.default_str)
+        else:
+            self.config.write(sys.stdout)
 
     def _info(self):
         session = self.db_session
@@ -59,7 +67,7 @@ class Info(command.Command):
         print("\t%d labels" % session.query(Label).count())
 
     def _run(self):
-        if self.args.show_config:
+        if self.args.show_config or self.args.show_default:
             self._config()
         else:
             self._info()
