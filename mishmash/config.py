@@ -20,10 +20,12 @@
 import os
 from os.path import expandvars
 from collections import OrderedDict
-from configparser import ConfigParser, ExtendedInterpolation
+import configparser
 
 
 CONFIG_ENV_VAR = "MISHMASH_CONFIG"
+MAIN_SECT = "mishmash"
+SA_KEY = "sqlalchemy.url"
 
 
 default_str = """
@@ -111,7 +113,7 @@ def load(config_file):
     '''Initializes a config with the default, applies ``config_file`` if it is
     not None, and applies any file set in the MISHMASH_CONFIG environment
     variable.'''
-    conf = ConfigParser(interpolation=ExtendedInterpolation())
+    conf = ConfigParser()
     conf.read_string(default_str)
 
     # -c / --config
@@ -127,5 +129,15 @@ def load(config_file):
     return conf
 
 
-default = ConfigParser(interpolation=ExtendedInterpolation())
+class ConfigParser(configparser.ConfigParser):
+    def __init__(self):
+        super(ConfigParser, self).__init__(
+                interpolation=configparser.ExtendedInterpolation())
+
+    @property
+    def db_url(self):
+        return self.get(MAIN_SECT, SA_KEY)
+
+
+default = ConfigParser()
 default.read_string(default_str)
