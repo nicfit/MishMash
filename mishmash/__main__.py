@@ -48,6 +48,11 @@ def main():
                         help="Drop into 'pdb' when errors occur.")
 
     args = parser.parse_args()
+    if "func" not in args:
+        # No command was given.
+        parser.print_help()
+        return 1
+
     if args.debug_pdb:
         try:
             # The import of ipdb MUST be limited to explicit --pdb option
