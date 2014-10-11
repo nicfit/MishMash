@@ -17,10 +17,8 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-import sys
 from configparser import ConfigParser
 from pyramid.config import Configurator
-import transaction
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from .. import database
@@ -64,9 +62,9 @@ def main(global_config, **main_settings):
     # Strip prefix and remove url value
     sql_ini_args = {
             name[plen:]: mm_settings[name]
-                for name in mm_settings if name.startswith(pfix) and
-                                           not name.endswith(".url")
-            }
+            for name in mm_settings
+            if name.startswith(pfix) and not name.endswith(".url")
+    }
     engine_args.update(sql_ini_args)
 
     (engine,

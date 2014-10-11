@@ -52,7 +52,7 @@ def normalizeCountry(country_str, target="iso3c", title_case=False):
     if country_str is None:
         return u''
 
-    if type(country_str) is unicode:
+    if type(country_str) is str:
         # XXX https://github.com/vincentarelbundock/pycountrycode/issues/1
         country_str = country_str.encode('latin1')
 

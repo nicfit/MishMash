@@ -22,8 +22,6 @@ from pyramid_layout.panel import panel_config
 from .. import __version__, __years__, __projectname__
 from .. import orm
 
-#from .layouts import Thing1, Thing2, LittleCat
-
 
 @panel_config(name='navbar',
               renderer='mishmash.web:templates/panels/navbar.pt')

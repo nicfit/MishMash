@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import unittest
 from pyramid import testing
 import mishmash.database

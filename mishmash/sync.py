@@ -21,15 +21,12 @@ from __future__ import print_function
 
 import os
 import time
-import transaction
 from os.path import getctime
 from datetime import datetime
-from fnmatch import fnmatch
 
 from sqlalchemy.orm.exc import NoResultFound
 
 from eyed3.utils import art
-from eyed3.id3.frames import ImageFrame
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils.console import printMsg
 from eyed3.utils.console import Fore as fg
@@ -334,7 +331,6 @@ class SyncPlugin(LoaderPlugin):
             printMsg("%fs time (%f files/s)" % (t, self._num_loaded / t))
 
         session.commit()
-
 
 
 def deleteOrphans(session):
