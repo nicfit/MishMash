@@ -17,11 +17,14 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+from collections import OrderedDict
 from .. import database
 
 
 class Command(object):
-    _all_commands = {}
+    '''Base class for all mishmash commands.'''
+
+    _all_commands = OrderedDict()
 
     def __init__(self, help, subparsers=None):
         self.subparsers = subparsers
@@ -44,6 +47,8 @@ class Command(object):
 
 
 def register(CommandSubClass):
+    '''A class decorator for Command classes to register in the default
+    set.'''
     # Gotta mae the command name a class var
     Command._all_commands[CommandSubClass.NAME] = CommandSubClass
     return CommandSubClass
