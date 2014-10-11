@@ -17,13 +17,14 @@
 #
 ################################################################################
 from sqlalchemy import create_engine, or_
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from sqlalchemy_utils.functions import database_exists, create_database
+from sqlalchemy_utils.functions import (database_exists,
+                                        create_database,
+                                        drop_database)
 
 from . import log
-from .orm import TYPES, TABLES, ENUMS
+from .orm import TYPES, TABLES
 from .orm import Base, Artist, Track, Album
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
@@ -34,8 +35,7 @@ DEFAULT_SESSION_ARGS = {
         }
 
 
-def init(uri, engine_args=None, session_args=None, drop_all=False,
-         trans_mgr=None):
+def init(uri, engine_args=None, session_args=None, trans_mgr=None):
 
     log.debug("Checking for database '%s'" % uri)
     if not database_exists(uri):
@@ -95,18 +95,8 @@ def checkSchema(engine):
         raise MissingSchemaException(missing_tables)
 
 
-def dropAll(engine):
-
-    for dbo_list in [TABLES, ENUMS]:
-        tmp = list(dbo_list)
-        tmp.reverse()
-
-        for dbo in tmp:
-            try:
-                log.debug("Dropping '%s'" % dbo)
-                dbo.drop(bind=engine)
-            except OperationalError as ex:
-                log.debug(str(ex))
+def dropAll(url):
+    drop_database(url)
 
 
 class MissingSchemaException(Exception):
