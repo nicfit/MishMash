@@ -17,11 +17,11 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-from configparser import ConfigParser
 from pyramid.config import Configurator
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from .. import database
+from ..config import load as config_load
 
 
 def _configure(settings, DBSession):
@@ -53,9 +53,8 @@ def _configure(settings, DBSession):
 
 
 def main(global_config, **main_settings):
-    config_file = ConfigParser()
-    config_file.read(global_config["__file__"])
-    mm_settings = config_file._sections["mishmash"]
+    app_config = config_load(global_config["__file__"])
+    mm_settings = app_config._sections["mishmash"]
 
     engine_args = dict(database.DEFAULT_ENGINE_ARGS)
     pfix, plen = "sqlalchemy.", len("sqlalchemy.")
@@ -68,10 +67,10 @@ def main(global_config, **main_settings):
     engine_args.update(sql_ini_args)
 
     (engine,
-     DBSession) = database.init(mm_settings["%surl" % pfix],
+     DBSession) = database.init(app_config,
                                 engine_args=engine_args,
                                 trans_mgr=ZopeTransactionExtension())
 
-    config = _configure(main_settings, DBSession)
+    pyra_config = _configure(main_settings, DBSession)
 
-    return config.make_wsgi_app()
+    return pyra_config.make_wsgi_app()
