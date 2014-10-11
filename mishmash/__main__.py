@@ -22,6 +22,7 @@ from __future__ import print_function
 import sys
 import logging
 import logging.config
+from argparse import ArgumentParser
 
 from sqlalchemy import exc as sql_exceptions
 
@@ -34,12 +35,47 @@ from eyed3.utils.prompt import PromptExit
 
 from .database import MissingSchemaException
 from .log import log
-from .commands import makeCmdLineParser
 from . import config
+from .commands.command import Command
 
 
 def _pErr(subject, msg):
     print(fg.red(subject) + ": %s" % str(msg))
+
+
+def makeCmdLineParser():
+    from . import __version_txt__ as VERSION_MSG
+
+    parser = ArgumentParser(prog="mishmash")
+    parser.add_argument("--version", action="version", version=VERSION_MSG)
+
+    group = parser.add_argument_group(title="Settings and options")
+    group.add_argument("-c", "--config", dest="config", metavar="configfile",
+                       help="Configuration file.")
+    group.add_argument("-D", "--database", dest="db_url", metavar="url",
+            default=None,
+            help="Database URL. This will override the URL from the config "
+                 "file be it the default of one passed with -c/--config.")
+
+    subparsers = parser.add_subparsers(
+            title="Sub commands",
+            description="Database command line options are required by most "
+                        "sub commands.")
+
+    # help subcommand; turns it into the less intuitive --help format.
+    def _help(args, config):
+        if args.command:
+            parser.parse_args([args.command, "--help"])
+        else:
+            parser.print_help()
+        parser.exit(0)
+    help_parser = subparsers.add_parser("help", help="Show help.")
+    help_parser.set_defaults(func=_help)
+    help_parser.add_argument("command", nargs='?', default=None)
+
+    Command.initAll(subparsers)
+
+    return parser
 
 
 def main():

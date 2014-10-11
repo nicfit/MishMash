@@ -23,20 +23,24 @@ import os
 import time
 from os.path import getctime
 from datetime import datetime
+from argparse import Namespace
 
 from sqlalchemy.orm.exc import NoResultFound
 
+import eyed3
+import eyed3.main
+from eyed3.main import main as eyed3_main
 from eyed3.utils import art
 from eyed3.plugins import LoaderPlugin
-from eyed3.utils.console import printMsg
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
-from .orm import (Track, Artist, Album, Label, Meta, Image,
-                  VARIOUS_ARTISTS_ID)
-from .log import log
-from . import console
+from ..orm import (Track, Artist, Album, Label, Meta, Image,
+                   VARIOUS_ARTISTS_ID)
+from ..log import log
+from . import command
+from .. import console
 
 
 IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
@@ -313,22 +317,21 @@ class SyncPlugin(LoaderPlugin):
         num_orphaned_artists = 0
         num_orphaned_albums = 0
         if not self.args.no_purge:
-            printMsg("Purging orphans (tracks, artists, albums) from "
-                     "database...")
+            print("Purging orphans (tracks, artists, albums) from database...")
             (self._num_deleted,
              num_orphaned_artists,
              num_orphaned_albums) = deleteOrphans(session)
 
         if self._num_loaded or self._num_deleted:
-            printMsg("")
-            printMsg("%d files sync'd" % self._num_loaded)
-            printMsg("%d tracks added" % self._num_added)
-            printMsg("%d tracks modified" % self._num_modified)
+            print("")
+            print("%d files sync'd" % self._num_loaded)
+            print("%d tracks added" % self._num_added)
+            print("%d tracks modified" % self._num_modified)
             if not self.args.no_purge:
-                printMsg("%d orphaned tracks deleted" % self._num_deleted)
-                printMsg("%d orphaned artists deleted" % num_orphaned_artists)
-                printMsg("%d orphaned albums deleted" % num_orphaned_albums)
-            printMsg("%fs time (%f files/s)" % (t, self._num_loaded / t))
+                print("%d orphaned tracks deleted" % self._num_deleted)
+                print("%d orphaned artists deleted" % num_orphaned_artists)
+                print("%d orphaned albums deleted" % num_orphaned_albums)
+            print("%fs time (%f files/s)" % (t, self._num_loaded / t))
 
         session.commit()
 
@@ -416,3 +419,38 @@ def syncImage(img, current, session):
         current.images.append(img)
         session.add(current)
         print(fg.green("Adding image") + ": " + _img_str(img))
+
+
+@command.register
+class Sync(command.Command):
+    NAME = "sync"
+
+    def __init__(self, subparsers=None):
+        super(Sync, self).__init__(
+                "Syncronize music directories with database.", subparsers)
+
+        self.parser = eyed3.main.makeCmdLineParser(self.parser)
+        self.plugin = SyncPlugin(self.parser)
+        self.args = None
+
+    def _run(self, paths=[], config=None, backup=False, excludes=None,
+             fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
+
+        if self.args:
+            args = self.args
+        else:
+            # Running as an API, make an args object with the right info
+            args = Namespace()
+            args.paths = paths
+            args.config = config
+            args.backup = backup
+            args.excludes = excludes
+            args.fs_encoding = fs_encoding
+            args.quiet = quiet
+            args.list_plugins = False
+            args.no_purge = no_purge
+
+        args.plugin = self.plugin
+        args.db_engine, args.db_session = self.db_engine, self.db_session
+
+        return eyed3_main(args, None)
