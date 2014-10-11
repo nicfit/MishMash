@@ -2,6 +2,101 @@
 Usage
 ========
 
+Configuration
+-------------
+
+MishMash ships with a default configuration that should work out of the
+box with no extra additional settings by using a SQLite database resided in
+``${HOME}/mishmash.db``.  Running ``mishmash info`` with demonstrate this,
+afterwards ``mishmash.db`` will exist in your home directory and be
+initialized with the database schema.
+
+.. code-block:: bash
+
+    $ mishmash info
+    $ sqlite3 /home/travis/mishmash.db
+    sqlite> select * from artists;
+    1|Various Artists|Various Artists|2014-10-11 01:12:10.246406|||
+    sqlite>
+
+To see the current configuration use info command's ``-C/--show-config``
+option. You may wish to capture this output for writing custom configuration
+files.
+
+.. code-block:: bash
+
+    $ mishmash info --show-config
+    [mishmash]
+    sqlalchemy.url = sqlite:////home/travis/mishmash.db
+
+    [loggers]
+    keys = root, sqlalchemy, eyed3, mishmash
+
+    [handlers]
+    keys = console
+
+    [formatters]
+    keys = generic
+
+    [logger_root]
+    level = INFO
+    handlers = console
+
+    ... more config ...
+
+The first change most users will want to do is change the database that
+MishMash uses. The ``-D/--database`` option make this easy. In this example,
+information about ./mymusic.db SQLite database and the mymusic PostgreSQL
+database is displayed.
+
+.. code-block:: bash
+
+    $ mishmash --database=sqlite:///mymusic.db info
+    $ mishmash -D postgresql://mishmash@localhost:5432/mymusic info
+
+In you wish to make additional configuration changes, or would like to avoid
+needing to type the database URL all the time, a configuration is needed.  The
+file may contain the entire configuration (see ``info --show-config``) or only
+the values you wish to change (i.e. changes are applied to the default
+configuration).  With the settings saved to a file you use the ``-c/--config``
+option to have MishMash use it. In this examples the database URL and
+a logging level are modified.
+
+.. code-block:: bash
+
+    $ cat example.ini
+    [mishmash]
+    sqlalchemy.url = postgresql://mishmash@localhost:5432/mymusic
+
+    [logger_sqlalchemy]
+    level = DEBUG
+
+    $ mishmash -c example.ini info
+
+You can avoid typing ``-c/--config`` option by setting the file name in the
+``MISHMASH_CONFIG`` environment variable.
+
+.. code-block:: bash
+
+    $ export MISHMASH_CONFIG=/etc/mishmash.ini
+
+None of the options for controlling configuration are mutually exclusive,
+complex setups can be made by combining them. The order of precedence is
+show below::
+
+    Default <-- -c/--config <-- MISHMASH_CONFIG <-- -D/--database
+
+Items to the left are lower precedence and the direction arrows (``<--``)
+show the order in which the options are merged.
+
+For example, local machine changes (local.ini) could be merged with the
+global site configuration (site.ini) and the PostgreSQL server at
+dbserver.example.com is used regardless then the other files set.
+
+.. code-block:: bash
+
+    $ MISHMASH_CONFIG=local.ini mishmish -c site.ini -D postgresql://dbserver.example.com:5432/music
+
 Databases
 ---------
 The first requirement is deciding a database for MishMash to use. One of the
@@ -12,12 +107,10 @@ currently tested/supported are::
 * Postgresql
 * SQLite; limited testing.
 
-MishMash uses a database URL to create connections. The URL is most commonly 
-read from the ``MISHMASH_DB`` environment variable, while other applications
-might use a configuration file. The default value uses a SQLite database
-called 'mishmash.db' in the user's home directory.::
+The default value uses a SQLite database called 'mishmash.db' in the user's
+home directory.::
 
-    $ export MISHMASH_DB="sqlite:///${HOME}/mishmash.db"
+    sqlite:///${HOME}/mishmash.db
 
 The URL in this example specifies the type of database (i.e. SQLite) and
 the filename of the DB file. The following sections provide more URL
@@ -36,22 +129,7 @@ while ``host`` and ``port`` (the default is 5432) determine where to connect.
 Lastly, the specific name of the database that contains the MishMash data
 is given by ``db_name``. A specific example::
 
-    export MISHMASH_DB='postgresql://mishmash:mishmash@localhost/mishmash_test'
-
-See the official `PostgreSQL documentation`_ for setup and administration
-details but a brief example creating a database for MishMash to serve as a
-starting point might be helpful.
-
-.. code-block:: bash
-
-  # Become the postges user
-  $ sudo su - postgres
-  # Create a db user named mishmash with database creation permission.
-  $ createuser -d -P mishmash
-  # Close postgres user shell.
-  $ exit
-  # As user mishmash, create a suitable database named mishmash
-  $ createdb -U mishmash -T template0 -E UTF8 mishmash
+    postgresql://mishmash:mishmash@localhost/mishmash_test
 
 SQLite
 ~~~~~~
@@ -68,24 +146,14 @@ The slashes can be a little odd, so some examples::
 The last example specifies an in-memory database that only exists as long as
 the application using it.
 
-mishmash init
+mishmash info
 -------------
-
-Initialize the database tables with the ``mishmash init`` command.
-
-.. code-block:: bash
-
-  # Initialize if the database is empty, otherwise the command does nothing.
-  $ mishmash init
-  # Delete entire database if it exists and re-initialize.
-  $ mishmash init --drop-all
+The ``info`` command displays details about the current settings and database.
+TODO
 
 mishmash sync
 -------------
-TODO
-
-mishmash info
--------------
+The ``sync`` command imports music metadata into the database.
 TODO
 
 

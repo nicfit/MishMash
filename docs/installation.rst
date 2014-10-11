@@ -31,7 +31,7 @@ At the command line::
     $ cd mishmash
     $ python setup.py install
 
-Additional dependencies should be installed if developing MishMish::
+Additional dependencies should be installed if developing MishMash::
 
     $ pip install -r dev-requirements.txt
 
