@@ -17,8 +17,23 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
+import tempfile
+from pyramid.scripts.pserve import PServeCommand
+from . import command
 
-from . import info                                                # flake8: noqa
-from . import sync                                                # flake8: noqa
-from . import mgmt                                                # flake8: noqa
-from . import web                                                 # flake8: noqa
+
+@command.register
+class Web(command.Command):
+    NAME = "web"
+
+    def __init__(self, subparsers=None):
+        super(Web, self).__init__("MishMash web interface.", subparsers)
+
+    def _run(self):
+        # pserve wants a file to open, so use the *composed* config.
+        with tempfile.NamedTemporaryFile(mode="w") as config_file:
+            self.config.write(config_file)
+            config_file.flush()
+            argv = ["mishmish", config_file.name]
+            pserve = PServeCommand(argv)
+            return pserve.run()
