@@ -103,7 +103,7 @@ pyramid.includes =
 [server:main]
 use = egg:waitress#main
 host = 0.0.0.0
-port = 6474
+port = 6229
 
 """ % {"db_url": expandvars("sqlite:///$HOME/mishmash.db"),
        "generic_format":
