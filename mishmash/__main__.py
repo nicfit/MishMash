@@ -107,7 +107,7 @@ def main():
         def _pdb():
             pass
 
-    app_config = config.load(args.config)
+    app_config, args.config_files = config.load(args.config)
 
     logging.config.fileConfig(app_config)
 

@@ -50,7 +50,7 @@ keys = console
 keys = generic
 
 [logger_root]
-level = INFO
+level = WARN
 handlers = console
 
 [logger_sqlalchemy]
@@ -63,7 +63,7 @@ qualname = sqlalchemy.engine
 propagate = 0
 
 [logger_mishmash]
-level = INFO
+level = WARN
 qualname = mishmash
 handlers = console
 propagate = 0
@@ -107,28 +107,33 @@ port = 6474
 
 """ % {"db_url": expandvars("sqlite:///$HOME/mishmash.db"),
        "generic_format":
-         "%(levelname)-5.5s [%(name)s][%(threadName)s]: %(message)s",
+         "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s",
       }
 
 
-def load(config_file):
-    '''Initializes a config with the default, applies ``config_file`` if it is
+def load(conf_file):
+    '''Initializes a config with the default, applies ``conf_file`` if it is
     not None, and applies any file set in the MISHMASH_CONFIG environment
     variable.'''
+    conf_file = conf_file or None
+    files = []
+
     conf = ConfigParser()
     conf.read_string(default_str)
 
     # -c / --config
-    if config_file:
-        with open(config_file) as confp:
+    if conf_file:
+        with open(conf_file) as confp:
             conf.read_file(confp)
+        files.append(conf_file)
 
     # env var
     if CONFIG_ENV_VAR in os.environ:
         with open(os.environ[CONFIG_ENV_VAR]) as confp:
             conf.read_file(confp)
+        files.append(confp.name)
 
-    return conf
+    return conf, files
 
 
 class ConfigParser(configparser.ConfigParser):
