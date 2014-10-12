@@ -23,7 +23,7 @@ from sqlalchemy.exc import ProgrammingError, OperationalError
 from eyed3.utils.console import printError
 from eyed3.utils.console import cprint, cformat, Fore, Style
 from .. import __version__
-from ..orm import Track, Artist, Album, Meta, Label
+from ..orm import Track, Artist, Album, Meta, Tag
 from . import command
 
 
@@ -52,6 +52,7 @@ class Info(command.Command):
         session = self.db_session
 
         _output = []
+
         def _addOutput(_k, _v):
             _output.append(tuple((_k, _v)))
 
@@ -83,12 +84,11 @@ class Info(command.Command):
 
         _addOutput(None, None)
         for name, orm_type in [("tracks", Track), ("artists", Artist),
-                              ("albums", Album), ("labias", Label),
+                              ("albums", Album), ("Tags", Tag),
                      ]:
             count = session.query(orm_type).count()
             _addOutput(str(count), name)
         _printOutput("%s music %s", _output)
-
 
     def _run(self):
         if self.args.show_config or self.args.show_default:

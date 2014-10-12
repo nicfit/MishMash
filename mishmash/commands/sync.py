@@ -36,7 +36,7 @@ from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
-from ..orm import (Track, Artist, Album, Label, Meta, Image,
+from ..orm import (Track, Artist, Album, Tag, Meta, Image,
                    VARIOUS_ARTISTS_ID)
 from ..log import log
 from . import command
@@ -256,21 +256,20 @@ class SyncPlugin(LoaderPlugin):
                 print(fg.yellow("Updating track") + ": " + path)
 
             genre = tag.genre
-            label = None
+            genre_tag = None
             if genre:
                 try:
-                    label = \
-                        session.query(
-                            Label).filter_by(name=genre.name).one()
+                    genre_tag = session.query(Tag).filter_by(name=genre.name)\
+                                       .one()
                 except NoResultFound:
-                    label = Label(name=genre.name)
-                    session.add(label)
+                    genre_tag = Tag(name=genre.name)
+                    session.add(genre_tag)
                     session.flush()
 
             track.artist_id = artist.id
             track.album_id = album.id if album else None
-            if label:
-                track.labels.append(label)
+            if genre_tag:
+                track.tags.append(genre_tag)
             session.add(track)
 
             if album:
