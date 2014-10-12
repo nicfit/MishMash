@@ -33,6 +33,7 @@ def splitNameByPrefix(s):
 
 
 def sortByDate(things, prefer_recording_date=False):
+    # XXX: Why just just make Album types sortable by intregating this
     def _sortkey(a):
         return datePicker(a, prefer_recording_date=prefer_recording_date)
     return sorted(things, key=_sortkey)
@@ -80,7 +81,7 @@ def commonDirectoryPrefix(*args):
     return os.path.commonprefix(args).rpartition(os.path.sep)[0]
 
 
-def mostCommon(lst):
+def mostCommonItem(lst):
     '''Choose the most common item from the list, or the first item if all
     items are unique.'''
     # This elegant solution from: http://stackoverflow.com/a/1518632/1760218
