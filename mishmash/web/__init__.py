@@ -53,7 +53,7 @@ def _configure(settings, DBSession):
 
 
 def main(global_config, **main_settings):
-    app_config = config_load(global_config["__file__"])
+    app_config, config_files = config_load(global_config["__file__"])
     mm_settings = app_config._sections["mishmash"]
 
     engine_args = dict(database.DEFAULT_ENGINE_ARGS)

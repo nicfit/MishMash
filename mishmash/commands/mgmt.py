@@ -18,11 +18,14 @@
 #
 ################################################################################
 import os
+
 from eyed3.core import VARIOUS_TYPE
 from eyed3.utils.prompt import prompt
 from eyed3.utils.console import (Style, Fore as fg)
+
+from ..console import promptArtist, selectArtist
 from ..orm import Track, Artist, Album, Meta, Label
-from ..util import normalizeCountry, commonDirectoryPrefix
+from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
 from . import command
 
 '''Metadata management commands.'''
@@ -144,4 +147,82 @@ class SplitArtists(command.Command):
 
             session.flush()
 
+        session.commit()
+
+
+@command.register
+class MergeArtists(command.Command):
+    NAME = "merge-artists"
+
+    def __init__(self, subparsers=None):
+        super(MergeArtists, self).__init__(
+                "Merge two or more artists into a single artist.",
+                subparsers)
+        self.parser.add_argument("artists", nargs="+",
+                                 help="The artist names to merge.")
+
+    def _run(self):
+        session = self.db_session
+
+        merge_list = []
+        for artist_arg in self.args.artists:
+            artists = session.query(Artist)\
+                             .filter(Artist.name == artist_arg).all()
+            if len(artists) == 1:
+                merge_list.append(artists[0])
+            elif len(artists) > 1:
+                merge_list += selectArtist(
+                        fg.blue("Select the artists to merge..."),
+                        multiselect=True, choices=artists)
+
+        if len(merge_list) > 1:
+            # Reuse lowest id
+            artist_ids = {a.id: a for a in merge_list}
+            min_id = min(*artist_ids.keys())
+            artist = artist_ids[min_id]
+
+            mc = mostCommonItem
+            new_artist = promptArtist(
+                    "Merging %d artists into new artist..." % len(merge_list),
+                    default_name=mc([a.name for a in merge_list]),
+                    default_city=mc([a.origin_city for a in merge_list]),
+                    default_state=mc([a.origin_state for a in merge_list]),
+                    default_country=mc([a.origin_country for a in merge_list]),
+                    artist=artist)
+        else:
+            print("Nothing to do, %s" %
+                    ("artist not found" if not len(merge_list)
+                                        else "only one artist found"))
+            return 1
+
+        assert(new_artist in merge_list)
+
+        for artist in merge_list:
+            if artist is new_artist:
+                continue
+
+            for alb in list(artist.albums):
+                # FIXME: use constant
+                if alb.type != "various":
+                    alb.artist_id = new_artist.id
+                    artist.albums.remove(alb)
+                    new_artist.albums.append(alb)
+
+                for track in alb.tracks:
+                    if track.artist_id == artist.id:
+                        # gotta check in case alb is type various
+                        track.artist_id = new_artist.id
+
+            for track in artist.getTrackSingles():
+                track.artist_id = new_artist.id
+
+            # flush to get new artist ids in sync before delete, otherwise
+            # cascade happens.
+            session.flush()
+            session.delete(artist)
+
+            session.flush()
+
+        # FIXME: promt for whether the tags should be updated with the new
+        # name if it is new.
         session.commit()

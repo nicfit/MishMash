@@ -40,7 +40,7 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
 
     log.debug("Checking for database '%s'" % url)
     if not database_exists(url):
-        log.debug("Creating database '%s'" % url)
+        log.info("Creating database '%s'" % url)
         create_database(url, template="template0")
 
     log.debug("Connecting to database '%s'" % url)
@@ -63,9 +63,7 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
             log.debug("Checking database schema '%s'" % url)
             checkSchema(engine)
         except MissingSchemaException as ex:
-            log.warn("Missing database schema: %s" % ex.tables)
-
-            log.debug("Creating database schema '%s'" % url)
+            log.info("Creating database schema '%s'" % url)
             Base.metadata.create_all(engine)
             for T in TYPES:
                 # Run extra table initialization

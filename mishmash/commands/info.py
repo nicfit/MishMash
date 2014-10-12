@@ -18,8 +18,11 @@
 #
 ################################################################################
 import sys
+from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
 from eyed3.utils.console import printError
+from eyed3.utils.console import cprint, cformat, Fore, Style
+from .. import __version__
 from ..orm import Track, Artist, Album, Meta, Label
 from . import command
 
@@ -48,8 +51,23 @@ class Info(command.Command):
     def _info(self):
         session = self.db_session
 
-        print("\nDatabase:")
-        print("\tURL: %s" % self.config.db_url)
+        _output = []
+        def _addOutput(_k, _v):
+            _output.append(tuple((_k, _v)))
+
+        def _printOutput(_format, _olist, key_fg=None):
+            k_width = max([len(k) for k, v in _olist if k])
+            for k, v in _olist:
+                print(_format % (cformat(k.ljust(k_width), key_fg), v)
+                        if k else "")
+            _olist.clear()
+
+        cprint(figlet_format("``MishMash``", font="graffiti"), Fore.GREEN,
+                styles=[Style.BRIGHT])
+
+        _addOutput("Version", __version__)
+        _addOutput("Database URL", self.config.db_url)
+
         try:
             meta = session.query(Meta).one()
         except (ProgrammingError, OperationalError) as ex:
@@ -57,14 +75,20 @@ class Info(command.Command):
                        "initialized: %s" % str(ex))
             return 1
 
-        print("\tVersion: %s" % meta.version)
-        print("\tLast Sync: %s" % meta.last_sync)
+        _addOutput("Database version", meta.version)
+        _addOutput("Last sync", meta.last_sync)
+        _addOutput("Configuration files",
+                   (", ".join(self.args.config_files) or "None"))
+        _printOutput("%s : %s", _output, key_fg=Fore.BLUE)
 
-        print("\nMusic:")
-        print("\t%d tracks" % session.query(Track).count())
-        print("\t%d artists" % session.query(Artist).count())
-        print("\t%d albums" % session.query(Album).count())
-        print("\t%d labels" % session.query(Label).count())
+        _addOutput(None, None)
+        for name, orm_type in [("tracks", Track), ("artists", Artist),
+                              ("albums", Album), ("labias", Label),
+                     ]:
+            count = session.query(orm_type).count()
+            _addOutput(str(count), name)
+        _printOutput("%s music %s", _output)
+
 
     def _run(self):
         if self.args.show_config or self.args.show_default:
