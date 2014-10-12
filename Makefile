@@ -1,5 +1,5 @@
-.PHONY: clean-pyc clean-build clean-patch docs clean help lint test test-all \
-        coverage docs release dist tags
+.PHONY: clean-pyc clean-build clean-patch docs docs-clean clean \
+        help lint test test-all coverage docs release dist tags
 
 help:
 	@echo "clean-build - remove build artifacts"
@@ -47,11 +47,13 @@ coverage:
 	coverage html
 	@echo "file://`pwd`/htmlcov/index.html"
 
-docs:
+docs-clean:
 	rm -f docs/mishmash.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ -H "mishmash API" -e mishmash
 	$(MAKE) -C docs clean
+
+docs:
+	sphinx-apidoc -o docs -H "Developer API" -e mishmash
 	$(MAKE) -C docs html
 	@echo "file://`pwd`/docs/_build/html/index.html"
 
