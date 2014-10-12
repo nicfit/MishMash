@@ -84,7 +84,7 @@ class Info(command.Command):
 
         _addOutput(None, None)
         for name, orm_type in [("tracks", Track), ("artists", Artist),
-                              ("albums", Album), ("Tags", Tag),
+                              ("albums", Album), ("tags", Tag),
                      ]:
             count = session.query(orm_type).count()
             _addOutput(str(count), name)
