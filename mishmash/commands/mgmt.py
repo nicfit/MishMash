@@ -24,7 +24,7 @@ from eyed3.utils.prompt import prompt
 from eyed3.utils.console import (Style, Fore as fg)
 
 from ..console import promptArtist, selectArtist
-from ..orm import Track, Artist, Album, Meta, Label
+from ..orm import Artist
 from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
 from . import command
 

@@ -54,32 +54,32 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 Base = declarative_base()
 
-artist_labels = sql.Table("artist_labels", Base.metadata,
-                          sql.Column("artist_id", sql.Integer,
-                                     sql.ForeignKey("artists.id")),
-                          sql.Column("label_id", sql.Integer,
-                                     sql.ForeignKey("labels.id")),
+artist_tags = sql.Table("artist_tags", Base.metadata,
+                        sql.Column("artist_id", sql.Integer,
+                                   sql.ForeignKey("artists.id")),
+                        sql.Column("label_id", sql.Integer,
+                                   sql.ForeignKey("tags.id")),
                          )
-'''Pivot table 'artist_labels' for mapping an artist ID to a value in the
-`labels` table.'''
+'''Pivot table 'artist_tags' for mapping an artist ID to a value in the
+`tags` table.'''
 
-album_labels = sql.Table("album_labels", Base.metadata,
-                         sql.Column("album_id", sql.Integer,
-                                    sql.ForeignKey("albums.id")),
-                         sql.Column("label_id", sql.Integer,
-                                    sql.ForeignKey("labels.id")),
+album_tags = sql.Table("album_tags", Base.metadata,
+                       sql.Column("album_id", sql.Integer,
+                                  sql.ForeignKey("albums.id")),
+                       sql.Column("label_id", sql.Integer,
+                                  sql.ForeignKey("tags.id")),
                         )
-'''Pivot table 'album_labels' for mapping an album ID to a value in the
-`labels` table.'''
+'''Pivot table 'album_tags' for mapping an album ID to a value in the
+`tags` table.'''
 
-track_labels = sql.Table("track_labels", Base.metadata,
-                         sql.Column("track_id", sql.Integer,
-                                    sql.ForeignKey("tracks.id")),
-                         sql.Column("label_id", sql.Integer,
-                                    sql.ForeignKey("labels.id")),
+track_tags = sql.Table("track_tags", Base.metadata,
+                       sql.Column("track_id", sql.Integer,
+                                  sql.ForeignKey("tracks.id")),
+                       sql.Column("label_id", sql.Integer,
+                                  sql.ForeignKey("tags.id")),
                         )
-'''Pivot table 'track_labels' for mapping a track ID to a value in the
-`labels` table.'''
+'''Pivot table 'track_tags' for mapping a track ID to a value in the
+`tags` table.'''
 
 artist_images = sql.Table("artist_images", Base.metadata,
                           sql.Column("artist_id", sql.Integer,
@@ -165,7 +165,7 @@ class Artist(Base, OrmObject):
     '''all albums by the artist'''
     tracks = orm.relation("Track", cascade="all")
     '''all tracks by the artist'''
-    labels = orm.relation("Label", secondary=artist_labels)
+    tags = orm.relation("Tag", secondary=artist_tags)
     '''one-to-many (artist->label) and many-to-one (label->artist)'''
     images = orm.relation("Image", secondary=artist_images, cascade="all")
     '''one-to-many artist images.'''
@@ -285,7 +285,7 @@ class Album(Base, OrmObject):
     artist = orm.relation("Artist")
     tracks = orm.relation("Track", order_by="Track.track_num",
                           cascade="all")
-    labels = orm.relation("Label", secondary=album_labels)
+    tags = orm.relation("Tag", secondary=album_tags)
     images = orm.relation("Image", secondary=album_images, cascade="all")
     '''one-to-many album images.'''
 
@@ -327,7 +327,7 @@ class Track(Base, OrmObject):
     # Relations
     artist = orm.relation("Artist")
     album = orm.relation("Album")
-    labels = orm.relation("Label", secondary=track_labels)
+    tags = orm.relation("Tag", secondary=track_tags)
 
     def __init__(self, **kwargs):
         '''Along with the column args a ``audio_file`` keyword may be passed
@@ -355,8 +355,8 @@ class Track(Base, OrmObject):
         self.media_num, self.media_total = tag.disc_num
 
 
-class Label(Base, OrmObject):
-    __tablename__ = "labels"
+class Tag(Base, OrmObject):
+    __tablename__ = "tags"
 
     # Columns
     id = sql.Column(sql.Integer, primary_key=True)
@@ -413,10 +413,10 @@ class Image(Base, OrmObject):
                      size=len(data),
                      data=data)
 
-TYPES = [Meta, Label, Artist, Album, Track, Image]
-LABELS = [artist_labels, album_labels, track_labels,
-          artist_images, album_images]
-TABLES = [T.__table__ for T in TYPES] + LABELS
+
+TYPES = [Meta, Tag, Artist, Album, Track, Image]
+TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
+TABLES = [T.__table__ for T in TYPES] + TAGS
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''
 ENUMS = [Image._types_enum, Album._types_enum]
