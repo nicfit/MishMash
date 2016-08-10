@@ -1,8 +1,9 @@
 wheel
 tox
 Sphinx
-sphinxcontrib-bitbucket
+#sphinxcontrib-bitbucket
 flake8
 coverage
 sphinx_bootstrap_theme
 pyramid_debugtoolbar
+nose

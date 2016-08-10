@@ -35,4 +35,4 @@ Run with --help/-h for usage information or read the docs at
 %(__web__)s
 """ % (locals())
 
-from .log import log                                             # flake8: noqa
+from .log import log                                             # noqa
