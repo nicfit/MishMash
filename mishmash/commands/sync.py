@@ -332,8 +332,6 @@ class SyncPlugin(LoaderPlugin):
                 print("%d orphaned albums deleted" % num_orphaned_albums)
             print("%fs time (%f files/s)" % (t, self._num_loaded / t))
 
-        session.commit()
-
 
 def deleteOrphans(session):
     num_orphaned_artists = 0

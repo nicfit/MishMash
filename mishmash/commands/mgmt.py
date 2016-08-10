@@ -88,66 +88,65 @@ class SplitArtists(command.Command):
         n = prompt("\nEnter the number of distinct artists", type_=int,
                    validate=_validN)
         new_artists = []
-        with session.begin_nested():
-            for i in range(1, n + 1):
-                print(Style.bright(u"\n%s #%d") % (fg.blue(artist.name), i))
+        for i in range(1, n + 1):
+            print(Style.bright(u"\n%s #%d") % (fg.blue(artist.name), i))
 
-                # Reuse original artist for first
-                a = artist if i == 1 else Artist(name=artist.name,
-                                                 date_added=artist.date_added)
-                a.origin_city = prompt("   City", required=False)
-                a.origin_state = prompt("   State", required=False)
-                a.origin_country = prompt("   Country", required=False,
-                                          type_=normalizeCountry)
+            # Reuse original artist for first
+            a = artist if i == 1 else Artist(name=artist.name,
+                                             date_added=artist.date_added)
+            a.origin_city = prompt("   City", required=False)
+            a.origin_state = prompt("   State", required=False)
+            a.origin_country = prompt("   Country", required=False,
+                                      type_=normalizeCountry)
+            import ipdb; ipdb.set_trace()
 
-                new_artists.append(a)
+            new_artists.append(a)
 
-            if not Artist.checkUnique(new_artists):
-                print(fg.red("Artists must be unique."))
-                return 1
+        if not Artist.checkUnique(new_artists):
+            print(fg.red("Artists must be unique."))
+            return 1
 
-            for a in new_artists:
-                session.add(a)
+        for a in new_artists:
+            session.add(a)
 
-            # New Artist objects need IDs
-            session.flush()
+        # New Artist objects need IDs
+        session.flush()
 
-            print(Style.bright("\nAssign albums to the correct artist."))
-            for i, a in enumerate(new_artists):
-                print("Enter %s%d%s for %s from %s%s%s" %
-                      (Style.BRIGHT, i + 1, Style.RESET_BRIGHT,
-                      a.name,
-                      Style.BRIGHT, a.origin(country_code="iso3c",
-                                             title_case=False),
-                      Style.RESET_BRIGHT))
+        print(Style.bright("\nAssign albums to the correct artist."))
+        for i, a in enumerate(new_artists):
+            print("Enter %s%d%s for %s from %s%s%s" %
+                  (Style.BRIGHT, i + 1, Style.RESET_BRIGHT,
+                  a.name,
+                  Style.BRIGHT, a.origin(country_code="iso3c",
+                                         title_case=False),
+                  Style.RESET_BRIGHT))
 
-            # prompt for correct artists
-            def _promptForArtist(_text):
-                a = prompt(_text, type_=int,
-                           choices=range(1, len(new_artists) + 1))
-                return new_artists[a - 1]
+        # prompt for correct artists
+        def _promptForArtist(_text):
+            a = prompt(_text, type_=int,
+                       choices=range(1, len(new_artists) + 1))
+            return new_artists[a - 1]
 
-            print("")
-            for alb in albums:
-                # Get some of the path to help the decision
-                path = commonDirectoryPrefix(*[t.path for t in alb.tracks])
-                path = os.path.join(*path.split(os.sep)[-2:])
+        print("")
+        for alb in albums:
+            # Get some of the path to help the decision
+            path = commonDirectoryPrefix(*[t.path for t in alb.tracks])
+            path = os.path.join(*path.split(os.sep)[-2:])
 
-                a = _promptForArtist("%s (%s)" % (alb.title, path))
-                if alb.type != "various":
-                    alb.artist_id = a.id
-                for track in alb.tracks:
-                    if track.artist_id == artist.id:
-                        track.artist_id = a.id
+            a = _promptForArtist("%s (%s)" % (alb.title, path))
+            if alb.type != "various":
+                alb.artist_id = a.id
+            for track in alb.tracks:
+                if track.artist_id == artist.id:
+                    track.artist_id = a.id
 
-            print("")
-            for track in singles:
-                a = _promptForArtist(track.title)
-                track.artist_id = a.id
+        print("")
+        for track in singles:
+            a = _promptForArtist(track.title)
+            track.artist_id = a.id
 
-            session.flush()
+        session.flush()
 
-        session.commit()
 
 
 @command.register
@@ -201,20 +200,22 @@ class MergeArtists(command.Command):
             if artist is new_artist:
                 continue
 
-            for alb in list(artist.albums):
-                # FIXME: use constant
-                if alb.type != "various":
-                    alb.artist_id = new_artist.id
-                    artist.albums.remove(alb)
-                    new_artist.albums.append(alb)
+            with session.no_autoflush:
+                for alb in list(artist.albums):
+                    # FIXME: use constant
+                    if alb.type != "various":
+                        alb.artist_id = new_artist.id
+                        artist.albums.remove(alb)
+                        with session.no_autoflush:
+                            new_artist.albums.append(alb)
 
-                for track in alb.tracks:
-                    if track.artist_id == artist.id:
-                        # gotta check in case alb is type various
-                        track.artist_id = new_artist.id
+                    for track in alb.tracks:
+                        if track.artist_id == artist.id:
+                            # gotta check in case alb is type various
+                            track.artist_id = new_artist.id
 
-            for track in artist.getTrackSingles():
-                track.artist_id = new_artist.id
+                for track in artist.getTrackSingles():
+                    track.artist_id = new_artist.id
 
             # flush to get new artist ids in sync before delete, otherwise
             # cascade happens.
@@ -223,6 +224,5 @@ class MergeArtists(command.Command):
 
             session.flush()
 
-        # FIXME: promt for whether the tags should be updated with the new
+        # FIXME: prompt for whether the tags should be updated with the new
         # name if it is new.
-        session.commit()
