@@ -26,7 +26,7 @@ from datetime import datetime
 from hashlib import md5
 
 import sqlalchemy as sql
-from sqlalchemy import orm, event, types
+from sqlalchemy import orm, event, types, Sequence
 from sqlalchemy.engine import Engine
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.ext.declarative import declarative_base
@@ -151,7 +151,7 @@ class Artist(Base, OrmObject):
                                            name="artist_uniq_constraint"), {})
 
     # Columns
-    id = sql.Column(sql.Integer, primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("artist_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(128), nullable=False, index=True)
     sort_name = sql.Column(sql.Unicode(128), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
@@ -268,7 +268,7 @@ class Album(Base, OrmObject):
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
     # Columns
-    id = sql.Column(sql.Integer, primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("album_id_seq"), primary_key=True)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
@@ -303,7 +303,7 @@ class Track(Base, OrmObject):
     __tablename__ = "tracks"
 
     # Columns
-    id = sql.Column(sql.Integer, primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("track_id_seq"), primary_key=True)
     path = sql.Column(sql.String(512), nullable=False, unique=True, index=True)
     size_bytes = sql.Column(sql.Integer, nullable=False)
     ctime = sql.Column(sql.DateTime(), nullable=False)
@@ -359,7 +359,7 @@ class Tag(Base, OrmObject):
     __tablename__ = "tags"
 
     # Columns
-    id = sql.Column(sql.Integer, primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("tag_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
 
 
@@ -376,7 +376,7 @@ class Image(Base, OrmObject):
                    LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
-    id = sql.Column(sql.Integer, primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("img_id_seq"), primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
     mime_type = sql.Column(sql.String(32), nullable=False)
     md5 = sql.Column(sql.String(32), nullable=False)
