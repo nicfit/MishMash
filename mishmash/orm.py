@@ -392,7 +392,7 @@ class Image(Base, OrmObject):
 
         return Image(type=type,
                      description=img.description,
-                     mime_type=img.mime_type,
+                     mime_type=str(img.mime_type, "ascii"),
                      md5=md5hash.hexdigest(),
                      size=len(img.image_data),
                      data=img.image_data)
