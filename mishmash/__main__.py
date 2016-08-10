@@ -50,8 +50,8 @@ def makeCmdLineParser():
     parser.add_argument("--version", action="version", version=VERSION_MSG)
 
     group = parser.add_argument_group(title="Settings and options")
-    group.add_argument("-c", "--config", dest="config", metavar="configfile",
-                       help="Configuration file.")
+    group.add_argument("-c", "--config", dest="config", metavar="config.ini",
+                       default=None, help="Configuration file.")
     group.add_argument("-D", "--database", dest="db_url", metavar="url",
             default=None,
             help="Database URL. This will override the URL from the config "

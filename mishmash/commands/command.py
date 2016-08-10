@@ -26,6 +26,7 @@ class Command(object):
 
     _all_commands = OrderedDict()
 
+    # FIXME: why is the default subparsers=None? it is obviously required.
     def __init__(self, help, subparsers=None):
         self.subparsers = subparsers
         self.parser = self.subparsers.add_parser(self.NAME, help=help)
