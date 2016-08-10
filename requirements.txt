@@ -1,6 +1,6 @@
 
 #eyeD3>=0.8.0
-#hg+https://bitbucket.org/nicfit/eyed3@py3#egg=eyeD3
+hg+https://bitbucket.org/nicfit/eyed3@devel#egg=eyeD3
 countrycode
 pyfiglet
 
