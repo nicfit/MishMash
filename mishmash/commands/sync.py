@@ -50,20 +50,23 @@ IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
 
 
 class SyncPlugin(LoaderPlugin):
+    """An eyeD3 file scanner/loader plugin."""
+
     NAMES = ['mishmash-sync']
     SUMMARY = u"Synchronize files/directories with a Mishmash database."
     DESCRIPTION = u""
 
     def __init__(self, arg_parser):
-        super(SyncPlugin, self).__init__(arg_parser, cache_files=True,
-                                         track_images=True)
+        super().__init__(arg_parser, cache_files=True, track_images=True)
 
-        self.arg_group.add_argument(
+        arg_parser.add_argument("paths", metavar="PATH", nargs="*",
+                help="Files or directory paths")
+        arg_parser.add_argument(
                 "--no-purge", action="store_true", dest="no_purge",
                 help="Do not purge orphaned data (tracks, artists, albums, "
                      "etc.). This will make for a faster sync, and useful when "
                      "files were only added to a library.")
-        self.arg_group.add_argument(
+        arg_parser.add_argument(
                 "--no-prompt", action="store_true", dest="no_prompt",
                 help="Skip files that require user input.")
 
@@ -76,7 +79,7 @@ class SyncPlugin(LoaderPlugin):
         import eyed3.utils.prompt
         eyed3.utils.prompt.DISABLE_PROMPT = "raise" if args.no_prompt else None
 
-        super(SyncPlugin, self).start(args, config)
+        super().start(args, config)
         self.start_time = time.time()
         self._db_session = args.db_session
 
@@ -426,15 +429,29 @@ class Sync(command.Command):
         super(Sync, self).__init__(
                 "Syncronize music directories with database.", subparsers)
 
-        self.parser = eyed3.main.makeCmdLineParser(self.parser)
+        ## FIXME: this was being done to get paths and --exclude, get exclude nback
+        ##self.parser = eyed3.main.makeCmdLineParser(self.parser)
         self.plugin = SyncPlugin(self.parser)
         self.args = None
 
     def _run(self, paths=[], config=None, backup=False, excludes=None,
              fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
 
+        #
+        # FIXME: This needs to be with the default argparse setup, else it
+        # gets out of date.
+        #
+        # Set up args for stuff eyed3.main can use.
         if self.args:
             args = self.args
+            # TODO
+            args.excludes = []
+            # TODO
+            args.backup = False
+            # TODO
+            args.fs_encoding = fs_encoding
+            # TODO
+            args.quiet = False
         else:
             # Running as an API, make an args object with the right info
             args = Namespace()
@@ -444,10 +461,9 @@ class Sync(command.Command):
             args.excludes = excludes
             args.fs_encoding = fs_encoding
             args.quiet = quiet
-            args.list_plugins = False
             args.no_purge = no_purge
 
         args.plugin = self.plugin
-        args.db_engine, args.db_session = self.db_engine, self.db_session
 
+        args.db_engine, args.db_session = self.db_engine, self.db_session
         return eyed3_main(args, None)
