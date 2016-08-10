@@ -34,8 +34,19 @@ class Command(object):
     def run(self, args, config):
         self.args = args
         self.config = config
-        self.db_engine, self.db_session = database.init(self.config)
-        return self._run()
+        self.db_engine, Session = database.init(self.config)
+
+        self.db_session = Session()
+        try:
+            retval = self._run()
+            self.db_session.commit()
+        except:
+            self.db_session.rollback()
+            raise
+        finally:
+            self.db_session.close()
+
+        return retval
 
     def _run(self):
         raise NotImplementedError("Must implement the run() function")

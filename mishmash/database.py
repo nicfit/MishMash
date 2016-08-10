@@ -52,12 +52,12 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
     if trans_mgr:
         import transaction
         args.update({"extension": trans_mgr})
-    session = scoped_session(sessionmaker(**args))
-    session.configure(bind=engine)
+    SessionMaker = sessionmaker(bind=engine, **args)
 
     for T in TYPES:
         T.metadata.bind = engine
 
+    session= SessionMaker()
     try:
         try:
             log.debug("Checking database schema '%s'" % url)
@@ -74,14 +74,15 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
         else:
             session.commit()
     except Exception as ex:
-        log.exception(ex)
         if trans_mgr:
             transaction.abort()
-            raise
         else:
             session.rollback()
+        raise
+    finally:
+        session.close()
 
-    return engine, session
+    return engine, SessionMaker
 
 
 def checkSchema(engine):

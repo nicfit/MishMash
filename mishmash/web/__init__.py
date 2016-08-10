@@ -66,10 +66,10 @@ def main(global_config, **main_settings):
     engine_args.update(sql_ini_args)
 
     (engine,
-     DBSession) = database.init(app_config,
-                                engine_args=engine_args,
-                                trans_mgr=ZopeTransactionExtension())
+     SessionMaker) = database.init(app_config,
+                                   engine_args=engine_args,
+                                   trans_mgr=ZopeTransactionExtension())
 
-    pyra_config = _configure(main_settings, DBSession)
+    pyra_config = _configure(main_settings, SessionMaker())
 
     return pyra_config.make_wsgi_app()
