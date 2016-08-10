@@ -18,7 +18,7 @@
 #
 ################################################################################
 
-from . import info                                                # flake8: noqa
-from . import sync                                                # flake8: noqa
-from . import mgmt                                                # flake8: noqa
-from . import web                                                 # flake8: noqa
+from . import info                                                # noqa
+from . import sync                                                # noqa
+from . import mgmt                                                # noqa
+from . import web                                                 # noqa
