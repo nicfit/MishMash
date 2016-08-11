@@ -52,6 +52,9 @@ def makeCmdLineParser():
     group = parser.add_argument_group(title="Settings and options")
     group.add_argument("-c", "--config", dest="config", metavar="config.ini",
                        default=None, help="Configuration file.")
+    group.add_argument("--default-config", dest="show_config",
+                       action="store_true",
+                       help="Prints the default configuration.")
     group.add_argument("-D", "--database", dest="db_url", metavar="url",
             default=None,
             help="Database URL. This will override the URL from the config "
@@ -62,7 +65,7 @@ def makeCmdLineParser():
             description="Database command line options are required by most "
                         "sub commands.")
 
-    # help subcommand; turns it into the less intuitive --help format.
+    # 'help' subcommand; turns it into the less intuitive --help format.
     def _help(args, config):
         if args.command:
             parser.parse_args([args.command, "--help"])
@@ -84,7 +87,10 @@ def main():
                         help="Drop into 'pdb' when errors occur.")
 
     args = parser.parse_args()
-    if "func" not in args:
+    if args.show_config:
+        print(config.DEFAULT_CONFIG)
+        return 0
+    elif "func" not in args:
         # No command was given.
         parser.print_help()
         return 1
@@ -92,9 +98,9 @@ def main():
     if args.debug_pdb:
         try:
             # The import of ipdb MUST be limited to explicit --pdb option
-            # (what follows was at module scope prior) because of
-            # https://github.com/gotcha/ipdb/issues/48. Which --pdb is
-            # used with commands where stdout is captured you will bet extra
+            # (thius code SHOULD (and was) at module scope) but because of
+            # https://github.com/gotcha/ipdb/issues/48 it is here. When --pdb is
+            # used with commands where stdout is captured you will get extra
             # leading bytes.
             import ipdb as pdb
         except ImportError:
