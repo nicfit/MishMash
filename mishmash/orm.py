@@ -386,11 +386,23 @@ class Image(Base, OrmObject):
     data = orm.deferred(sql.Column(sql.LargeBinary, nullable=False))
 
     @staticmethod
-    def fromTagFrame(img, type):
+    def _validMimeType(mt):
+        try:
+            p1, p2 = mt.split("/")
+            return p1 == "image" and p2
+        except ValueError:
+            # Missing '/'
+            return False
+
+    @staticmethod
+    def fromTagFrame(img, type_):
+        if not Image._validMimeType(str(img.mime_type, "ascii")):
+            return None
+
         md5hash = md5()
         md5hash.update(img.image_data)
 
-        return Image(type=type,
+        return Image(type=type_,
                      description=img.description,
                      mime_type=str(img.mime_type, "ascii"),
                      md5=md5hash.hexdigest(),
@@ -398,7 +410,10 @@ class Image(Base, OrmObject):
                      data=img.image_data)
 
     @staticmethod
-    def fromFile(path, type):
+    def fromFile(path, type_):
+        mime_type = guessMimetype(path)
+        if not Image._validMimeType(mime_type):
+            return None
         md5hash = md5()
 
         img = open(path, "rb")
@@ -407,7 +422,7 @@ class Image(Base, OrmObject):
 
         md5hash.update(data)
 
-        return Image(type=type,
+        return Image(type=type_,
                      mime_type=guessMimetype(path),
                      md5=md5hash.hexdigest(),
                      size=len(data),
