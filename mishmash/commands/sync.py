@@ -290,10 +290,13 @@ class SyncPlugin(LoaderPlugin):
                         continue
 
                     new_img = Image.fromTagFrame(img, img_type)
-                    syncImage(new_img,
-                              album if img_type in IMAGE_TYPES["album"]
-                                    else album.artist,
-                              session)
+                    if new_img:
+                        syncImage(new_img,
+                                  album if img_type in IMAGE_TYPES["album"]
+                                        else album.artist,
+                                  session)
+                    else:
+                        log.warn("Invalid image in tag")
 
         if album:
             # Directory images.
@@ -305,10 +308,13 @@ class SyncPlugin(LoaderPlugin):
                     continue
 
                 new_img = Image.fromFile(img_file, img_type)
-                new_img.description = os.path.basename(img_file)
-                syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
-                                         else album.artist,
-                          session)
+                if new_img:
+                    new_img.description = os.path.basename(img_file)
+                    syncImage(new_img, album if img_type in IMAGE_TYPES["album"]
+                                             else album.artist,
+                              session)
+                else:
+                    log.warn("Invalid image file: " + img_file)
 
     def handleDone(self):
         t = time.time() - self.start_time
