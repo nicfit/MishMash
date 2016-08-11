@@ -19,13 +19,13 @@ initialized with the database schema.
     1|Various Artists|Various Artists|2014-10-11 01:12:10.246406|||
     sqlite>
 
-To see the current configuration use info command's ``-C/--show-config``
+To see the current configuration use info command's ``--default-config``
 option. You may wish to capture this output for writing custom configuration
 files.
 
 .. code-block:: bash
 
-    $ mishmash info --show-config
+    $ mishmash --default-config
     [mishmash]
     sqlalchemy.url = sqlite:////home/travis/mishmash.db
 

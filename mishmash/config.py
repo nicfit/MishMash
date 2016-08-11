@@ -27,12 +27,13 @@ MAIN_SECT = "mishmash"
 SA_KEY = "sqlalchemy.url"
 
 
-default_str = """
+DEFAULT_CONFIG = """
 [mishmash]
-sqlalchemy.url = %(db_url)s
+sqlalchemy.url = %(sqlite_db_url)s
+;sqlalchemy.url = %(postgres_db_url)s
 
-; Albums that involve a collection of different artists are grouped under
-; this name.
+# Albums that involve a collection of different artists are grouped under
+# this name.
 various_artists_name = Various Artists
 
 ###
@@ -105,7 +106,8 @@ use = egg:waitress#main
 host = 0.0.0.0
 port = 6229
 
-""" % {"db_url": expandvars("sqlite:///$HOME/mishmash.db"),
+""" % {"sqlite_db_url": expandvars("sqlite:///$HOME/mishmash.db"),
+       "postgres_db_url": "postgresql://mishmash@localhost/mishmash",
        "generic_format":
          "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s",
       }
@@ -119,7 +121,7 @@ def load(conf_file):
     files = []
 
     conf = ConfigParser()
-    conf.read_string(default_str)
+    conf.read_string(DEFAULT_CONFIG)
 
     # -c / --config
     if conf_file:
@@ -150,7 +152,3 @@ class ConfigParser(configparser.ConfigParser):
     @property
     def various_artists_name(self):
         return self.get(MAIN_SECT, "various_artists_name")
-
-
-default = ConfigParser()
-default.read_string(default_str)
