@@ -32,23 +32,10 @@ class Info(command.Command):
     NAME = "info"
 
     def __init__(self, subparsers=None):
-        super(Info, self).__init__("Show information about the database or "
+        super(Info, self).__init__("Show information about the database and "
                                    "configuration.", subparsers)
-        self.parser.add_argument("-C", "--show-config", action="store_true",
-                                 dest="show_config",
-                                 help="Display current configuration.")
-        self.parser.add_argument("-D", "--show-default", action="store_true",
-                                 dest="show_default",
-                                 help="Display the default configuration.")
 
-    def _config(self):
-        if self.args.show_default:
-            from .. import config
-            print(config.default_str)
-        else:
-            self.config.write(sys.stdout)
-
-    def _info(self):
+    def _run(self):
         session = self.db_session
 
         _output = []
@@ -89,9 +76,3 @@ class Info(command.Command):
             count = session.query(orm_type).count()
             _addOutput(str(count), name)
         _printOutput("%s music %s", _output)
-
-    def _run(self):
-        if self.args.show_config or self.args.show_default:
-            self._config()
-        else:
-            self._info()

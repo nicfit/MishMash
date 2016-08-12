@@ -98,7 +98,6 @@ class SplitArtists(command.Command):
             a.origin_state = prompt("   State", required=False)
             a.origin_country = prompt("   Country", required=False,
                                       type_=normalizeCountry)
-            import ipdb; ipdb.set_trace()
 
             new_artists.append(a)
 
