@@ -135,7 +135,7 @@ def artistView(request):
             return artist.getAlbumsByType(typ)
 
     albums = list(artist.albums)
-    all_tabs = ALBUM_TYPE_IDS + [ALL_TYPE]
+    all_tabs = [ALL_TYPE] + ALBUM_TYPE_IDS
 
     active_albums = []
     active_singles = []
