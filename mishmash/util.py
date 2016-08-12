@@ -18,8 +18,8 @@
 #
 ################################################################################
 import os
-from countrycode import countrycode
 from eyed3.utils import datePicker
+from countrycode.countrycode import countrycode
 
 NAME_PREFIXES = [u"the ", u"los ", u"la ", u"el "]
 
@@ -45,17 +45,12 @@ def normalizeCountry(country_str, target="iso3c", title_case=False):
     3 character ISO code is the default (iso3c), 'country_name', and 'iso2c'
     are common also. See ``countrycode.countrycode`` for details and other
     options. Raises ``ValueError`` if the country is unrecognized.'''
-
     iso2 = "iso2c"
     iso3 = "iso3c"
     raw = "country_name"
 
     if country_str is None:
         return u''
-
-    if type(country_str) is str:
-        # XXX https://github.com/vincentarelbundock/pycountrycode/issues/1
-        country_str = country_str.encode('latin1')
 
     if len(country_str) == 2:
         cc = countrycode(country_str.upper(), origin=iso2, target=target)
