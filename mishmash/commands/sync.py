@@ -59,8 +59,8 @@ class SyncPlugin(LoaderPlugin):
     def __init__(self, arg_parser):
         super().__init__(arg_parser, cache_files=True, track_images=True)
 
-        arg_parser.add_argument("paths", metavar="PATH", nargs="*",
-                help="Files or directory paths")
+        eyed3.main.setFileScannerOpts(arg_parser)
+
         arg_parser.add_argument(
                 "--no-purge", action="store_true", dest="no_purge",
                 help="Do not purge orphaned data (tracks, artists, albums, "
@@ -168,6 +168,7 @@ class SyncPlugin(LoaderPlugin):
         resolved_artist = None
         resolved_album_artist = None
 
+        album = None
         session = self._db_session
         for audio_file in audio_files:
             path = audio_file.path
@@ -200,8 +201,6 @@ class SyncPlugin(LoaderPlugin):
 
             artist, resolved_artist = self._getArtist(session, tag.artist,
                                                       resolved_artist)
-            album = None
-
             if tag.album_type != SINGLE_TYPE:
                 if tag.album_artist and tag.artist != tag.album_artist:
                     album_artist, resolved_album_artist = \
@@ -435,40 +434,11 @@ class Sync(command.Command):
         super(Sync, self).__init__(
                 "Syncronize music directories with database.", subparsers)
 
-        ## FIXME: this was being done to get paths and --exclude, get exclude nback
-        ##self.parser = eyed3.main.makeCmdLineParser(self.parser)
         self.plugin = SyncPlugin(self.parser)
         self.args = None
 
-    def _run(self, paths=[], config=None, backup=False, excludes=None,
-             fs_encoding=eyed3.LOCAL_FS_ENCODING, quiet=False, no_purge=False):
-
-        #
-        # FIXME: This needs to be with the default argparse setup, else it
-        # gets out of date.
-        #
-        # Set up args for stuff eyed3.main can use.
-        if self.args:
-            args = self.args
-            # TODO
-            args.excludes = []
-            # TODO
-            args.backup = False
-            # TODO
-            args.fs_encoding = fs_encoding
-            # TODO
-            args.quiet = False
-        else:
-            # Running as an API, make an args object with the right info
-            args = Namespace()
-            args.paths = paths
-            args.config = config
-            args.backup = backup
-            args.excludes = excludes
-            args.fs_encoding = fs_encoding
-            args.quiet = quiet
-            args.no_purge = no_purge
-
+    def _run(self, args=None):
+        args = args or self.args
         args.plugin = self.plugin
 
         args.db_engine, args.db_session = self.db_engine, self.db_session

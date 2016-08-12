@@ -50,7 +50,7 @@ class Command(object):
         return retval
 
     def _run(self):
-        raise NotImplementedError("Must implement the run() function")
+        raise NotImplementedError("Must implement a _run function")
 
     @staticmethod
     def initAll(subparsers):
