@@ -17,9 +17,8 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-import os
 from os.path import expandvars
-import configparser
+import nicfit
 
 
 CONFIG_ENV_VAR = "MISHMASH_CONFIG"
@@ -113,38 +112,12 @@ port = 6229
       }
 
 
-def load(conf_file):
-    '''Initializes a config with the default, applies ``conf_file`` if it is
-    not None, and applies any file set in the MISHMASH_CONFIG environment
-    variable.'''
-    conf_file = conf_file or None
-    files = []
-
-    conf = ConfigParser()
-    conf.read_string(DEFAULT_CONFIG)
-
-    # -c / --config
-    if conf_file:
-        with open(conf_file) as confp:
-            conf.read_file(confp)
-        files.append(conf_file)
-
-    # env var
-    if CONFIG_ENV_VAR in os.environ:
-        with open(os.environ[CONFIG_ENV_VAR]) as confp:
-            conf.read_file(confp)
-        files.append(confp.name)
-
-    return conf, files
-
-
-class ConfigParser(configparser.ConfigParser):
-    def __init__(self):
-        super(ConfigParser, self).__init__(
-                interpolation=configparser.ExtendedInterpolation())
+class Config(nicfit.Config):
+    def __init__(self, filename):
+        from configparser import ExtendedInterpolation
+        super().__init__(filename, interpolation=ExtendedInterpolation())
 
     # XXX: new decorator could simplify these accessors.
-
     @property
     def db_url(self):
         return self.get(MAIN_SECT, SA_KEY)

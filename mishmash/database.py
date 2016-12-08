@@ -1,21 +1,4 @@
-################################################################################
-#  Copyright (C) 2013  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-################################################################################
+import nicfit
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -23,7 +6,6 @@ from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
 
-from . import log
 from .orm import TYPES, TABLES
 from .orm import Base, Artist, Track, Album
 
@@ -33,6 +15,8 @@ DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                       }
 DEFAULT_SESSION_ARGS = {
         }
+
+log = nicfit.getLogger(__name__)
 
 
 def init(config, engine_args=None, session_args=None, trans_mgr=None):
