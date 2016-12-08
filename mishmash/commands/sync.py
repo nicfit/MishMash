@@ -26,7 +26,7 @@ from datetime import datetime
 from argparse import Namespace
 
 from sqlalchemy.orm.exc import NoResultFound
-
+import nicfit
 import eyed3
 import eyed3.main
 from eyed3.main import main as eyed3_main
@@ -38,9 +38,10 @@ from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
 from ..orm import (Track, Artist, Album, Tag, Meta, Image,
                    VARIOUS_ARTISTS_ID)
-from ..log import log
 from . import command
 from .. import console
+
+log = nicfit.getLogger(__name__)
 
 
 IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
