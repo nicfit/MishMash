@@ -36,65 +36,6 @@ def main(args):
         args.app.arg_parser.print_help()
         return 1
 
-    if args.debug_pdb:
-        try:
-            # The import of ipdb MUST be limited to explicit --pdb option
-            # (this code SHOULD (and was) at module scope) but because of
-            # https://github.com/gotcha/ipdb/issues/48 it is here. When --pdb is
-            # used with commands where stdout is captured you will get extra
-            # leading bytes.
-            import ipdb as pdb
-        except ImportError:
-            import pdb
-
-        def _pdb():
-            e, m, tb = sys.exc_info()
-            pdb.post_mortem(tb)
-    else:
-        def _pdb():
-            pass
-
-    # env var config file
-    if CONFIG_ENV_VAR in os.environ:
-        with open(os.environ[CONFIG_ENV_VAR]) as confp:
-            args.config.read_file(confp)
-
-    logging.config.fileConfig(args.config)
-
-    if args.db_url:
-        args.config.set(config.MAIN_SECT, config.SA_KEY, args.db_url)
-        # Don't want commands and such to use this, so reset.
-        args.db_url = None
-
-    AnsiCodes.init(True)
-
-    try:
-        # Run command
-        retval = args.func(args, args.config) or 0
-    except (KeyboardInterrupt, PromptExit) as ex:
-        # PromptExit raised when CTRL+D during prompt, or prompts disabled
-        retval = 0
-    except (sql_exceptions.ArgumentError,
-            sql_exceptions.OperationalError) as ex:
-        _pErr("Database error", ex)
-        _pdb()
-        retval = 1
-    except MissingSchemaException as ex:
-        _pErr("Schema error",
-              "The table%s '%s' %s missing from the database schema." %
-                 ('s' if len(ex.tables) > 1 else '',
-                  ", ".join([str(t) for t in ex.tables]),
-                  "are" if len(ex.tables) > 1 else "is")
-             )
-        retval = 1
-    except Exception as ex:
-        log.exception(ex)
-        _pErr(ex.__class__.__name__, str(ex))
-        _pdb()
-        retval = 2
-
-    return retval
-
 
 class MishMash(Application):
     def __init__(self):
@@ -102,7 +43,8 @@ class MishMash(Application):
         super().__init__(main, name="mishmash", version=__version__,
                          config_opts=ConfigOpts(required=False,
                                                 default_config=DEFAULT_CONFIG,
-                                                ConfigClass=Config))
+                                                ConfigClass=Config),
+                         pdb_opt=True)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
@@ -132,9 +74,6 @@ class MishMash(Application):
         help_parser.add_argument("command", nargs='?', default=None)
 
         Command.initAll(subparsers)
-
-        parser.add_argument("--pdb", action="store_true", dest="debug_pdb",
-                            help="Drop into 'pdb' when errors occur.")
 
         return parser
 
