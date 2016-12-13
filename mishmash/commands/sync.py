@@ -20,10 +20,10 @@
 from __future__ import print_function
 
 import os
+import sys
 import time
 from os.path import getctime
 from datetime import datetime
-from argparse import Namespace
 
 from sqlalchemy.orm.exc import NoResultFound
 import nicfit
@@ -443,4 +443,8 @@ class Sync(command.Command):
         args.plugin = self.plugin
 
         args.db_engine, args.db_session = self.db_engine, self.db_session
-        return eyed3_main(args, None)
+        try:
+            return eyed3_main(args, None)
+        except IOError as err:
+            print(str(err), file=sys.stderr)
+            return 1
