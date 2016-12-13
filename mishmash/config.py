@@ -113,9 +113,10 @@ port = 6229
 
 
 class Config(nicfit.Config):
-    def __init__(self, filename):
+    def __init__(self, filename, **kwargs):
         from configparser import ExtendedInterpolation
-        super().__init__(filename, interpolation=ExtendedInterpolation())
+        super().__init__(filename, interpolation=ExtendedInterpolation(),
+                         **kwargs)
 
     # XXX: new decorator could simplify these accessors.
     @property
