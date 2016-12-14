@@ -21,7 +21,7 @@ from pyramid.config import Configurator
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from .. import database
-from ..config import load as config_load
+from ..config import Config
 
 
 def _configure(settings, DBSession):
@@ -52,8 +52,9 @@ def _configure(settings, DBSession):
 
 
 def main(global_config, **main_settings):
-    app_config, config_files = config_load(global_config["__file__"])
-    mm_settings = app_config._sections["mishmash"]
+    app_config = Config(global_config["__file__"])
+    app_config.read()
+    mm_settings = app_config["mishmash"]
 
     engine_args = dict(database.DEFAULT_ENGINE_ARGS)
     pfix, plen = "sqlalchemy.", len("sqlalchemy.")
@@ -71,5 +72,4 @@ def main(global_config, **main_settings):
                                    trans_mgr=ZopeTransactionExtension())
 
     pyra_config = _configure(main_settings, SessionMaker())
-
     return pyra_config.make_wsgi_app()
