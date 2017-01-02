@@ -27,7 +27,6 @@ def _pErr(subject, msg):
 
 
 def main(args):
-
     if "func" not in args:
         # No command was given.
         args.app.arg_parser.print_help()
@@ -91,5 +90,6 @@ class MishMash(Application):
 
         return parser
 
+app = MishMash()
 if __name__ == "__main__":
     MishMash().run()

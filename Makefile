@@ -4,7 +4,7 @@
         pypi-release github-release clean-docs cookiecutter
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
-TMPDIR=./tmp
+TEMP_DIR ?= ./tmp
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 try:
@@ -67,6 +67,7 @@ clean-pyc:
 clean-test:
 	rm -fr .tox/
 	rm -f .coverage
+	rm -rf ${TEMP_DIR}
 
 clean-patch:
 	find . -name '*.rej' -exec rm -f '{}' \;
@@ -190,9 +191,9 @@ README.html: README.rst
 	rst2html5.py README.rst >| README.html
 
 cookiecutter:
-	rm -rf ${TMPDIR}
-	git clone . ${TMPDIR}/mishmash
+	rm -rf ${TEMP_DIR}
+	git clone . ${TEMP_DIR}/mishmash
 	# FIXME.. CC path
-	cookiecutter -o ${TMPDIR} -f --config-file ./.cookiecutter.json \
-                 --no-input ../nicfit.py/cookiecutter
-	git -C ${TMPDIR}/mishmash status -s -b
+	cookiecutter -o ${TEMP_DIR} -f --config-file ./.cookiecutter.json \
+                 --no-input ./cookiecutter
+	git -C ${TEMP_DIR}/mishmash status -s -b

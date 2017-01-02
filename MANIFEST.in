@@ -1,8 +1,15 @@
-include AUTHORS.rst
+include AUTHORS
 include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
+include Makefile
+include tox.ini
 
 include bin/mishmash
-include requirements.txt
+graft docs
+graft tests
+global-exclude __pycache__
+global-exclude .editorconfig
+global-exclude *.py[co]
+recursive-include requirements *.txt
