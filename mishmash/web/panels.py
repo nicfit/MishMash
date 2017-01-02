@@ -19,7 +19,7 @@
 ################################################################################
 import random
 from pyramid_layout.panel import panel_config
-from .. import __version__, __years__, __projectname__
+from ..__about__ import __version__, __years__, __project_name__
 from .. import orm
 
 
@@ -47,7 +47,7 @@ def footer(context, request):
     return ("<footer>"
             "<p align='right'>%(NAME)s %(VERSION)s &copy; %(YEARS)s"
             "</footer>" %
-            dict(NAME=__projectname__,
+            dict(NAME=__project__name__,
                  VERSION=__version__,
                  YEARS=__years__))
 

@@ -17,12 +17,11 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-import sys
 from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
 from eyed3.utils.console import printError
 from eyed3.utils.console import cprint, cformat, Fore, Style
-from .. import __version__
+from .. import version
 from ..orm import Track, Artist, Album, Meta, Tag
 from . import command
 
@@ -53,7 +52,7 @@ class Info(command.Command):
         cprint(figlet_format("``MishMash``", font="graffiti"), Fore.GREEN,
                 styles=[Style.BRIGHT])
 
-        _addOutput("Version", __version__)
+        _addOutput("Version", version)
         _addOutput("Database URL", self.config.db_url)
 
         try:

@@ -70,11 +70,11 @@ def main(args):
 
 class MishMash(Application):
     def __init__(self):
-        from . import __version__
+        from . import version
         config_opts = ConfigOpts(required=False, default_config=DEFAULT_CONFIG,
                                  default_config_opt="--default-config",
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
-        super().__init__(main, name="mishmash", version=__version__,
+        super().__init__(main, name="mishmash", version=version,
                          config_opts=config_opts, pdb_opt=True)
 
     def _addArguments(self, parser):

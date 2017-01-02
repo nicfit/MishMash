@@ -31,7 +31,7 @@ from eyed3.core import ALBUM_TYPE_IDS
 from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
                         DEMO_TYPE, SINGLE_TYPE)
 
-from .. import __version__ as VERSION
+from .. import version as VERSION
 from .. import __projectname__ as PROJECT_NAME
 _vars = {"project_name": PROJECT_NAME,
          "project_version": VERSION,

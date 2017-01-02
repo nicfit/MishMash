@@ -36,7 +36,7 @@ from eyed3.utils import art
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
-from . import __version__ as VERSION
+from . import version as VERSION
 
 
 VARIOUS_ARTISTS_ID = 1

@@ -61,7 +61,7 @@ copyright = u'2014, Travis Shirk'
 # built documents.
 #
 # The short X.Y version.
-version = mishmash.__version__
+version = mishmash.version
 # The full version, including alpha/beta/rc tags.
 release = "%s-%s" % (version, mishmash.__release__)
 

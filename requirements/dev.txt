@@ -1,0 +1,16 @@
+wheel
+watchdog
+tox
+flake8
+twine
+Sphinx
+pytest-cov
+
+check-manifest
+paver
+cogapp
+sphinxcontrib-paverutils
+
+
+pyramid_debugtoolbar
+sphinx_bootstrap_theme

@@ -1,60 +1,91 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import re
 import sys
-
-from setuptools import setup
-
-import mishmash
+from setuptools import setup, find_packages
 
 
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    sys.exit()
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Operating System :: POSIX',
+    'Natural Language :: English',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+]
 
-readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
-install_requires = []
-with open("requirements.txt") as requirements:
-    for req in requirements:
-        req = req.strip()
-        if req and req[0] not in ('#',):
-            install_requires.append(req)
+def getPackageInfo():
+    info_dict = {}
+    info_keys = ["version", "name", "author", "author_email", "url", "license",
+                 "description", "release_name"]
+    key_remap = {"name": "project_name"}
 
-def find_packages(path, src):
-    packages = []
-    for pkg in [src]:
-        for _dir, subdirectories, files in (
-                os.walk(os.path.join(path, pkg))):
-            if '__init__.py' in files:
-                tokens = _dir.split(os.sep)[len(path.split(os.sep)):]
-                packages.append(".".join(tokens))
-    return packages
+    base = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(base, "mishmash/__about__.py")) as infof:
+        for line in infof:
+            for what in info_keys:
+                rex = re.compile(r"__{what}__\s*=\s*['\"](.*?)['\"]"
+                                  .format(what=what if what not in key_remap
+                                                    else key_remap[what]))
 
-dist = setup(
-    name=mishmash.__projectname__,
-    version=mishmash.__version__,
-    description='A music database using Python and SQLAlchemy.',
-    long_description=readme + '\n\n' + history,
-    author=mishmash.__author__,
-    author_email=mishmash.__email__,
-    url=mishmash.__web__,
-    packages=find_packages('.', 'mishmash'),
-    include_package_data=True,
-    install_requires=install_requires,
-    license="GPL",
-    zip_safe=False,
-    keywords='mishmash',
-    classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: GPL License',
-        'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
-    ],
-    test_suite='tests',
-    scripts=['bin/mishmash'],
-)
+                m = rex.match(line.strip())
+                if not m:
+                    continue
+                info_dict[what] = m.groups()[0]
 
+    return info_dict
+
+
+readme = ""
+if os.path.exists("README.rst"):
+    with open("README.rst") as readme_file:
+        readme = readme_file.read()
+
+history = ""
+if os.path.exists("HISTORY.rst"):
+    with open("HISTORY.rst") as history_file:
+        history = history_file.read().replace('.. :changelog:', '')
+
+
+def requirements(filename):
+    reqfile = os.path.join("requirements", filename)
+    if os.path.exists(reqfile):
+        return open(reqfile).read().splitlines()
+    else:
+        return ""
+
+
+pkg_info = getPackageInfo()
+
+src_dist_tgz = "{name}-{version}.tar.gz".format(**pkg_info)
+pkg_info["download_url"] = "{}/releases/{}".format(pkg_info["url"],
+                                                   src_dist_tgz)
+
+if sys.argv[1] == "--release-name":
+    print(pkg_info["release_name"])
+    sys.exit(0)
+else:
+    setup(classifiers=classifiers,
+          package_dir={'mishmash': 'mishmash'},
+          packages=find_packages('.', 'mishmash'),
+          zip_safe=False,
+          platforms=["Any",],
+          keywords=['mishmash'],
+          include_package_data=True,
+          install_requires=requirements("default.txt"),
+          tests_require=requirements("test.txt"),
+          test_suite='tests',
+          long_description=readme + '\n\n' + history,
+          package_data={},
+          entry_points={
+              "console_scripts": [
+                  "mishmash = mishmash.__main__:mishmash.run",
+              ]
+          },
+          **pkg_info
+    )
