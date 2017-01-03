@@ -5,6 +5,5 @@ flake8
 twine
 Sphinx
 check-manifest
-
 pyramid_debugtoolbar
 sphinx_bootstrap_theme

@@ -2,8 +2,7 @@
 Welcome to MishMash
 ===================
 
-A music database and web interface.
-
+Music database and web interface.
 
 Status
 ------

@@ -15,13 +15,10 @@ classifiers = [
     "Programming Language :: Python :: 2",
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.2",
     "Programming Language :: Python :: 3.3",
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
-    # XXX Remove to enable PyPi uploads
-    "Private :: Do Not Upload",
 ]
 
 
@@ -47,7 +44,7 @@ def getPackageInfo():
                 info_dict[what] = m.groups()[0]
 
     vparts = info_dict["version"].split("-", maxsplit=1)
-    info_dict["release"] =  vparts[1] if len(vparts) > 1 else "final"
+    info_dict["release"] = vparts[1] if len(vparts) > 1 else "final"
     return info_dict
 
 
@@ -94,9 +91,10 @@ if sys.argv[1:] and sys.argv[1] == "--release-name":
 else:
     setup(classifiers=classifiers,
           package_dir={"": "."},
-          packages=find_packages("."),
+          packages=find_packages(".",
+                                 exclude=["tests", "tests.*"]),
           zip_safe=False,
-          platforms=["Any",],
+          platforms=["Any"],
           keywords=["mishmash"],
           include_package_data=True,
           install_requires=requirements("default.txt"),

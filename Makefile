@@ -1,7 +1,7 @@
 .PHONY: clean-pyc clean-build clean-patch clean-local docs clean help lint \
         test test-all coverage docs release dist tags install \
-        build-release pre-release freeze-release _tag-release upload-release \
-        pypi-release github-release clean-docs cookiecutter
+        build-release pre-release freeze-release _tag-release _upload-release \
+        _pypi-release _github-release clean-docs cookiecutter changelog
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -42,8 +42,7 @@ help:
 	@echo ""
 	@echo "Options:"
 	@echo "TEST_PDB - If defined PDB options are added when 'pytest' is invoked"
-
-	@echo "BROWSER - Set to empty string to prevent opening docs/coverage results in a web browser"
+	@echo "BROWSER - Set to "yes" to open docs/coverage results in a web browser"
 
 clean: clean-local clean-build clean-pyc clean-test clean-patch clean-docs
 	rm -rf tags
@@ -76,8 +75,8 @@ clean-patch:
 lint:
 	flake8 $(SRC_DIRS)
 
-
 _PYTEST_OPTS=
+
 ifdef TEST_PDB
     _PDB_OPTS=--pdb -s
 endif
@@ -113,7 +112,7 @@ clean-docs:
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-pre-release: lint test
+pre-release: lint test changelog
 	@test -n "${NAME}" || (echo "NAME not set, needed for git" && false)
 	@test -n "${EMAIL}" || (echo "EMAIL not set, needed for git" && false)
 	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
@@ -124,28 +123,33 @@ pre-release: lint test
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	$(eval RELEASE_NAME = $(shell python setup.py --release-name 2> /dev/null))
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
-	if git tag | grep ${VERSION} > /dev/null; then \
-        echo "Verison tag already exists!"; \
+	check-manifest
+	@if git tag -l | grep ${RELEASE_TAG} > /dev/null; then \
+        echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \
     fi
 	git authors --list >| AUTHORS
-	check-manifest --ignore 'examples*'
-	github-release --version
+	@github-release --version    # Just a exe existence check
+
+changelog:
+	@# TODO
 
 build-release: test-all dist
 
 freeze-release:
+	@# TODO: check for incoming
 	@($(GIT) diff --quiet && $(GIT) diff --quiet --staged) || \
-	    (printf "\n!!! Working repo has uncommited/unstaged changes. !!!\n" && \
-	     printf "\nCommit and try again.\n" && false)
+        (printf "\n!!! Working repo has uncommited/unstaged changes. !!!\n" && \
+         printf "\nCommit and try again.\n" && false)
 
 _tag-release:
 	$(GIT) tag -a $(RELEASE_TAG) -m "Release $(RELEASE_TAG)"
 	$(GIT) push --tags origin
 
-release: freeze-release pre-release build-release _tag-release upload-release
+release: pre-release freeze-release build-release _tag-release _upload-release
 
-github-release: pre-release
+
+_github-release:
 	name="${RELEASE_TAG}"; \
     if test -n "${RELEASE_NAME}"; then \
         name="${RELEASE_TAG} (${RELEASE_NAME})"; \
@@ -165,14 +169,18 @@ github-release: pre-release
                    --tag ${RELEASE_TAG} --name $${file} --file dist/$${file}; \
     done
 
-upload-release: github-release pypi-release
 
-pypi-release:
+
+_upload-release: _github-release _pypi-release
+
+
+_pypi-release:
 	find dist -type f -exec twine register -r ${PYPI_REPO} {} \;
-	find dist -type f -exec twine upload -r ${PYPI_REPO} {} \;
+	find dist -type f -exec twine upload -r ${PYPI_REPO} --skip-existing {} \;
 
 dist: clean
 	python setup.py sdist
+	python setup.py bdist_egg
 	python setup.py bdist_wheel
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
 	cd dist && \
@@ -192,8 +200,8 @@ README.html: README.rst
 
 cookiecutter:
 	rm -rf ${TEMP_DIR}
-	git clone . ${TEMP_DIR}/mishmash
-	# FIXME.. CC path
+	git clone . ${TEMP_DIR}/MishMash
+	# FIXME: Pull from a non-local ./cookiecutter
 	cookiecutter -o ${TEMP_DIR} -f --config-file ./.cookiecutter.json \
                  --no-input ../nicfit.py/cookiecutter
-	git -C ${TEMP_DIR}/mishmash status -s -b
+	git -C ${TEMP_DIR}/MishMash status -s -b

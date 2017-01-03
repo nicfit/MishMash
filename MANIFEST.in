@@ -1,3 +1,5 @@
+include bin/mishmash
+
 include AUTHORS
 include CONTRIBUTING.rst
 include HISTORY.rst
@@ -6,10 +8,12 @@ include README.rst
 include Makefile
 include tox.ini
 
-include bin/mishmash
 graft docs
-graft tests
+
+recursive-include ./tests *.py
+
 global-exclude __pycache__
 global-exclude .editorconfig
 global-exclude *.py[co]
+
 recursive-include requirements *.txt
