@@ -195,5 +195,5 @@ cookiecutter:
 	git clone . ${TEMP_DIR}/mishmash
 	# FIXME.. CC path
 	cookiecutter -o ${TEMP_DIR} -f --config-file ./.cookiecutter.json \
-                 --no-input ./cookiecutter
+                 --no-input ../nicfit.py/cookiecutter
 	git -C ${TEMP_DIR}/mishmash status -s -b
