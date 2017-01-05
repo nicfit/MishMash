@@ -1,6 +1,6 @@
 import nicfit
 from sqlalchemy import create_engine, or_
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
@@ -41,7 +41,7 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
     for T in TYPES:
         T.metadata.bind = engine
 
-    session= SessionMaker()
+    session = SessionMaker()
     try:
         try:
             log.debug("Checking database schema '%s'" % url)
