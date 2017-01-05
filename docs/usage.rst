@@ -135,6 +135,12 @@ is given by ``db_name``. A specific example::
 
     postgresql://mishmash:mishmash@localhost/mishmash_test
 
+
+Setup of initial database and roles:::
+
+    $ createuser --createdb mishmash
+    $ createdb -E utf8 -U mishmash mishmash
+
 SQLite
 ~~~~~~
 The pattern for SQLite URLs is::
