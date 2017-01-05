@@ -101,7 +101,7 @@ else:
           tests_require=requirements("test.txt"),
           test_suite="./tests",
           long_description=readme + "\n\n" + history,
-          package_data={},
+          package_data={"mishmash" ["_default-config.ini"]},
           entry_points={
               "console_scripts": [
                   "mishmash = mishmash.__main__:app.run",
