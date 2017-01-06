@@ -46,6 +46,7 @@ Features
 * Free software: GNU GPL v3.0 license
 * MishMash is a music database using `Python`_ and `SQLAlchemy`_.
 * A command-line tool for building and managing a music database.
+* Web browser interface (using `Pyramid`_) for browsing your music library.
 * Uses `eyeD3`_ for reading MP3s and ID3 metadata.
 * Support and tested with Python 3.4 and Postgresql. SQLite is periodically
   tested with, but future features may not be supported (e.g. full text
@@ -54,4 +55,5 @@ Features
 .. _Python: https://www.python.org/
 .. _SQLAlchemy: http://www.sqlalchemy.org/
 .. _eyeD3: http://eyeD3.nicfit.net/
+.. _Pyramid: https://trypyramid.com/
 
