@@ -204,6 +204,7 @@ cookiecutter:
 	# FIXME: Pull from a non-local ./cookiecutter
 	cookiecutter -o ${TEMP_DIR} -f --config-file ./.cookiecutter.json \
                  --no-input ../nicfit.py/cookiecutter
+	git -C ${TEMP_DIR}/MishMash diff
 	git -C ${TEMP_DIR}/MishMash status -s -b
 
 docker:
