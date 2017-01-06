@@ -22,8 +22,13 @@ from sqlalchemy.exc import ProgrammingError, OperationalError
 from eyed3.utils.console import printError
 from eyed3.utils.console import cprint, cformat, Fore, Style
 from .. import version
-from ..orm import Track, Artist, Album, Meta, Tag
+from ..orm import Track, Artist, Album, Meta, Tag, Library, NULL_LIB_ID
 from . import command
+
+"""
+TODO:
+    - command line arg for selecting libary
+"""
 
 
 @command.register
@@ -67,10 +72,16 @@ class Info(command.Command):
         _addOutput("Configuration file ", self.args.config.filename or "None")
         _printOutput("%s : %s", _output, key_fg=Fore.BLUE)
 
-        _addOutput(None, None)
-        for name, orm_type in [("tracks", Track), ("artists", Artist),
-                              ("albums", Album), ("tags", Tag),
-                     ]:
-            count = session.query(orm_type).count()
-            _addOutput(str(count), name)
-        _printOutput("%s music %s", _output)
+        print("")
+        for lib in session.query(Library)\
+                          .filter(Library.id > NULL_LIB_ID).all():
+            cprint("\n=== {} library ===".format(lib.name), Fore.YELLOW)
+            _addOutput(None, None)
+            for name, orm_type in [("tracks", Track), ("artists", Artist),
+                                  ("albums", Album), ("tags", Tag),
+                         ]:
+                count = session.query(orm_type).filter_by(lib_id=lib.id)\
+                               .count()
+
+                _addOutput(str(count), name)
+            _printOutput("%s music %s", _output)

@@ -32,8 +32,9 @@ VARIOUS_ARTISTS_TEXT = "Various Artists"
 
 
 def DEFAULT_CONFIG():
+    from .orm import MAIN_LIB_NAME
     default = Path(__file__).parent / "_default-config.ini"
-    return default.read_text().format(**globals())
+    return default.read_text().format(MAIN_LIB_NAME=MAIN_LIB_NAME, **globals())
 
 
 class Config(nicfit.Config):
@@ -50,3 +51,8 @@ class Config(nicfit.Config):
     @property
     def various_artists_name(self):
         return self.get(MAIN_SECT, "various_artists_name")
+
+    @property
+    def music_libs(self):
+        for sect in [s for s in self.sections() if s.startswith("library:")]:
+            yield self[sect]

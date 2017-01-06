@@ -22,6 +22,7 @@ from __future__ import print_function
 import os
 import sys
 import time
+from pathlib import Path
 from os.path import getctime
 from datetime import datetime
 
@@ -36,8 +37,8 @@ from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
-from ..orm import (Track, Artist, Album, Tag, Meta, Image,
-                   VARIOUS_ARTISTS_ID)
+from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
+                   VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from . import command
 from .. import console
 
@@ -71,21 +72,34 @@ class SyncPlugin(LoaderPlugin):
                 "--no-prompt", action="store_true", dest="no_prompt",
                 help="Skip files that require user input.")
 
+    def start(self, args, config):
+        import eyed3.utils.prompt
+
+        self._num_loaded = 0
         self._num_added = 0
         self._num_modified = 0
         self._num_deleted = 0
         self._db_session = None
 
-    def start(self, args, config):
-        import eyed3.utils.prompt
         eyed3.utils.prompt.DISABLE_PROMPT = "raise" if args.no_prompt else None
 
         super().start(args, config)
         self.start_time = time.time()
         self._db_session = args.db_session
 
+        try:
+            lib = self._db_session.query(Library)\
+                                  .filter_by(name=args._library).one()
+        except NoResultFound:
+            lib = Library(name=args._library)
+            self._db_session.add(lib)
+            self._db_session.flush()
+        self._lib_name = lib.name
+        self._lib_id = lib.id
+
     def _getArtist(self, session, name, resolved_artist):
-        artist_rows = session.query(Artist).filter_by(name=name).all()
+        artist_rows = session.query(Artist).filter_by(name=name,
+                                                      lib_id=self._lib_id).all()
         if artist_rows:
             if len(artist_rows) > 1 and resolved_artist:
                 # Use previously resolved artist for this directory.
@@ -113,7 +127,7 @@ class SyncPlugin(LoaderPlugin):
                 artist = artist_rows[0]
         else:
             # New artist
-            artist = Artist(name=name)
+            artist = Artist(name=name, lib_id=self._lib_id)
             session.add(artist)
             session.flush()
             print(fg.green("Adding artist") + ": " + name)
@@ -186,7 +200,8 @@ class SyncPlugin(LoaderPlugin):
                 continue
 
             try:
-                track = session.query(Track).filter_by(path=path).one()
+                track = session.query(Track)\
+                               .filter_by(path=path, lib_id=self._lib_id).one()
             except NoResultFound:
                 track = None
             else:
@@ -218,8 +233,8 @@ class SyncPlugin(LoaderPlugin):
                                                   else VARIOUS_ARTISTS_ID
                 album_rows = session.query(Album)\
                                     .filter_by(title=tag.album,
-                                               artist_id=album_artist_id)\
-                                    .all()
+                                               lib_id=self._lib_id,
+                                               artist_id=album_artist_id).all()
                 rel_date = tag.release_date
                 rec_date = tag.recording_date
                 or_date = tag.original_release_date
@@ -237,9 +252,8 @@ class SyncPlugin(LoaderPlugin):
                     album.recording_date = rec_date
                     print(fg.yellow("Updating album") + ": " + album.title)
                 elif tag.album:
-                    album = Album(title=tag.album,
-                                  artist_id=album_artist_id,
-                                  type=album_type,
+                    album = Album(title=tag.album, lib_id=self._lib_id,
+                                  artist_id=album_artist_id, type=album_type,
                                   release_date=rel_date,
                                   original_release_date=or_date,
                                   recording_date=rec_date,
@@ -250,7 +264,7 @@ class SyncPlugin(LoaderPlugin):
                 session.flush()
 
             if not track:
-                track = Track(audio_file=audio_file)
+                track = Track(audio_file=audio_file, lib_id=self._lib_id)
                 self._num_added += 1
                 print(fg.green("Adding track") + ": " + path)
             else:
@@ -262,10 +276,11 @@ class SyncPlugin(LoaderPlugin):
             genre_tag = None
             if genre:
                 try:
-                    genre_tag = session.query(Tag).filter_by(name=genre.name)\
-                                       .one()
+                    genre_tag = session.query(Tag)\
+                                       .filter_by(name=genre.name,
+                                                  lib_id=self._lib_id).one()
                 except NoResultFound:
-                    genre_tag = Tag(name=genre.name)
+                    genre_tag = Tag(name=genre.name, lib_id=self._lib_id)
                     session.add(genre_tag)
                     session.flush()
 
@@ -332,6 +347,8 @@ class SyncPlugin(LoaderPlugin):
 
         if self._num_loaded or self._num_deleted:
             print("")
+            print("== Library '{}' sync'd [ {:f}s time ({:f} files/s) ] =="
+                  .format(self._lib_name, t, self._num_loaded / t))
             print("%d files sync'd" % self._num_loaded)
             print("%d tracks added" % self._num_added)
             print("%d tracks modified" % self._num_modified)
@@ -339,7 +356,7 @@ class SyncPlugin(LoaderPlugin):
                 print("%d orphaned tracks deleted" % self._num_deleted)
                 print("%d orphaned artists deleted" % num_orphaned_artists)
                 print("%d orphaned albums deleted" % num_orphaned_albums)
-            print("%fs time (%f files/s)" % (t, self._num_loaded / t))
+            print("")
 
 
 def deleteOrphans(session):
@@ -440,15 +457,46 @@ class Sync(command.Command):
 
     def _run(self, args=None):
         args = args or self.args
-        if not args.paths:
+        args.plugin = self.plugin
+
+        # TODO: add CommandException to get rid of return 1 etc at this level
+
+        libs = list(args.config.music_libs)
+        if not libs and not args.paths:
             print("\nMissing at least one path in which to sync!\n")
             self.parser.print_usage()
             return 1
-        args.plugin = self.plugin
+
+        main_lib = ":".join(["library", MAIN_LIB_NAME])
+        sync_ops = {main_lib: []}
+        for music_lib in libs:
+            paths = music_lib.get("paths")
+            if not paths:
+                print("[{}] - missing 'paths'".format(music_lib.name))
+                return 1
+
+            if music_lib.getboolean("sync", True):
+                paths = paths.split("\n")
+                if music_lib.name not in sync_ops:
+                    sync_ops[music_lib.name] = []
+                for p in [Path(p).expanduser() for p in paths]:
+                    glob_paths = Path("/").glob(str(p.relative_to("/")))
+                    sync_ops[music_lib.name] += [str(p) for p in glob_paths]
+            else:
+                log.info("[{}] - sync=False".format(music_lib.name))
+
+        for path in args.paths:
+            sync_ops[main_lib].append(path)
 
         args.db_engine, args.db_session = self.db_engine, self.db_session
         try:
-            return eyed3_main(args, None)
+            for lib, paths in sync_ops.items():
+                args._library = lib.split(":", 1)[1]
+                args.paths = paths
+                log.info("Syncing library {}: paths={}".format(lib, paths))
+                r = eyed3_main(args, None)
+                if r != 0:
+                    return r
         except IOError as err:
             print(str(err), file=sys.stderr)
             return 1
