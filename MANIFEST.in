@@ -1,4 +1,5 @@
-include bin/mishmash
+include mishmash/_default-config.ini
+graft mishmash/web
 
 include AUTHORS
 include CONTRIBUTING.rst

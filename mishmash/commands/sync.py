@@ -325,7 +325,7 @@ class SyncPlugin(LoaderPlugin):
         num_orphaned_artists = 0
         num_orphaned_albums = 0
         if not self.args.no_purge:
-            print("Purging orphans (tracks, artists, albums) from database...")
+            log.debug("Purging orphans (tracks, artists, albums) from database")
             (self._num_deleted,
              num_orphaned_artists,
              num_orphaned_albums) = deleteOrphans(session)
@@ -440,6 +440,10 @@ class Sync(command.Command):
 
     def _run(self, args=None):
         args = args or self.args
+        if not args.paths:
+            print("\nMissing at least one path in which to sync!\n")
+            self.parser.print_usage()
+            return 1
         args.plugin = self.plugin
 
         args.db_engine, args.db_session = self.db_engine, self.db_session

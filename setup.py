@@ -96,12 +96,12 @@ else:
           zip_safe=False,
           platforms=["Any"],
           keywords=["mishmash"],
-          include_package_data=True,
           install_requires=requirements("default.txt"),
           tests_require=requirements("test.txt"),
           test_suite="./tests",
           long_description=readme + "\n\n" + history,
-          package_data={},
+          include_package_data=True,
+          package_data={"mishmash": ["_default-config.ini"]},
           entry_points={
               "console_scripts": [
                   "mishmash = mishmash.__main__:app.run",

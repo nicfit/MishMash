@@ -63,7 +63,7 @@ class Info(command.Command):
             return 1
 
         _addOutput("Database version", meta.version)
-        _addOutput("Last sync", meta.last_sync)
+        _addOutput("Last sync", meta.last_sync or "Never")
         _addOutput("Configuration file ", self.args.config.filename or "None")
         _printOutput("%s : %s", _output, key_fg=Fore.BLUE)
 

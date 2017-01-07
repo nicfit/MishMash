@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
 import logging
 import logging.config
-from argparse import ArgumentParser
 
 from nicfit import Application, ConfigOpts
 from sqlalchemy import exc as sql_exceptions
+
 
 import eyed3
 
@@ -33,6 +31,8 @@ def main(args):
         return 1
 
     logging.config.fileConfig(args.config)
+    # In the case fileConfig undid the command line, typically not necessary.
+    args.applyLoggingOpts(args.log_levels, args.log_files)
 
     if args.db_url:
         args.config.set(MAIN_SECT, SA_KEY, args.db_url)
@@ -70,7 +70,8 @@ def main(args):
 class MishMash(Application):
     def __init__(self):
         from . import version
-        config_opts = ConfigOpts(required=False, default_config=DEFAULT_CONFIG,
+        config_opts = ConfigOpts(required=False,
+                                 default_config=DEFAULT_CONFIG(),
                                  default_config_opt="--default-config",
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
         super().__init__(main, name="mishmash", version=version,

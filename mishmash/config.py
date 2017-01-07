@@ -17,99 +17,23 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ################################################################################
-from os.path import expandvars
+from pathlib import Path
 import nicfit
 
 
-CONFIG_ENV_VAR = "MISHMASH_CONFIG"
+WEB_PORT = 6229
 MAIN_SECT = "mishmash"
 SA_KEY = "sqlalchemy.url"
+CONFIG_ENV_VAR = "MISHMASH_CONFIG"
+SQLITE_DB_URL = "sqlite:///{0}/mishmash.db".format(Path.home())
+POSTGRES_DB_URL = "postgresql://mishmash@localhost/mishmash"
+LOG_FORMAT = "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s"
+VARIOUS_ARTISTS_TEXT = "Various Artists"
 
 
-DEFAULT_CONFIG = """
-[mishmash]
-sqlalchemy.url = %(sqlite_db_url)s
-;sqlalchemy.url = %(postgres_db_url)s
-
-# Albums that involve a collection of different artists are grouped under
-# this name.
-various_artists_name = Various Artists
-
-###
-# logging configuration
-# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/logging.html
-###
-
-[loggers]
-keys = root, sqlalchemy, eyed3, mishmash
-
-[handlers]
-keys = console
-
-[formatters]
-keys = generic
-
-[logger_root]
-level = WARN
-handlers = console
-
-[logger_sqlalchemy]
-level = WARN
-handlers = console
-qualname = sqlalchemy.engine
-# "level = INFO" logs SQL queries.
-# "level = DEBUG" logs SQL queries and results.
-# "level = WARN" logs neither.  (Recommended for production systems.)
-propagate = 0
-
-[logger_mishmash]
-level = WARN
-qualname = mishmash
-handlers = console
-propagate = 0
-
-[logger_eyed3]
-level = ERROR
-qualname = eyed3
-handlers = console
-propagate = 0
-
-[handler_console]
-class = StreamHandler
-args = (sys.stderr,)
-level = NOTSET
-formatter = generic
-
-[formatter_generic]
-format = %(generic_format)s
-
-###
-# app configuration
-# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/environment.html
-###
-
-[app:main]
-use = call:mishmash.web:main
-
-pyramid.reload_templates = true
-pyramid.debug_authorization = false
-pyramid.debug_notfound = false
-pyramid.debug_routematch = false
-pyramid.default_locale_name = en
-pyramid.includes =
-    pyramid_debugtoolbar
-    pyramid_tm
-
-[server:main]
-use = egg:waitress#main
-host = 0.0.0.0
-port = 6229
-
-""" % {"sqlite_db_url": expandvars("sqlite:///$HOME/mishmash.db"),
-       "postgres_db_url": "postgresql://mishmash@localhost/mishmash",
-       "generic_format":
-         "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s",
-      }
+def DEFAULT_CONFIG():
+    default = Path(__file__).parent / "_default-config.ini"
+    return default.read_text().format(**globals())
 
 
 class Config(nicfit.Config):

@@ -1,7 +1,7 @@
 .PHONY: clean-pyc clean-build clean-patch clean-local docs clean help lint \
         test test-all coverage docs release dist tags install \
         build-release pre-release freeze-release _tag-release _upload-release \
-        _pypi-release _github-release clean-docs cookiecutter changelog
+        _pypi-release _github-release clean-docs cookiecutter changelog docker
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -204,4 +204,8 @@ cookiecutter:
 	# FIXME: Pull from a non-local ./cookiecutter
 	cookiecutter -o ${TEMP_DIR} -f --config-file ./.cookiecutter.json \
                  --no-input ../nicfit.py/cookiecutter
+	git -C ${TEMP_DIR}/MishMash diff
 	git -C ${TEMP_DIR}/MishMash status -s -b
+
+docker:
+	docker build -t mishmash etc/
