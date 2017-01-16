@@ -22,7 +22,6 @@ from __future__ import print_function
 import os
 import sys
 import time
-from pathlib import Path
 from os.path import getctime
 from datetime import datetime
 
@@ -41,6 +40,7 @@ from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from . import command
 from .. import console
+from ..library import MusicLibrary
 
 log = nicfit.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class SyncPlugin(LoaderPlugin):
     def __init__(self, arg_parser):
         super().__init__(arg_parser, cache_files=True, track_images=True)
 
-        eyed3.main.setFileScannerOpts(arg_parser)
+        eyed3.main.setFileScannerOpts(arg_parser, paths_metavar="PATH_OR_LIB")
 
         arg_parser.add_argument(
                 "--no-purge", action="store_true", dest="no_purge",
@@ -89,9 +89,9 @@ class SyncPlugin(LoaderPlugin):
 
         try:
             lib = self._db_session.query(Library)\
-                                  .filter_by(name=args._library).one()
+                                  .filter_by(name=args._library.name).one()
         except NoResultFound:
-            lib = Library(name=args._library)
+            lib = Library(name=args._library.name)
             self._db_session.add(lib)
             self._db_session.flush()
         self._lib_name = lib.name
@@ -461,39 +461,38 @@ class Sync(command.Command):
 
         # TODO: add CommandException to get rid of return 1 etc at this level
 
-        libs = list(args.config.music_libs)
+        libs = {lib.name: lib for lib in args.config.music_libs}
         if not libs and not args.paths:
-            print("\nMissing at least one path in which to sync!\n")
+            print("\nMissing at least one path/library in which to sync!\n")
             self.parser.print_usage()
             return 1
+        assert libs[MAIN_LIB_NAME]
 
-        main_lib = ":".join(["library", MAIN_LIB_NAME])
-        sync_ops = {main_lib: []}
-        for music_lib in libs:
-            paths = music_lib.get("paths")
-            if not paths:
-                print("[{}] - missing 'paths'".format(music_lib.name))
-                return 1
-
-            if music_lib.getboolean("sync", True):
-                paths = paths.split("\n")
-                if music_lib.name not in sync_ops:
-                    sync_ops[music_lib.name] = []
-                for p in [Path(p).expanduser() for p in paths]:
-                    glob_paths = Path("/").glob(str(p.relative_to("/")))
-                    sync_ops[music_lib.name] += [str(p) for p in glob_paths]
-            else:
-                log.info("[{}] - sync=False".format(music_lib.name))
-
-        for path in args.paths:
-            sync_ops[main_lib].append(path)
+        sync_libs = []
+        if args.paths:
+            file_paths = []
+            for arg in args.paths:
+                if arg in libs:
+                    # Library name
+                    sync_libs.append(libs[arg])
+                else:
+                    # Path
+                    file_paths.append(arg)
+            if file_paths:
+                sync_libs.append(MusicLibrary(MAIN_LIB_NAME, paths=file_paths))
+        else:
+            sync_libs = list(libs.values())
 
         args.db_engine, args.db_session = self.db_engine, self.db_session
         try:
-            for lib, paths in sync_ops.items():
-                args._library = lib.split(":", 1)[1]
-                args.paths = paths
-                log.info("Syncing library {}: paths={}".format(lib, paths))
+            for lib in sync_libs:
+                if not lib.sync:
+                    log.info("[{}] - sync=False".format(lib.name))
+                    continue
+                args._library = lib
+                args.paths = lib.paths
+                log.info("Syncing library '{}': paths={}".format(lib.name,
+                                                                 lib.paths))
                 r = eyed3_main(args, None)
                 if r != 0:
                     return r

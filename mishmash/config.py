@@ -54,5 +54,7 @@ class Config(nicfit.Config):
 
     @property
     def music_libs(self):
+        from .library import MusicLibrary
+
         for sect in [s for s in self.sections() if s.startswith("library:")]:
-            yield self[sect]
+            yield MusicLibrary.fromConfig(self[sect])

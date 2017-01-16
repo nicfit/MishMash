@@ -1,5 +1,5 @@
 nicfit.py>=0.5.1b0
-eyeD3>=0.8.0a1
+eyeD3>=0.8.0a2
 SQLAlchemy>=0.9
 countrycode
 pyfiglet

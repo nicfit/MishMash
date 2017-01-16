@@ -461,9 +461,14 @@ class Library(Base, OrmObject):
 
     @staticmethod
     def initTable(session, config):
-        session.add(Library(name=NULL_LIB_NAME, id=NULL_LIB_ID))
-        session.add(Library(name=MAIN_LIB_NAME, id=MAIN_LIB_ID))
+        null_lib = Library(name=NULL_LIB_NAME)
+        session.add(null_lib)
+        main_lib = Library(name=MAIN_LIB_NAME)
+        session.add(main_lib)
         session.flush()
+        if (null_lib.id, main_lib.id) != (NULL_LIB_ID, MAIN_LIB_ID):
+            raise RuntimeError(
+                "Unable to provision null/main libs wih expected IDs")
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
