@@ -61,7 +61,10 @@ class SyncPlugin(LoaderPlugin):
     def __init__(self, arg_parser):
         super().__init__(arg_parser, cache_files=True, track_images=True)
 
-        eyed3.main.setFileScannerOpts(arg_parser, paths_metavar="PATH_OR_LIB")
+        eyed3.main.setFileScannerOpts(
+            arg_parser, paths_metavar="PATH_OR_LIB",
+            paths_help="Files/directory paths, or individual music libraries. "
+                       "No arguments will sync all configured libraries.")
 
         arg_parser.add_argument(
                 "--no-purge", action="store_true", dest="no_purge",
