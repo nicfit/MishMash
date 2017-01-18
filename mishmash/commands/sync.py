@@ -20,7 +20,6 @@
 from __future__ import print_function
 
 import os
-import sys
 import time
 from os.path import getctime
 from datetime import datetime
@@ -40,6 +39,7 @@ from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from . import command
 from .. import console
+from .._console import pout, perr
 from ..library import MusicLibrary
 
 log = nicfit.getLogger(__name__)
@@ -66,6 +66,9 @@ class SyncPlugin(LoaderPlugin):
             paths_help="Files/directory paths, or individual music libraries. "
                        "No arguments will sync all configured libraries.")
 
+        arg_parser.add_argument(
+                "-f", "--force", action="store_true", dest="force",
+                help="Force sync a library when sync=False.")
         arg_parser.add_argument(
                 "--no-purge", action="store_true", dest="no_purge",
                 help="Do not purge orphaned data (tracks, artists, albums, "
@@ -123,7 +126,7 @@ class SyncPlugin(LoaderPlugin):
                     if artist not in artist_rows:
                         session.add(artist)
                         session.flush()
-                        print(fg.yellow("Updating artist") + ": " + name)
+                        pout(fg.yellow("Updating artist") + ": " + name)
                     resolved_artist = artist
             else:
                 # Artist match
@@ -133,7 +136,7 @@ class SyncPlugin(LoaderPlugin):
             artist = Artist(name=name, lib_id=self._lib_id)
             session.add(artist)
             session.flush()
-            print(fg.green("Adding artist") + ": " + name)
+            pout(fg.green("Adding artist") + ": " + name)
 
         return artist, resolved_artist
 
@@ -253,7 +256,7 @@ class SyncPlugin(LoaderPlugin):
                     album.release_date = rel_date
                     album.original_release_date = or_date
                     album.recording_date = rec_date
-                    print(fg.yellow("Updating album") + ": " + album.title)
+                    pout(fg.yellow("Updating album") + ": " + album.title)
                 elif tag.album:
                     album = Album(title=tag.album, lib_id=self._lib_id,
                                   artist_id=album_artist_id, type=album_type,
@@ -262,18 +265,18 @@ class SyncPlugin(LoaderPlugin):
                                   recording_date=rec_date,
                                   date_added=d_datetime)
                     session.add(album)
-                    print(fg.green("Adding album") + ": " + album.title)
+                    pout(fg.green("Adding album") + ": " + album.title)
 
                 session.flush()
 
             if not track:
                 track = Track(audio_file=audio_file, lib_id=self._lib_id)
                 self._num_added += 1
-                print(fg.green("Adding track") + ": " + path)
+                pout(fg.green("Adding track") + ": " + path)
             else:
                 track.update(audio_file)
                 self._num_modified += 1
-                print(fg.yellow("Updating track") + ": " + path)
+                pout(fg.yellow("Updating track") + ": " + path)
 
             genre = tag.genre
             genre_tag = None
@@ -349,17 +352,17 @@ class SyncPlugin(LoaderPlugin):
              num_orphaned_albums) = deleteOrphans(session)
 
         if self._num_loaded or self._num_deleted:
-            print("")
-            print("== Library '{}' sync'd [ {:f}s time ({:f} files/s) ] =="
-                  .format(self._lib_name, t, self._num_loaded / t))
-            print("%d files sync'd" % self._num_loaded)
-            print("%d tracks added" % self._num_added)
-            print("%d tracks modified" % self._num_modified)
+            pout("")
+            pout("== Library '{}' sync'd [ {:f}s time ({:f} files/s) ] =="
+                .format(self._lib_name, t, self._num_loaded / t))
+            pout("%d files sync'd" % self._num_loaded)
+            pout("%d tracks added" % self._num_added)
+            pout("%d tracks modified" % self._num_modified)
             if not self.args.no_purge:
-                print("%d orphaned tracks deleted" % self._num_deleted)
-                print("%d orphaned artists deleted" % num_orphaned_artists)
-                print("%d orphaned albums deleted" % num_orphaned_albums)
-            print("")
+                pout("%d orphaned tracks deleted" % self._num_deleted)
+                pout("%d orphaned artists deleted" % num_orphaned_artists)
+                pout("%d orphaned albums deleted" % num_orphaned_albums)
+            pout("")
 
 
 def deleteOrphans(session):
@@ -371,7 +374,7 @@ def deleteOrphans(session):
     # Tracks
     for track in session.query(Track).all():
         if not os.path.exists(track.path):
-            print(fg.red("Removing track") + ": " + track.path)
+            pout(fg.red("Removing track") + ": " + track.path)
             session.delete(track)
             num_orphaned_tracks += 1
             log.warn("Deleting track: %s" % str(track))
@@ -436,7 +439,7 @@ def syncImage(img, current, session):
                 current.images.remove(db_img)
                 current.images.append(img)
                 session.add(current)
-                print(fg.green("Updating image") + ": " + _img_str(img))
+                pout(fg.green("Updating image") + ": " + _img_str(img))
             img = None
             break
 
@@ -444,7 +447,7 @@ def syncImage(img, current, session):
         # Add image
         current.images.append(img)
         session.add(current)
-        print(fg.green("Adding image") + ": " + _img_str(img))
+        pout(fg.green("Adding image") + ": " + _img_str(img))
 
 
 @command.register
@@ -466,7 +469,7 @@ class Sync(command.Command):
 
         libs = {lib.name: lib for lib in args.config.music_libs}
         if not libs and not args.paths:
-            print("\nMissing at least one path/library in which to sync!\n")
+            perr("\nMissing at least one path/library in which to sync!\n")
             self.parser.print_usage()
             return 1
         assert libs[MAIN_LIB_NAME]
@@ -489,16 +492,17 @@ class Sync(command.Command):
         args.db_engine, args.db_session = self.db_engine, self.db_session
         try:
             for lib in sync_libs:
-                if not lib.sync:
-                    log.info("[{}] - sync=False".format(lib.name))
+                if not lib.sync and not args.force:
+                    pout("[{}] - sync=False".format(lib.name), log=log)
                     continue
                 args._library = lib
                 args.paths = lib.paths
-                log.info("Syncing library '{}': paths={}".format(lib.name,
-                                                                 lib.paths))
+                pout("{}yncing library '{}': paths={}"
+                     .format("Force s" if args.force else "S", lib.name,
+                             lib.paths), log=log)
                 r = eyed3_main(args, None)
                 if r != 0:
                     return r
         except IOError as err:
-            print(str(err), file=sys.stderr)
+            perr(str(err))
             return 1

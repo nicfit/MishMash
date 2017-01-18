@@ -47,7 +47,7 @@ def footer(context, request):
     return ("<footer>"
             "<p align='right'>%(NAME)s %(VERSION)s &copy; %(YEARS)s"
             "</footer>" %
-            dict(NAME=__project__name__,
+            dict(NAME=__project_name__,
                  VERSION=__version__,
                  YEARS=__years__))
 
