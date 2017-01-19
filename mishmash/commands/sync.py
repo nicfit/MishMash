@@ -35,6 +35,8 @@ from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
+import inotify.adapters
+
 from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from . import command
@@ -77,6 +79,8 @@ class SyncPlugin(LoaderPlugin):
         arg_parser.add_argument(
                 "--no-prompt", action="store_true", dest="no_prompt",
                 help="Skip files that require user input.")
+
+        self.inotify = inotify.adapters.Inotify()
 
     def start(self, args, config):
         import eyed3.utils.prompt
@@ -336,6 +340,11 @@ class SyncPlugin(LoaderPlugin):
                               session)
                 else:
                     log.warn("Invalid image file: " + img_file)
+
+        if True:
+            idir = d.encode(eyed3.LOCAL_FS_ENCODING)
+            self.watched_dirs.append(idir)
+            self.inotify.add_watch(idir)
 
     def handleDone(self):
         t = time.time() - self.start_time
