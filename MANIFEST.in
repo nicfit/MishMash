@@ -10,6 +10,7 @@ include Makefile
 include tox.ini
 
 graft docs
+prune docs/_build
 
 recursive-include ./tests *.py
 
@@ -18,3 +19,8 @@ global-exclude .editorconfig
 global-exclude *.py[co]
 
 recursive-include requirements *.txt
+
+exclude .cookiecutter.json
+exclude .gitchangelog.rc
+prune etc
+
