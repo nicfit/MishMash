@@ -7,3 +7,4 @@ Sphinx
 check-manifest
 pyramid_debugtoolbar
 sphinx_bootstrap_theme
+gitchangelog
