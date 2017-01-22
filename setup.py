@@ -43,7 +43,10 @@ def getPackageInfo():
                     continue
                 info_dict[what] = m.groups()[0]
 
-    vparts = info_dict["version"].split("-", maxsplit=1)
+    if sys.version_info[:2] >= (3, 4):
+        vparts = info_dict["version"].split("-", maxsplit=1)
+    else:
+        vparts = info_dict["version"].split("-", 1)
     info_dict["release"] = vparts[1] if len(vparts) > 1 else "final"
     return info_dict
 

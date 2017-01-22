@@ -1,5 +1,5 @@
-nicfit.py
-eyeD3>=0.8.0a1
+nicfit.py>=0.5.1b0
+eyeD3>=0.8.0a3
 SQLAlchemy>=0.9
 countrycode
 pyfiglet
@@ -13,3 +13,4 @@ pyramid_tm
 waitress
 transaction
 zope.sqlalchemy
+alembic

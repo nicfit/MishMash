@@ -1,10 +1,12 @@
 .PHONY: clean-pyc clean-build clean-patch clean-local docs clean help lint \
         test test-all coverage docs release dist tags install \
         build-release pre-release freeze-release _tag-release _upload-release \
-        _pypi-release _github-release clean-docs cookiecutter changelog docker
+        _pypi-release _github-release clean-docs cookiecutter changelog docker \
+        _web-release
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
+CC_DIR = ${TEMP_DIR}/MishMash
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 try:
@@ -19,8 +21,11 @@ NAME ?= Travis Shirk
 EMAIL ?= travis@pobox.com
 GITHUB_USER ?= nicfit
 GITHUB_REPO ?= mishmash
-GIT := git -c user.name="$(NAME)" -c user.email="$(EMAIL)"
 PYPI_REPO = pypitest
+VERSION = $(shell python setup.py --version 2> /dev/null)
+RELEASE_NAME = $(shell python setup.py --release-name 2> /dev/null)
+CHANGELOG = HISTORY.rst
+CHANGELOG_HEADER = v${VERSION} ($(shell date --iso-8601))$(if ${RELEASE_NAME}, : ${RELEASE_NAME},)
 
 help:
 	@echo "test - run tests quickly with the default Python"
@@ -113,38 +118,52 @@ servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 pre-release: lint test changelog
-	@test -n "${NAME}" || (echo "NAME not set, needed for git" && false)
-	@test -n "${EMAIL}" || (echo "EMAIL not set, needed for git" && false)
 	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
 	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
-	$(eval VERSION = $(shell python setup.py --version 2> /dev/null))
 	@echo "VERSION: $(VERSION)"
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
-	$(eval RELEASE_NAME = $(shell python setup.py --release-name 2> /dev/null))
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
 	check-manifest
 	@if git tag -l | grep ${RELEASE_TAG} > /dev/null; then \
         echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \
     fi
-	git authors --list >| AUTHORS
+	IFS=$$'\n';\
+	for auth in `git authors --list`; do \
+		echo "Checking $$auth...";\
+		grep "$$auth" AUTHORS || echo "$$auth" >> AUTHORS;\
+	done
 	@github-release --version    # Just a exe existence check
 
 changelog:
-	@# TODO
+	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\
+	if ! grep "${CHANGELOG_HEADER}" ${CHANGELOG} > /dev/null; then \
+		rm -f ${CHANGELOG}.new; \
+		if test -n "$$last"; then \
+			gitchangelog show ^$${last} |\
+			  sed "s|^%%version%% .*|${CHANGELOG_HEADER}|" |\
+			  sed '/^.. :changelog:/ r/dev/stdin' ${CHANGELOG} \
+			 > ${CHANGELOG}.new; \
+		else \
+			cat ${CHANGELOG} |\
+			  sed "s/^%%version%% .*/${CHANGELOG_HEADER}/" \
+			> ${CHANGELOG}.new;\
+		fi; \
+		mv ${CHANGELOG}.new ${CHANGELOG}; \
+	fi
 
 build-release: test-all dist
 
 freeze-release:
 	@# TODO: check for incoming
-	@($(GIT) diff --quiet && $(GIT) diff --quiet --staged) || \
+	@(git diff --quiet && git diff --quiet --staged) || \
         (printf "\n!!! Working repo has uncommited/unstaged changes. !!!\n" && \
          printf "\nCommit and try again.\n" && false)
 
 _tag-release:
-	$(GIT) tag -a $(RELEASE_TAG) -m "Release $(RELEASE_TAG)"
-	$(GIT) push --tags origin
+	git tag -a $(RELEASE_TAG) -m "Release $(RELEASE_TAG)"
+	git push --tags origin
 
 release: pre-release freeze-release build-release _tag-release _upload-release
 
@@ -170,8 +189,14 @@ _github-release:
     done
 
 
+_web-release:
+	# TODO
+	#find dist -type f -exec scp register -r ${PYPI_REPO} {} \;
+	# Not implemented
+	true
 
-_upload-release: _github-release _pypi-release
+
+_upload-release: _github-release _pypi-release _web-release
 
 
 _pypi-release:
@@ -198,14 +223,22 @@ tags:
 README.html: README.rst
 	rst2html5.py README.rst >| README.html
 
+CC_DIFF ?= gvimdiff -geometry 169x60 -f
 cookiecutter:
 	rm -rf ${TEMP_DIR}
-	git clone . ${TEMP_DIR}/MishMash
+	git clone --branch `git rev-parse --abbrev-ref HEAD` . ${CC_DIR}
 	# FIXME: Pull from a non-local ./cookiecutter
 	cookiecutter -o ${TEMP_DIR} -f --config-file ./.cookiecutter.json \
                  --no-input ../nicfit.py/cookiecutter
-	git -C ${TEMP_DIR}/MishMash diff
-	git -C ${TEMP_DIR}/MishMash status -s -b
+	if test "${CC_DIFF}" == "no"; then \
+		git -C ${CC_DIR} diff; \
+		git -C ${CC_DIR} status -s -b; \
+	else \
+		for f in `git -C ${CC_DIR} status --porcelain | \
+		                 awk '{print $$2}'`; do \
+			${CC_DIFF} ${CC_DIR}/$$f ./$$f; \
+		done \
+	fi
 
 docker:
 	docker build -t mishmash etc/

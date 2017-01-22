@@ -40,6 +40,10 @@ from . import version as VERSION
 
 
 VARIOUS_ARTISTS_ID = 1
+NULL_LIB_ID = 1
+NULL_LIB_NAME = "__null_lib__"
+MAIN_LIB_ID = 2
+MAIN_LIB_NAME = "Music"
 
 
 @event.listens_for(Engine, "connect")
@@ -148,6 +152,7 @@ class Artist(Base, OrmObject):
                                            "origin_city",
                                            "origin_state",
                                            "origin_country",
+                                           "lib_id",
                                            name="artist_uniq_constraint"), {})
 
     # Columns
@@ -159,6 +164,10 @@ class Artist(Base, OrmObject):
     origin_city = sql.Column(sql.Unicode(32))
     origin_state = sql.Column(sql.Unicode(32))
     origin_country = sql.Column(sql.String(3))
+
+    # Foreign keys
+    lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
+                        nullable=False, index=True)
 
     # Relations
     albums = orm.relation("Album", cascade="all")
@@ -172,7 +181,7 @@ class Artist(Base, OrmObject):
 
     @staticmethod
     def initTable(session, config):
-        va = Artist(name=config.various_artists_name)
+        va = Artist(name=config.various_artists_name, lib_id=NULL_LIB_ID)
         session.add(va)
         session.flush()
         if va.id != VARIOUS_ARTISTS_ID:
@@ -263,7 +272,8 @@ class AlbumDate(TypeDecorator):
 class Album(Base, OrmObject):
     __tablename__ = "albums"
     __table_args__ = (sql.UniqueConstraint("title",
-                                           "artist_id"), {})
+                                           "artist_id",
+                                           "lib_id"), {})
 
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
@@ -280,6 +290,8 @@ class Album(Base, OrmObject):
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
                            nullable=False, index=True)
+    lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
+                        nullable=False, index=True)
 
     # Relations
     artist = orm.relation("Artist")
@@ -301,10 +313,13 @@ class Album(Base, OrmObject):
 
 class Track(Base, OrmObject):
     __tablename__ = "tracks"
+    __table_args__ = (sql.UniqueConstraint("path",
+                                           "lib_id",
+                                           name="track_uniq_constraint"), {})
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("track_id_seq"), primary_key=True)
-    path = sql.Column(sql.String(512), nullable=False, unique=True, index=True)
+    path = sql.Column(sql.String(512), nullable=False, index=True)
     size_bytes = sql.Column(sql.Integer, nullable=False)
     ctime = sql.Column(sql.DateTime(), nullable=False)
     mtime = sql.Column(sql.DateTime(), nullable=False)
@@ -324,6 +339,9 @@ class Track(Base, OrmObject):
                            nullable=False, index=True)
     album_id = sql.Column(sql.Integer, sql.ForeignKey("albums.id"),
                           nullable=True, index=True)
+    lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
+                        nullable=False, index=True)
+
     # Relations
     artist = orm.relation("Artist")
     album = orm.relation("Album")
@@ -357,10 +375,15 @@ class Track(Base, OrmObject):
 
 class Tag(Base, OrmObject):
     __tablename__ = "tags"
+    __table_args__ = (sql.UniqueConstraint("name",
+                                           "lib_id",
+                                           name="tag_uniq_constraint"), {})
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("tag_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
+    name = sql.Column(sql.Unicode(64), nullable=False, unique=False)
+    lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
+                        nullable=False, index=True)
 
 
 class Image(Base, OrmObject):
@@ -429,7 +452,26 @@ class Image(Base, OrmObject):
                      data=data)
 
 
-TYPES = [Meta, Tag, Artist, Album, Track, Image]
+class Library(Base, OrmObject):
+    __tablename__ = "libraries"
+
+    # Columns
+    id = sql.Column(sql.Integer, Sequence("lib_id_seq"), primary_key=True)
+    name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
+
+    @staticmethod
+    def initTable(session, config):
+        null_lib = Library(name=NULL_LIB_NAME)
+        session.add(null_lib)
+        main_lib = Library(name=MAIN_LIB_NAME)
+        session.add(main_lib)
+        session.flush()
+        if (null_lib.id, main_lib.id) != (NULL_LIB_ID, MAIN_LIB_ID):
+            raise RuntimeError(
+                "Unable to provision null/main libs wih expected IDs")
+
+
+TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
 TABLES = [T.__table__ for T in TYPES] + TAGS
 '''All the table instances.  Order matters (esp. for postgresql). The

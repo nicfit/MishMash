@@ -147,7 +147,6 @@ class SplitArtists(command.Command):
         session.flush()
 
 
-
 @command.register
 class MergeArtists(command.Command):
     NAME = "merge-artists"

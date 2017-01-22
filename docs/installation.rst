@@ -26,8 +26,7 @@ At the command line:
 From BitBucket
 --------------
 At the command line::
-
-    $ hg clone https://bitbucket.org/nicfit/mishmash
+    $ git clone https://github.com/nicfit/mishmash
     $ cd mishmash
     $ python setup.py install
 
