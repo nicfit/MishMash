@@ -472,7 +472,6 @@ class Sync(command.Command):
             perr("\nMissing at least one path/library in which to sync!\n")
             self.parser.print_usage()
             return 1
-        assert libs[MAIN_LIB_NAME]
 
         sync_libs = []
         if args.paths:
