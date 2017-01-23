@@ -5,6 +5,6 @@ flake8
 twine
 Sphinx
 check-manifest
+gitchangelog
 pyramid_debugtoolbar
 sphinx_bootstrap_theme
-gitchangelog

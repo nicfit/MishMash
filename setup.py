@@ -12,11 +12,6 @@ classifiers = [
     "Natural Language :: English",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 2.7",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.3",
-    "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
 ]
@@ -87,6 +82,14 @@ pkg_info["download_url"] = (
     "{github_url}/releases/downloads/v{version}/{gz}"
     .format(gz=gz, **pkg_info)
 )
+
+
+def package_files(directory):
+    paths = []
+    for (path, _, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join("..", path, filename))
+    return paths
 
 if sys.argv[1:] and sys.argv[1] == "--release-name":
     print(pkg_info["release_name"])
