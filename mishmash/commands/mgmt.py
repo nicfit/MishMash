@@ -1,46 +1,26 @@
 # -*- coding: utf-8 -*-
-################################################################################
-#  Copyright (C) 2014  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-################################################################################
 import os
 
+from nicfit import command
 from eyed3.core import VARIOUS_TYPE
 from eyed3.utils.prompt import prompt
 from eyed3.utils.console import (Style, Fore as fg)
 
-from ..console import promptArtist, selectArtist
 from ..orm import Artist
+from ..core import Command
+from ..console import promptArtist, selectArtist
 from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
-from . import command
 
-'''Metadata management commands.'''
+"""Metadata management commands."""
 
 
 @command.register
-class SplitArtists(command.Command):
+class SplitArtists(Command):
     NAME = "split-artists"
+    HELP = "Split a single artist name into N distinct artists."
 
-    def __init__(self, subparsers=None):
-        super(SplitArtists, self).__init__(
-                "Split a single artist name into N distinct artists.",
-                subparsers)
-        self.parser.add_argument("artist",
-                                 help="The name of the artist to split.")
+    def _initArgParser(self, parser):
+        parser.add_argument("artist", help="The name of the artist to split.")
 
     def _displayArtistMusic(self, artist, albums, singles):
         if albums:
@@ -148,15 +128,13 @@ class SplitArtists(command.Command):
 
 
 @command.register
-class MergeArtists(command.Command):
+class MergeArtists(Command):
     NAME = "merge-artists"
+    HELP = "Merge two or more artists into a single artist."
 
-    def __init__(self, subparsers=None):
-        super(MergeArtists, self).__init__(
-                "Merge two or more artists into a single artist.",
-                subparsers)
-        self.parser.add_argument("artists", nargs="+",
-                                 help="The artist names to merge.")
+    def _initArgParser(self, parser):
+        parser.add_argument("artists", nargs="+",
+                            help="The artist names to merge.")
 
     def _run(self):
         session = self.db_session
