@@ -14,3 +14,4 @@ waitress
 transaction
 zope.sqlalchemy
 alembic
+inotify
