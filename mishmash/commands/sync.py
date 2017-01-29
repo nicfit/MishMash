@@ -1,22 +1,4 @@
 # -*- coding: utf-8 -*-
-################################################################################
-#  Copyright (C) 2013-2014  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-################################################################################
 from __future__ import print_function
 
 import os
@@ -24,27 +6,28 @@ import time
 from os.path import getctime
 from datetime import datetime
 
+from nicfit import command, getLogger
 from sqlalchemy.orm.exc import NoResultFound
-import nicfit
+
 import eyed3
 import eyed3.main
-from eyed3.main import main as eyed3_main
 from eyed3.utils import art
 from eyed3.plugins import LoaderPlugin
-from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
+from eyed3.main import main as eyed3_main
+from eyed3.utils.console import Fore as fg
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
 import inotify.adapters
 
 from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
-from . import command
 from .. import console
+from ..core import Command
 from .._console import pout, perr
 from ..library import MusicLibrary
 
-log = nicfit.getLogger(__name__)
+log = getLogger(__name__)
 
 
 IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
@@ -460,13 +443,12 @@ def syncImage(img, current, session):
 
 
 @command.register
-class Sync(command.Command):
+class Sync(Command):
     NAME = "sync"
+    HELP = "Syncronize music directories with database."
 
-    def __init__(self, subparsers=None):
-        super(Sync, self).__init__(
-                "Syncronize music directories with database.", subparsers)
-
+    def __init__(self, subparsers):
+        super(Sync, self).__init__(subparsers)
         self.plugin = SyncPlugin(self.parser)
         self.args = None
 
@@ -481,7 +463,6 @@ class Sync(command.Command):
             perr("\nMissing at least one path/library in which to sync!\n")
             self.parser.print_usage()
             return 1
-        assert libs[MAIN_LIB_NAME]
 
         sync_libs = []
         if args.paths:

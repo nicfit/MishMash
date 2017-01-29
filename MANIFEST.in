@@ -1,7 +1,4 @@
-include mishmash/_default-config.ini
-graft mishmash/web
-
-include AUTHORS
+include AUTHORS.rst
 include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
@@ -10,11 +7,19 @@ include Makefile
 include tox.ini
 
 graft docs
+prune docs/_build
 
 recursive-include ./tests *.py
 
+exclude .gitchangelog.rc
 global-exclude __pycache__
 global-exclude .editorconfig
 global-exclude *.py[co]
 
 recursive-include requirements *.txt
+
+include mishmash/_default-config.ini
+graft mishmash/web
+
+exclude .cookiecutter.json
+prune etc

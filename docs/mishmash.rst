@@ -36,6 +36,14 @@ mishmash.database module
     :undoc-members:
     :show-inheritance:
 
+mishmash.library module
+-----------------------
+
+.. automodule:: mishmash.library
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 mishmash.orm module
 -------------------
 
