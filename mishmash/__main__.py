@@ -13,6 +13,7 @@ from eyed3.utils.prompt import PromptExit
 from .database import MissingSchemaException
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
 from . import log
+from .commands import *                                                   # noqa
 
 eyed3.require("0.8")
 
