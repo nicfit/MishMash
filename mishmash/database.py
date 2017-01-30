@@ -6,8 +6,7 @@ from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
 
-from .orm import TYPES, TABLES
-from .orm import Base, Artist, Track, Album
+from .orm import TYPES, TABLES, Base, Artist, Track, Album
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
@@ -90,6 +89,7 @@ class MissingSchemaException(Exception):
 
 
 def search(session, query):
+    # FIXME
     flat_query = u"".join(query.split())
 
     artists = session.query(Artist).filter(
@@ -104,3 +104,5 @@ def search(session, query):
     return dict(artists=artists,
                 albums=albums,
                 tracks=tracks)
+
+
