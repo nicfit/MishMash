@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import os
 import time
+from pathlib import Path
 from os.path import getctime
 from datetime import datetime
 
@@ -18,18 +19,16 @@ from eyed3.main import main as eyed3_main
 from eyed3.utils.console import Fore as fg
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 
-import inotify.adapters
+from ...orm import (Track, Artist, Album, Tag, Meta, Image, Library,
+                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
+from ... import console
+from ...core import Command
+from ..._console import pout, perr
+from ...library import MusicLibrary
 
-from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
-                   VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
-from .. import console
-from ..core import Command
-from .._console import pout, perr
-from ..library import MusicLibrary
+from ._inotify import Monitor, SYNC_INTERVAL
 
 log = getLogger(__name__)
-
-
 IMAGE_TYPES = {"artist": (Image.LOGO_TYPE, Image.ARTIST_TYPE, Image.LIVE_TYPE),
                "album": (Image.FRONT_COVER_TYPE, Image.BACK_COVER_TYPE,
                          Image.MISC_COVER_TYPE),
@@ -66,8 +65,7 @@ class SyncPlugin(LoaderPlugin):
                 "--no-prompt", action="store_true", dest="no_prompt",
                 help="Skip files that require user input.")
 
-        self._inotify = None
-        self._synced_dirs = []
+        self.monitor_proc = None
 
     def start(self, args, config):
         import eyed3.utils.prompt
@@ -94,8 +92,11 @@ class SyncPlugin(LoaderPlugin):
         self._lib_name = lib.name
         self._lib_id = lib.id
 
-        if self.args.monitor:
-            self._inotify = inotify.adapters.Inotify()
+        if self.args.monitor and self.monitor_proc is None:
+            self.monitor_proc = Monitor()
+            # Watch library root paths
+            for p in args.paths:
+                self._watchDir(p)
 
     def _getArtist(self, session, name, resolved_artist):
         artist_rows = session.query(Artist).filter_by(name=name,
@@ -344,9 +345,7 @@ class SyncPlugin(LoaderPlugin):
             self._watchDir(d)
 
     def _watchDir(self, d):
-        d = d.encode(eyed3.LOCAL_FS_ENCODING)
-        self._synced_dirs.append(d)
-        self._inotify.add_watch(d)
+        self.monitor_proc.dir_queue.put((self._lib_name, Path(d)))
 
     def handleDone(self):
         t = time.time() - self.start_time
@@ -375,24 +374,8 @@ class SyncPlugin(LoaderPlugin):
                 pout("%d orphaned albums deleted" % num_orphaned_albums)
             pout("")
 
-    def monitor(self):
-        log.info("Monitor {:d} directories for file changes"
-                 .format(len(self._synced_dirs)))
-        for event in self._inotify.event_gen():
-            if event is None:
-                continue
-            (header, type_names, watch_path, filename) = event
-            log.debug("WD=({:d}) MASK=({:d}) COOKIE=({:d}) LEN=({:d}) "
-                      "MASK->NAMES={:s} WATCH-PATH=[{:s}] FILENAME=[{:s}]"
-                      .format(header.wd, header.mask, header.cookie, header.len,
-                              type_names,
-                              watch_path.decode(eyed3.LOCAL_FS_ENCODING),
-                              filename.decode(eyed3.LOCAL_FS_ENCODING)))
 
-    def unmonitor(self):
-        for d in self._synced_dirs:
-            self._inotify.remove_watch(d)
-
+# FIXME: move to mishmash.database
 def deleteOrphans(session):
     num_orphaned_artists = 0
     num_orphaned_albums = 0
@@ -492,6 +475,7 @@ class Sync(Command):
         args = args or self.args
         args.plugin = self.plugin
 
+        # FIXME
         # TODO: add CommandException to get rid of return 1 etc at this level
 
         libs = {lib.name: lib for lib in args.config.music_libs}
@@ -516,27 +500,98 @@ class Sync(Command):
             sync_libs = list(libs.values())
 
         args.db_engine, args.db_session = self.db_engine, self.db_session
+
+        def _syncLib(lib):
+            args._library = lib
+            args.paths = []
+            for p in lib.paths:
+                args.paths.append(str(p) if isinstance(p, Path) else p)
+            pout("{}yncing library '{}': paths={}"
+                 .format("Force s" if args.force else "S", lib.name, lib.paths),
+                 log=log)
+            return eyed3_main(args, None)
+
         try:
             for lib in sync_libs:
                 if not lib.sync and not args.force:
                     pout("[{}] - sync=False".format(lib.name), log=log)
                     continue
-                args._library = lib
-                args.paths = lib.paths
-                pout("{}yncing library '{}': paths={}"
-                     .format("Force s" if args.force else "S", lib.name,
-                             lib.paths), log=log)
-                r = eyed3_main(args, None)
-                if r != 0:
-                    return r
+                result = _syncLib(lib)
+                if result != 0:
+                    return result
         except IOError as err:
             perr(str(err))
             return 1
 
-        self.db_session.commit()
         if args.monitor:
-            # FIXME: kick monitor off in a sep process.
-            try:
-                self.plugin.monitor()
-            finally:
-                self.plugin.unmonitor()
+            monitor = self.plugin.monitor_proc
+
+            # Commit now, since we won't be returning
+            self.db_session.commit()
+
+            monitor.start()
+            while True:
+                if monitor.sync_queue.empty():
+                    time.sleep(SYNC_INTERVAL / 2)
+                    continue
+
+                sync_libs = {}
+                for i in range(monitor.sync_queue.qsize()):
+                    lib, path = monitor.sync_queue.get_nowait()
+                    if lib not in sync_libs:
+                        sync_libs[lib] = set()
+                    sync_libs[lib].add(path)
+
+                for lib, paths in sync_libs.items():
+                    result = _syncLib(MusicLibrary(lib, paths=paths))
+                    if result != 0:
+                        return result
+                    self.db_session.commit()
+            monitor.join()
+
+
+"""
+Test:
+    * touch a music file: IN_OPEN, IN_ATTRIB, IN_CLOSE_WRITE
+    * touch a non-music file: IN_OPEN, IN_ATTRIB, IN_CLOSE_WRITE
+    * touch a music dir
+    - touch a non-music dir
+    * chmod/chown a music file
+    * chmod/chown a non-music file
+    * chmod/chown a music dir
+    * chmod/chown a non-music dir
+    * edit a file
+    * add a file
+    * rm a file
+    - add a music dir
+    - rm a music dir
+    - add a non-music dir
+    - rm a non-music dir
+    - rm cover art
+    - add cover art
+Problems:
+    - A change of a non-music dir (e.g. root music dir files, images) is not
+      synced since it is not in a lib dir
+    - rm a music dir::
+
+        Syncing b"./music/complete/(1988) Demo '88" (lib: Music)
+        Syncing library 'Music': paths={b"./music/complete/(1988) Demo '88"}
+        <mishmash:MainThread> [ERROR]: file not found: ./music/complete/(1988) Demo '88
+        Traceback (most recent call last):
+          File "/home/travis/devel/mishmash/mishmash/__main__.py", line 48, in main
+            retval = args.command_func(args, args.config) or 0
+          File "/home/travis/devel/mishmash/mishmash/core.py", line 17, in run
+            retval = super().run(args)
+          File "/home/travis/.virtualenvs/mishmash/lib/python3.6/site-packages/nicfit/command.py", line 38, in run
+            return self._run()
+          File "/home/travis/devel/mishmash/mishmash/commands/sync.py", line 540, in _run
+            result = _syncLib(MusicLibrary(lib, paths=paths))
+          File "/home/travis/devel/mishmash/mishmash/commands/sync.py", line 509, in _syncLib
+            return eyed3_main(args, None)
+          File "/home/travis/.virtualenvs/mishmash/lib/python3.6/site-packages/eyed3/main.py", line 50, in main
+            fs_encoding=args.fs_encoding)
+          File "/home/travis/.virtualenvs/mishmash/lib/python3.6/site-packages/eyed3/utils/__init__.py", line 72, in walk
+            raise IOError("file not found: %s" % path)
+        OSError: file not found: ./music/complete/(1988) Demo '88
+        OSError: file not found: ./music/complete/(1988) Demo '88
+"""

@@ -23,6 +23,10 @@ def _pErr(subject, msg):
 
 
 def main(args):
+    import multiprocessing
+
+    multiprocessing.set_start_method("fork")
+
     if not args.command:
         # No command was given.
         args.app.arg_parser.print_help()

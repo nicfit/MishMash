@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from nicfit.command import Command as BaseCommand
+from nicfit.command import CommandError                                   # noqa
 
 
 class Command(BaseCommand):
