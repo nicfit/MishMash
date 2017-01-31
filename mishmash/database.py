@@ -104,5 +104,3 @@ def search(session, query):
     return dict(artists=artists,
                 albums=albums,
                 tracks=tracks)
-
-

@@ -509,4 +509,4 @@ Problems:
             raise IOError("file not found: %s" % path)
         OSError: file not found: ./music/complete/(1988) Demo '88
         OSError: file not found: ./music/complete/(1988) Demo '88
-"""
+""" # noqa
