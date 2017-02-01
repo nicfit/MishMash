@@ -22,9 +22,22 @@ DEFAULT_SESSION_ARGS = {
 
 log = nicfit.getLogger(__name__)
 
+# FIXME: Remove once in nicfit.py
+import contextlib
+@contextlib.contextmanager
+def cd(path):
+    old_path = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(old_path)
 
 def init(config, engine_args=None, session_args=None, trans_mgr=None):
     db_url = config.db_url
+    alembic_d = Path(__file__).parent
+    alembic_cfg = Config(str(alembic_d / "alembic.ini"))
+    alembic_cfg.set_main_option("sqlalchemy.url", db_url)
 
     log.debug("Checking for database '%s'" % db_url)
     if not database_exists(db_url):
@@ -38,51 +51,36 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
 
     args = session_args or DEFAULT_SESSION_ARGS
     if trans_mgr:
-        import transaction
         args.update({"extension": trans_mgr})
     SessionMaker = sessionmaker(bind=engine, **args)
 
     for T in TYPES:
         T.metadata.bind = engine
 
-    session = SessionMaker()
-    alembic_init = False
-    try:
+    missing_tables = checkSchema(engine)
+    if missing_tables:
+        log.info("Creating database '%s'" % db_url)
+        Base.metadata.create_all(engine)
+
         try:
-            log.debug("Checking database schema '%s'" % db_url)
-            checkSchema(engine)
-        except MissingSchemaException as ex:
-            log.info("Creating database schema '%s'" % db_url)
-            Base.metadata.create_all(engine)
-            for T in TYPES:
-                # Run extra table initialization
+            # Run extra table initialization any missing/new tables
+            session = SessionMaker()
+            for T in [t for t in TYPES if t.__table__ in missing_tables]:
                 T.initTable(session, config)
-
-            alembic_init = True
-
-        if trans_mgr:
-            transaction.commit()
-        else:
             session.commit()
-    except Exception as ex:
-        if trans_mgr:
-            transaction.abort()
-        else:
+        except Exception as ex:
             session.rollback()
-        raise
-    finally:
-        session.close()
-
-    if alembic_init:
-        alembic_d = Path(__file__).parent
-        alembic_cfg = Config(str(alembic_d / "alembic.ini"))
-        alembic_cfg.set_main_option("sqlalchemy.url", db_url)
-        cwd = os.getcwd()
-        try:
-            os.chdir(str(alembic_d))
-            command.stamp(alembic_cfg, "head")
+            raise
         finally:
-            os.chdir(cwd)
+            session.close()
+
+        # Initialize Alembic with current revision hash.
+        with cd(str(alembic_d)):
+            command.stamp(alembic_cfg, "head")
+    else:
+        # Upgrade to head (i.e. this) revision, or no-op if they match
+        with cd(str(alembic_d)):
+            command.upgrade(alembic_cfg, "head")
 
     return engine, SessionMaker
 
@@ -91,20 +89,13 @@ def checkSchema(engine):
     missing_tables = []
     for table in TABLES:
         if not engine.has_table(table.name):
+            log.debug(f"Missing {table.name}")
             missing_tables.append(table)
-
-    if missing_tables:
-        raise MissingSchemaException(missing_tables)
+    return missing_tables
 
 
 def dropAll(url):
     drop_database(url)
-
-
-class MissingSchemaException(Exception):
-    def __init__(self, missing_tables):
-        super(MissingSchemaException, self).__init__("missing tables")
-        self.tables = missing_tables
 
 
 def search(session, query):
