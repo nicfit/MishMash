@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-
 import os
 import time
 from os.path import getctime
@@ -17,12 +15,12 @@ from eyed3.utils.prompt import PromptExit
 from eyed3.main import main as eyed3_main
 from eyed3.utils.console import Fore as fg
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
+from nicfit.console import pout, perr
 
 from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from .. import console
 from ..core import Command
-from .._console import pout, perr
 from ..library import MusicLibrary
 
 log = getLogger(__name__)
