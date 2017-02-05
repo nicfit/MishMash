@@ -7,6 +7,7 @@ __years__ = "2013-2017"
 
 __project_name__ = "MishMash"
 __project_slug__ = "mishmash"
+__pypi_name__ = "MishMash"
 __author__ = "Travis Shirk"
 __author_email__ = "travis@pobox.com"
 __url__ = "https://github.com/nicfit/MishMash"

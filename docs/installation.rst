@@ -26,6 +26,7 @@ At the command line:
 From GitHub
 --------------
 At the command line::
+
     $ git clone https://github.com/nicfit/MishMash
     $ cd mishmash
     $ python setup.py install
