@@ -10,7 +10,7 @@ At the command line::
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv mishmash
+    $ mkvirtualenv MishMash
     $ pip install mishmash
 
 Using a source distribution
@@ -19,14 +19,14 @@ At the command line:
 
 .. parsed-literal::
 
-    $ tar zxf MishMish-|version|.tar.gz
-    $ cd MishMish-|version|
+    $ tar zxf mishmash-|version|.tar.gz
+    $ cd mishmash-|version|
     $ python setup.py install
 
 From GitHub
 --------------
 At the command line::
-    $ git clone https://github.com/nicfit/mishmash
+    $ git clone https://github.com/nicfit/MishMash
     $ cd mishmash
     $ python setup.py install
 
