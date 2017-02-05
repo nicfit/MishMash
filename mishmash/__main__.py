@@ -84,11 +84,7 @@ class MishMash(Application):
 
         description = "Database command line options are required by most "\
                       "sub commands."
-        Command.initAll(parser.add_subparsers(title="Commands",
-                                              add_help_subcmd=True,
-                                              dest="command",
-                                              description=description))
-        return parser
+        self.enableCommands(title="Commands", description=description)
 
 
 app = MishMash()
