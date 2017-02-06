@@ -74,6 +74,9 @@ class MishMash(Application):
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
         super().__init__(main, name="mishmash", version=version,
                          config_opts=config_opts, pdb_opt=True)
+        desc = "Database command line options (or config) are required by "\
+               "most sub commands."
+        self.enableCommands(title="Commands", description=desc)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
@@ -81,10 +84,6 @@ class MishMash(Application):
                 default=None,
                 help="Database URL. This will override the URL from the config "
                      "file be it the default of one passed with -c/--config.")
-
-        description = "Database command line options are required by most "\
-                      "sub commands."
-        self.enableCommands(title="Commands", description=description)
 
 
 app = MishMash()
