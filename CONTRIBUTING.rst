@@ -56,12 +56,13 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `mishmash` for local development.
+Ready to contribute? Here's how to set up MishMash for
+local development.
 
-1. Fork the `mishmash` repo on GitHub.
+1. Fork the `MishMash` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/mishmash.git
+    $ git clone git@github.com:your_name_here/MishMash.git
 
 3. Install your local copy into a virtualenv. Assuming you have
    virtualenvwrapper installed, this is how you set up your fork for local
