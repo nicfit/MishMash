@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import nicfit
 from nicfit.util import cd
@@ -11,8 +10,8 @@ from sqlalchemy_utils.functions import (database_exists,
 from alembic import command
 from alembic.config import Config
 
-from .orm import TYPES, TABLES
-from .orm import Base, Artist, Track, Album
+from .orm import TYPES
+from .orm import Artist, Track, Album
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",

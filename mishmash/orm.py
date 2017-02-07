@@ -437,6 +437,7 @@ TABLES = [T.__table__ for T in TYPES] + TAGS
 tables are created in normal order, and dropped in reverse order.'''
 ENUMS = [Image._types_enum, Album._types_enum]
 
+
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     """Allows foreign keys to work in sqlite."""
