@@ -11,6 +11,7 @@ prune docs/_build
 
 recursive-include ./tests *.py
 
+exclude .cookiecutter.yml
 exclude .gitchangelog.rc
 global-exclude __pycache__
 global-exclude .editorconfig
@@ -21,5 +22,4 @@ recursive-include requirements *.txt
 include mishmash/_default-config.ini
 graft mishmash/web
 
-exclude .cookiecutter.json
 prune etc

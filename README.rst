@@ -6,23 +6,23 @@ Music database and web interface.
 
 Status
 ------
-.. image:: https://img.shields.io/pypi/v/mishmash.svg
-   :target: https://pypi.python.org/pypi/mishmash/
+.. image:: https://img.shields.io/pypi/v/MishMash.svg
+   :target: https://pypi.python.org/pypi/MishMash/
    :alt: Latest Version
-.. image:: https://img.shields.io/pypi/status/mishmash.svg
-   :target: https://pypi.python.org/pypi/mishmash/
+.. image:: https://img.shields.io/pypi/status/MishMash.svg
+   :target: https://pypi.python.org/pypi/MishMash/
    :alt: Project Status
-.. image:: https://travis-ci.org/nicfit/mishmash.svg?branch=master
-   :target: https://travis-ci.org/nicfit/mishmash
+.. image:: https://travis-ci.org/nicfit/MishMash.svg?branch=master
+   :target: https://travis-ci.org/nicfit/MishMash
    :alt: Build Status
-.. image:: https://img.shields.io/pypi/l/mishmash.svg
-   :target: https://pypi.python.org/pypi/mishmash/
+.. image:: https://img.shields.io/pypi/l/MishMash.svg
+   :target: https://pypi.python.org/pypi/MishMash/
    :alt: License
-.. image:: https://img.shields.io/pypi/pyversions/mishmash.svg
-   :target: https://pypi.python.org/pypi/mishmash/
+.. image:: https://img.shields.io/pypi/pyversions/MishMash.svg
+   :target: https://pypi.python.org/pypi/MishMash/
    :alt: Supported Python versions
-.. image:: https://coveralls.io/repos/nicfit/mishmash/badge.svg
-   :target: https://coveralls.io/r/nicfit/mishmash
+.. image:: https://coveralls.io/repos/nicfit/MishMash/badge.svg
+   :target: https://coveralls.io/r/nicfit/MishMash
    :alt: Coverage Status
 
 Features

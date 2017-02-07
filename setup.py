@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import warnings
 from setuptools import setup, find_packages
 
 
@@ -12,7 +13,6 @@ classifiers = [
     "Natural Language :: English",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
 ]
 
@@ -21,7 +21,7 @@ def getPackageInfo():
     info_dict = {}
     info_keys = ["version", "name", "author", "author_email", "url", "license",
                  "description", "release_name", "github_url"]
-    key_remap = {"name": "project_name"}
+    key_remap = {"name": "pypi_name"}
 
     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                            ".",
@@ -95,23 +95,26 @@ if sys.argv[1:] and sys.argv[1] == "--release-name":
     print(pkg_info["release_name"])
     sys.exit(0)
 else:
-    setup(classifiers=classifiers,
-          package_dir={"": "."},
-          packages=find_packages(".",
-                                 exclude=["tests", "tests.*"]),
-          zip_safe=False,
-          platforms=["Any"],
-          keywords=["mishmash"],
-          install_requires=requirements("default.txt"),
-          tests_require=requirements("test.txt"),
-          test_suite="./tests",
-          long_description=readme + "\n\n" + history,
-          include_package_data=True,
-          package_data={"mishmash": ["_default-config.ini"]},
-          entry_points={
-              "console_scripts": [
-                  "mishmash = mishmash.__main__:app.run",
-              ]
-          },
-          **pkg_info
-    )
+    # The extra command line options we added cause warnings, quell that.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Unknown distribution option")
+        setup(classifiers=classifiers,
+              package_dir={"": "."},
+              packages=find_packages(".",
+                                     exclude=["tests", "tests.*"]),
+              zip_safe=False,
+              platforms=["Any"],
+              keywords=["mishmash"],
+              install_requires=requirements("default.txt"),
+              tests_require=requirements("test.txt"),
+              test_suite="./tests",
+              long_description=readme + "\n\n" + history,
+              include_package_data=True,
+              package_data={"mishmash": ["_default-config.ini"]},
+              entry_points={
+                  "console_scripts": [
+                      "mishmash = mishmash.__main__:app.run",
+                  ]
+              },
+              **pkg_info
+        )

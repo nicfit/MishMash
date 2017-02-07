@@ -3,14 +3,13 @@ import logging
 import logging.config
 
 from sqlalchemy import exc as sql_exceptions
-from nicfit import Application, ConfigOpts, Command
+from nicfit import Application, ConfigOpts
 
 import eyed3
 from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 
-from .database import MissingSchemaException
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
 from . import log
 from .commands import *                                                   # noqa
@@ -53,14 +52,6 @@ def main(args):
             sql_exceptions.OperationalError) as ex:
         _pErr("Database error", ex)
         retval = 1
-    except MissingSchemaException as ex:
-        _pErr("Schema error",
-              "The table%s '%s' %s missing from the database schema." %
-                 ('s' if len(ex.tables) > 1 else '',
-                  ", ".join([str(t) for t in ex.tables]),
-                  "are" if len(ex.tables) > 1 else "is")
-             )
-        retval = 1
     except Exception as ex:
         log.exception(ex)
         _pErr(ex.__class__.__name__, str(ex))
@@ -78,6 +69,9 @@ class MishMash(Application):
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
         super().__init__(main, name="mishmash", version=version,
                          config_opts=config_opts, pdb_opt=True)
+        desc = "Database command line options (or config) are required by "\
+               "most sub commands."
+        self.enableCommands(title="Commands", description=desc)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
@@ -85,14 +79,6 @@ class MishMash(Application):
                 default=None,
                 help="Database URL. This will override the URL from the config "
                      "file be it the default of one passed with -c/--config.")
-
-        description = "Database command line options are required by most "\
-                      "sub commands."
-        Command.initAll(parser.add_subparsers(title="Commands",
-                                              add_help_subcmd=True,
-                                              dest="command",
-                                              description=description))
-        return parser
 
 
 app = MishMash()

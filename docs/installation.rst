@@ -10,7 +10,7 @@ At the command line::
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv mishmash
+    $ mkvirtualenv MishMash
     $ pip install mishmash
 
 Using a source distribution
@@ -19,24 +19,23 @@ At the command line:
 
 .. parsed-literal::
 
-    $ tar zxf MishMish-|version|.tar.gz
-    $ cd MishMish-|version|
+    $ tar zxf mishmash-|version|.tar.gz
+    $ cd mishmash-|version|
     $ python setup.py install
 
-From BitBucket
+From GitHub
 --------------
 At the command line::
-    $ git clone https://github.com/nicfit/mishmash
+
+    $ git clone https://github.com/nicfit/MishMash
     $ cd mishmash
     $ python setup.py install
 
 Additional dependencies should be installed if developing MishMash::
 
-    $ pip install -r dev-requirements.txt
+    $ pip install -r requirements/dev.txt
 
 Dependencies
 -------------
-All the required software dependencies are installed using either 
-``requirements.txt`` files or by ``python install setup.py``, including the
-Postgresql adapter ``psycopg2``. To try a different SQLAlchemy engine you must
-install it separately.
+All the required software dependencies are installed using either
+``requirements/default.txt`` files or by ``python install setup.py``.

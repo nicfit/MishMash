@@ -1,8 +1,8 @@
-.PHONY: clean-pyc clean-build clean-patch clean-local docs clean help lint \
-        test test-all coverage docs release dist tags build install \
-        build-release pre-release freeze-release _tag-release _upload-release \
-        _pypi-release _github-release clean-docs cookiecutter changelog docker \
-        _web-release
+.PHONY: help build test clean dist install coverage pre-release release \
+        docs clean-docs lint tags docs-dist docs-view coverage-view changelog \
+        clean-pyc clean-build clean-patch clean-local clean-test-data \
+        test-all test-data build-release freeze-release tag-release \
+        pypi-release web-release github-release cookiecutter
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -10,8 +10,9 @@ CC_DIR = ${TEMP_DIR}/MishMash
 NAME ?= Travis Shirk
 EMAIL ?= travis@pobox.com
 GITHUB_USER ?= nicfit
-GITHUB_REPO ?= mishmash
+GITHUB_REPO ?= MishMash
 PYPI_REPO = pypitest
+PROJECT_NAME = $(shell python setup.py --name 2> /dev/null)
 VERSION = $(shell python setup.py --version 2> /dev/null)
 RELEASE_NAME = $(shell python setup.py --release-name 2> /dev/null)
 CHANGELOG = HISTORY.rst
@@ -28,6 +29,8 @@ help:
 	@echo "clean-patch - remove patch artifacts (.rej, .orig)"
 	@echo "build - byte-compile python files and generate other build objects"
 	@echo "lint - check style with flake8"
+	@echo "test - run tests quickly with the default Python"
+	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "test-all - run tests on various Python versions with tox"
 	@echo "release - package and upload a release"
@@ -35,6 +38,7 @@ help:
 	@echo "pre-release - check repo and show version"
 	@echo "dist - package"
 	@echo "install - install the package to the active Python's site-packages"
+	@echo "build - build package source files"
 	@echo ""
 	@echo "Options:"
 	@echo "TEST_PDB - If defined PDB options are added when 'pytest' is invoked"
@@ -65,7 +69,7 @@ clean-pyc:
 clean-test:
 	rm -fr .tox/
 	rm -f .coverage
-	rm -rf ${TEMP_DIR}
+	rm -rf "${CC_DIR}"
 
 clean-patch:
 	find . -name '*.rej' -exec rm -f '{}' \;
@@ -103,11 +107,15 @@ docs:
 	$(MAKE) -C docs html
 
 docs-view: docs
-	$(BROWSER) docs/_build/html/index.html;\
+	$(BROWSER) docs/_build/html/index.html
+
+docs-dist: clean-docs docs
+	test -d dist || mkdir dist
+	cd docs/_build && \
+	    tar czvf ../../dist/${PROJECT_NAME}-${VERSION}_docs.tar.gz html
 
 clean-docs:
-	# TODO
-	#$(MAKE) -C docs clean
+	$(MAKE) -C docs clean
 	-rm README.html
 
 # FIXME: never been tested
@@ -115,8 +123,6 @@ servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 pre-release: lint test changelog
-	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
-	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
 	@echo "VERSION: $(VERSION)"
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
@@ -131,6 +137,8 @@ pre-release: lint test changelog
 		echo "Checking $$auth...";\
 		grep "$$auth" AUTHORS.rst || echo "* $$auth" >> AUTHORS.rst;\
 	done
+	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
+	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
 	@github-release --version    # Just a exe existence check
 
 changelog:
@@ -138,7 +146,7 @@ changelog:
 	if ! grep "${CHANGELOG_HEADER}" ${CHANGELOG} > /dev/null; then \
 		rm -f ${CHANGELOG}.new; \
 		if test -n "$$last"; then \
-			gitchangelog show ^$${last} |\
+			gitchangelog show --author-format=email $${last}..HEAD |\
 			  sed "s|^%%version%% .*|${CHANGELOG_HEADER}|" |\
 			  sed '/^.. :changelog:/ r/dev/stdin' ${CHANGELOG} \
 			 > ${CHANGELOG}.new; \
@@ -158,14 +166,14 @@ freeze-release:
         (printf "\n!!! Working repo has uncommited/unstaged changes. !!!\n" && \
          printf "\nCommit and try again.\n" && false)
 
-_tag-release:
+tag-release:
 	git tag -a $(RELEASE_TAG) -m "Release $(RELEASE_TAG)"
 	git push --tags origin
 
-release: pre-release freeze-release build-release _tag-release _upload-release
+release: pre-release freeze-release build-release tag-release upload-release
 
 
-_github-release:
+github-release:
 	name="${RELEASE_TAG}"; \
     if test -n "${RELEASE_NAME}"; then \
         name="${RELEASE_TAG} (${RELEASE_NAME})"; \
@@ -186,22 +194,20 @@ _github-release:
     done
 
 
-_web-release:
-	# TODO
-	#find dist -type f -exec scp register -r ${PYPI_REPO} {} \;
-	# Not implemented
-	true
+web-release:
+	@# Not implemented
+	@true
 
 
-_upload-release: _github-release _pypi-release _web-release
+upload-release: github-release pypi-release web-release
 
 
-_pypi-release:
+pypi-release:
 	find dist -type f -exec twine register -r ${PYPI_REPO} {} \;
 	find dist -type f -exec twine upload -r ${PYPI_REPO} --skip-existing {} \;
 
-dist: clean
-	python setup.py sdist
+dist: clean docs-dist build
+	python setup.py sdist --formats=gztar,zip
 	python setup.py bdist_egg
 	python setup.py bdist_wheel
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
@@ -224,23 +230,16 @@ README.html: README.rst
 	fi
 
 CC_DIFF ?= gvimdiff -geometry 169x60 -f
+GIT_COMMIT_HOOK = .git/hooks/commit-msg
 cookiecutter:
-	rm -rf ${TEMP_DIR}
-	git clone --branch `git rev-parse --abbrev-ref HEAD` . ${CC_DIR}
-	nicfit cookiecutter --config-file ./.cookiecutter.json --no-input ${TEMP_DIR}
+	rm -rf "${CC_DIR}"
 	if test "${CC_DIFF}" == "no"; then \
-		git -C ${CC_DIR} diff; \
-		git -C ${CC_DIR} status -s -b; \
+		nicfit cookiecutter --no-input "${TEMP_DIR}"; \
+		git -C "${CC_DIR}" diff; \
+		git -C "${CC_DIR}" status -s -b; \
 	else \
-		for f in `git -C ${CC_DIR} status --porcelain | \
-		                 awk '{print $$2}'`; do \
-			if test -f ${CC_DIR}/$$f; then \
-				diff ${CC_DIR}/$$f ./$$f > /dev/null || \
-				  ${CC_DIFF} ${CC_DIR}/$$f ./$$f; \
-			fi \
-		done; \
-		diff ${CC_DIR}/.git/hooks/commit-msg .git/hooks/commit-msg >/dev/null || \
-		  ${CC_DIFF} ${CC_DIR}/.git/hooks/commit-msg ./.git/hooks/commit-msg; \
+		nicfit cookiecutter --merge --no-input "${TEMP_DIR}" \
+		       --extra-merge ${GIT_COMMIT_HOOK} ${GIT_COMMIT_HOOK};\
 	fi
 
 docker:

@@ -1,12 +1,11 @@
-nicfit.py>=0.5.5
+nicfit.py>=0.5.11
 eyeD3>=0.8.0a3
-SQLAlchemy>=0.9
+SQLAlchemy
 countrycode
 pyfiglet
 sqlalchemy-utils
 psycopg2
-# mishmash.web
-pyramid>=1.5
+pyramid
 pyramid_chameleon
 pyramid_layout
 pyramid_tm

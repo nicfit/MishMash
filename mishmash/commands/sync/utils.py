@@ -1,8 +1,8 @@
 import os
 import nicfit
-from eyed3.utils.console import Fore as fg
+from nicfit.console import pout
+from nicfit.console.ansi import Fg
 
-from ..._console import pout
 from ...orm import VARIOUS_ARTISTS_ID
 from ...orm import Artist, Track, Album
 
@@ -18,7 +18,7 @@ def deleteOrphans(session):
     # Tracks
     for track in session.query(Track).all():
         if not os.path.exists(track.path):
-            pout(fg.red("Removing track") + ": " + track.path)
+            pout(Fg.red("Removing track") + ": " + track.path)
             session.delete(track)
             num_orphaned_tracks += 1
             log.warn("Deleting track: %s" % str(track))
@@ -83,7 +83,7 @@ def syncImage(img, current, session):
                 current.images.remove(db_img)
                 current.images.append(img)
                 session.add(current)
-                pout(fg.green("Updating image") + ": " + _img_str(img))
+                pout(Fg.green("Updating image") + ": " + _img_str(img))
             img = None
             break
 
@@ -91,4 +91,4 @@ def syncImage(img, current, session):
         # Add image
         current.images.append(img)
         session.add(current)
-        pout(fg.green("Adding image") + ": " + _img_str(img))
+        pout(Fg.green("Adding image") + ": " + _img_str(img))
