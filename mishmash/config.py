@@ -28,7 +28,6 @@ CONFIG_ENV_VAR = "MISHMASH_CONFIG"
 SQLITE_DB_URL = "sqlite:///{0}/mishmash.db".format(Path.home())
 POSTGRES_DB_URL = "postgresql://mishmash@localhost/mishmash"
 LOG_FORMAT = "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s"
-VARIOUS_ARTISTS_TEXT = "Various Artists"
 
 
 def DEFAULT_CONFIG():

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import nicfit
+from nicfit.util import cd
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 
@@ -22,16 +23,6 @@ DEFAULT_SESSION_ARGS = {
 
 log = nicfit.getLogger(__name__)
 
-# FIXME: Remove once in nicfit.py
-import contextlib
-@contextlib.contextmanager
-def cd(path):
-    old_path = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(old_path)
 
 def init(config, engine_args=None, session_args=None, trans_mgr=None):
     db_url = config.db_url
@@ -57,41 +48,11 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
     for T in TYPES:
         T.metadata.bind = engine
 
-    missing_tables = checkSchema(engine)
-    if missing_tables:
-        log.info("Creating database '%s'" % db_url)
-        Base.metadata.create_all(engine)
-
-        try:
-            # Run extra table initialization any missing/new tables
-            session = SessionMaker()
-            for T in [t for t in TYPES if t.__table__ in missing_tables]:
-                T.initTable(session, config)
-            session.commit()
-        except Exception as ex:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-        # Initialize Alembic with current revision hash.
-        with cd(str(alembic_d)):
-            command.stamp(alembic_cfg, "head")
-    else:
-        # Upgrade to head (i.e. this) revision, or no-op if they match
-        with cd(str(alembic_d)):
-            command.upgrade(alembic_cfg, "head")
+    # Upgrade to head (i.e. this) revision, or no-op if they match
+    with cd(str(alembic_d)):
+        command.upgrade(alembic_cfg, "head")
 
     return engine, SessionMaker
-
-
-def checkSchema(engine):
-    missing_tables = []
-    for table in TABLES:
-        if not engine.has_table(table.name):
-            log.debug(f"Missing {table.name}")
-            missing_tables.append(table)
-    return missing_tables
 
 
 def dropAll(url):

@@ -3,7 +3,7 @@ import logging
 import logging.config
 
 from sqlalchemy import exc as sql_exceptions
-from nicfit import Application, ConfigOpts, Command
+from nicfit import Application, ConfigOpts
 
 import eyed3
 from eyed3.utils.console import AnsiCodes

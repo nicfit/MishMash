@@ -1,26 +1,7 @@
 # -*- coding: utf-8 -*-
-################################################################################
-#  Copyright (C) 2012  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-################################################################################
-
-'''
+"""
 Object to relational database mappings for all tables.
-'''
+"""
 import os
 from datetime import datetime
 from hashlib import md5
@@ -36,27 +17,22 @@ from eyed3.utils import art
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
-from . import version as VERSION
-
-
 VARIOUS_ARTISTS_ID = 1
+VARIOUS_ARTISTS_NAME = "Various Artists"
 NULL_LIB_ID = 1
 NULL_LIB_NAME = "__null_lib__"
 MAIN_LIB_ID = 2
 MAIN_LIB_NAME = "Music"
 
+convention = {
+  "ix": 'ix_%(column_0_label)s',
+  "uq": "uq_%(table_name)s_%(column_0_name)s",
+  "ck": "ck_%(table_name)s_%(constraint_name)s",
+  "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+  "pk": "pk_%(table_name)s"
+}
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    '''Allows foreign keeys to work in sqlite.'''
-    import sqlite3
-    if dbapi_connection.__class__ is sqlite3.Connection:
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
-
-
-Base = declarative_base()
+Base = declarative_base(metadata=sql.MetaData(naming_convention=convention))
 
 artist_tags = sql.Table("artist_tags", Base.metadata,
                         sql.Column("artist_id", sql.Integer,
@@ -107,12 +83,6 @@ album_images = sql.Table("album_images", Base.metadata,
 class OrmObject(object):
     '''Base classes for all other mishmash.orm classes.'''
 
-    @staticmethod
-    def initTable(session, config):
-        '''A hook function called after the table is created allowing for
-        initial table rows or another other required tweaks.'''
-        pass
-
     def __repr__(self):
         '''Dump the object state and return it as a strings.'''
         attrs = []
@@ -135,12 +105,8 @@ class Meta(Base, OrmObject):
     last_sync = sql.Column(sql.DateTime)
     '''A timestamp of the last sync operation.'''
 
-    @staticmethod
-    def initTable(session, config):
-        session.add(Meta(version=VERSION))
 
-
-def _getSortName(name):
+def getSortName(name):
     from . import util
     suffix, prefix = util.splitNameByPrefix(name)
     return u"%s, %s" % (suffix, prefix) if prefix else name
@@ -153,7 +119,7 @@ class Artist(Base, OrmObject):
                                            "origin_state",
                                            "origin_country",
                                            "lib_id",
-                                           name="artist_uniq_constraint"), {})
+                                          ), {})
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("artist_id_seq"), primary_key=True)
@@ -178,14 +144,6 @@ class Artist(Base, OrmObject):
     '''one-to-many (artist->label) and many-to-one (label->artist)'''
     images = orm.relation("Image", secondary=artist_images, cascade="all")
     '''one-to-many artist images.'''
-
-    @staticmethod
-    def initTable(session, config):
-        va = Artist(name=config.various_artists_name, lib_id=NULL_LIB_ID)
-        session.add(va)
-        session.flush()
-        if va.id != VARIOUS_ARTISTS_ID:
-            raise RuntimeError("Unable to provision various artists")
 
     def getAlbumsByType(self, album_type):
         if album_type == VARIOUS_TYPE:
@@ -230,7 +188,7 @@ class Artist(Base, OrmObject):
         '''This exists merely to keep sort_name in sync.'''
         if not value:
             raise ValueError("Artist.name is not nullable")
-        self.sort_name = _getSortName(value)
+        self.sort_name = getSortName(value)
         return value
 
     @orm.validates("origin_country")
@@ -273,7 +231,8 @@ class Album(Base, OrmObject):
     __tablename__ = "albums"
     __table_args__ = (sql.UniqueConstraint("title",
                                            "artist_id",
-                                           "lib_id"), {})
+                                           "lib_id",
+                                          ), {})
 
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
@@ -315,7 +274,7 @@ class Track(Base, OrmObject):
     __tablename__ = "tracks"
     __table_args__ = (sql.UniqueConstraint("path",
                                            "lib_id",
-                                           name="track_uniq_constraint"), {})
+                                          ), {})
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("track_id_seq"), primary_key=True)
@@ -377,7 +336,7 @@ class Tag(Base, OrmObject):
     __tablename__ = "tags"
     __table_args__ = (sql.UniqueConstraint("name",
                                            "lib_id",
-                                           name="tag_uniq_constraint"), {})
+                                          ), {})
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("tag_id_seq"), primary_key=True)
@@ -477,3 +436,12 @@ TABLES = [T.__table__ for T in TYPES] + TAGS
 '''All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order.'''
 ENUMS = [Image._types_enum, Album._types_enum]
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Allows foreign keys to work in sqlite."""
+    import sqlite3
+    if dbapi_connection.__class__ is sqlite3.Connection:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
