@@ -3,14 +3,13 @@ import logging
 import logging.config
 
 from sqlalchemy import exc as sql_exceptions
-from nicfit import Application, ConfigOpts, Command
+from nicfit import Application, ConfigOpts
 
 import eyed3
 from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 
-from .database import MissingSchemaException
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
 from . import log
 from .commands import *                                                   # noqa
@@ -48,14 +47,6 @@ def main(args):
     except (sql_exceptions.ArgumentError,
             sql_exceptions.OperationalError) as ex:
         _pErr("Database error", ex)
-        retval = 1
-    except MissingSchemaException as ex:
-        _pErr("Schema error",
-              "The table%s '%s' %s missing from the database schema." %
-                 ('s' if len(ex.tables) > 1 else '',
-                  ", ".join([str(t) for t in ex.tables]),
-                  "are" if len(ex.tables) > 1 else "is")
-             )
         retval = 1
     except Exception as ex:
         log.exception(ex)
