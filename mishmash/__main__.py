@@ -2,19 +2,17 @@
 import logging
 import logging.config
 
-from nicfit import Application, ConfigOpts
 from sqlalchemy import exc as sql_exceptions
-
+from nicfit import Application, ConfigOpts, Command
 
 import eyed3
-
 from eyed3.utils.console import AnsiCodes
 from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
-from .commands.command import Command
 from . import log
+from .commands import *                                                   # noqa
 
 eyed3.require("0.8")
 
@@ -24,7 +22,7 @@ def _pErr(subject, msg):
 
 
 def main(args):
-    if "func" not in args:
+    if not args.command:
         # No command was given.
         args.app.arg_parser.print_help()
         return 1
@@ -42,7 +40,7 @@ def main(args):
 
     try:
         # Run command
-        retval = args.func(args, args.config) or 0
+        retval = args.command_func(args, args.config) or 0
     except (KeyboardInterrupt, PromptExit) as ex:
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
@@ -67,6 +65,9 @@ class MishMash(Application):
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
         super().__init__(main, name="mishmash", version=version,
                          config_opts=config_opts, pdb_opt=True)
+        desc = "Database command line options (or config) are required by "\
+               "most sub commands."
+        self.enableCommands(title="Commands", description=desc)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
@@ -74,13 +75,6 @@ class MishMash(Application):
                 default=None,
                 help="Database URL. This will override the URL from the config "
                      "file be it the default of one passed with -c/--config.")
-
-        subs = parser.add_subparsers(title="Sub commands", add_help_subcmd=True,
-                description="Database command line options are required by most"
-                            " sub commands.")
-        Command.initAll(subs)
-
-        return parser
 
 
 app = MishMash()
