@@ -9,3 +9,4 @@ check-manifest
 git+https://github.com/nicfit/gitchangelog.git
 pyramid_debugtoolbar
 sphinx_bootstrap_theme
+pip-tools

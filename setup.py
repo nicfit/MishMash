@@ -5,7 +5,7 @@ import re
 import sys
 import warnings
 from setuptools import setup, find_packages
-
+from setuptools.command.install import install
 
 classifiers = [
     "Intended Audience :: End Users/Desktop",
@@ -60,9 +60,27 @@ if os.path.exists("HISTORY.rst"):
 def requirements(filename):
     reqfile = os.path.join("requirements", filename)
     if os.path.exists(reqfile):
-        return open(reqfile).read().splitlines()
+        return [l.strip() for l in open(reqfile).read().splitlines()
+                    if l.strip() and not l.strip().startswith("#")]
     else:
-        return ""
+        return []
+
+
+def extra_requirements():
+    ereqs = {}
+    px, sx = "extra_", ".in"
+    for f in os.listdir("requirements"):
+        if (os.path.isfile(os.path.join("requirements", f)) and
+                f.startswith(px) and f.endswith(sx)):
+            ereqs[f[len(px):-len(sx)]] = requirements(f)
+    return ereqs
+
+
+class PipInstallCommand(install):
+    def run(self):
+        reqs = " ".join(["'%s'" % r for r in requirements("requirements.in")])
+        os.system("pip install " + reqs)
+        return super().run()
 
 
 pkg_info = getPackageInfo()
@@ -91,6 +109,7 @@ def package_files(directory):
             paths.append(os.path.join("..", path, filename))
     return paths
 
+
 if sys.argv[1:] and sys.argv[1] == "--release-name":
     print(pkg_info["release_name"])
     sys.exit(0)
@@ -105,7 +124,7 @@ else:
               zip_safe=False,
               platforms=["Any"],
               keywords=["mishmash"],
-              install_requires=requirements("default.txt"),
+              install_requires=requirements("requirements.in"),
               tests_require=requirements("test.txt"),
               test_suite="./tests",
               long_description=readme + "\n\n" + history,
@@ -116,5 +135,9 @@ else:
                       "mishmash = mishmash.__main__:app.run",
                   ]
               },
+              cmdclass={
+                  "install": PipInstallCommand,
+              },
+              extras_require=extra_requirements(),
               **pkg_info
         )

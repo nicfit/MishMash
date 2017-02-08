@@ -17,9 +17,11 @@ global-exclude __pycache__
 global-exclude .editorconfig
 global-exclude *.py[co]
 
-recursive-include requirements *.txt
+include requirements.txt
+recursive-include requirements *.txt *.in
 
-include mishmash/_default-config.ini
 graft mishmash/web
+graft mishmash/alembic
+recursive-include mishmash *.ini
 
 prune etc

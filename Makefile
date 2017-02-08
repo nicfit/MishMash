@@ -35,7 +35,7 @@ help:
 	@echo "test-all - run tests on various Python versions with tox"
 	@echo "release - package and upload a release"
 	@echo "          PYPI_REPO=[pypitest]|pypi"
-	@echo "pre-release - check repo and show version"
+	@echo "pre-release - check repo and show version, generate changelog, etc.
 	@echo "dist - package"
 	@echo "install - install the package to the active Python's site-packages"
 	@echo "build - build package source files"
@@ -127,7 +127,6 @@ pre-release: lint test changelog
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
-	check-manifest
 	@if git tag -l | grep ${RELEASE_TAG} > /dev/null; then \
         echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \
@@ -137,6 +136,8 @@ pre-release: lint test changelog
 		echo "Checking $$auth...";\
 		grep "$$auth" AUTHORS.rst || echo "* $$auth" >> AUTHORS.rst;\
 	done
+	pip-compile requirements/*.in -o ./requirements.txt
+	check-manifest
 	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
 	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
 	@github-release --version    # Just a exe existence check
