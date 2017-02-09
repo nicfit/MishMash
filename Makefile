@@ -1,8 +1,4 @@
-.PHONY: help build test clean dist install coverage pre-release release \
-        docs clean-docs lint tags docs-dist docs-view coverage-view changelog \
-        clean-pyc clean-build clean-patch clean-local clean-test-data \
-        test-all test-data build-release freeze-release tag-release \
-        pypi-release web-release github-release cookiecutter
+.PHONY: help build test dist install release docs tags changelog
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -207,10 +203,12 @@ pypi-release:
 	find dist -type f -exec twine register -r ${PYPI_REPO} {} \;
 	find dist -type f -exec twine upload -r ${PYPI_REPO} --skip-existing {} \;
 
-dist: clean docs-dist build
+sdist: build
 	python setup.py sdist --formats=gztar,zip
 	python setup.py bdist_egg
 	python setup.py bdist_wheel
+
+dist: clean sdist docs-dist
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
 	cd dist && \
     for f in $$(ls); do \

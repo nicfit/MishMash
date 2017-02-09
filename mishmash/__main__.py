@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 import logging.config
 
@@ -35,6 +36,10 @@ def main(args):
         args.config.set(MAIN_SECT, SA_KEY, args.db_url)
         # Don't want commands and such to use this, so reset.
         args.db_url = None
+    elif "MISHMASH_DBURL" in os.environ:
+        log.verbose("Using environment MISHMASH_DBURL over configuration: {}"
+                    .format(os.environ["MISHMASH_DBURL"]))
+        args.config.set(MAIN_SECT, SA_KEY, os.environ["MISHMASH_DBURL"])
 
     AnsiCodes.init(True)
 

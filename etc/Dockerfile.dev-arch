@@ -17,13 +17,15 @@ USER $USER
 RUN virtualenv $MM_HOME
 RUN git clone https://github.com/nicfit/mishmash.git ${MM_HOME}/src
 RUN source ${MM_HOME}/bin/activate && \
-    pip install -r ${MM_HOME}/src/requirements/default.txt && \
+    pip install -r ${MM_HOME}/src/requirements.txt && \
     pip install -r ${MM_HOME}/src/requirements/test.txt && \
     pip install -r ${MM_HOME}/src/requirements/dev.txt && \
     cd ${MM_HOME}/src && python setup.py install
 
 
-#RUN source ${HOME}/bin/activate && \
-#    mishmash info
+ENV MISHMASH_DBURL sqlite:////MishMash.sqlite
+
+RUN source ${MM_HOME}/bin/activate && \
+    mishmash info
 
 CMD ["/bin/bash"]
