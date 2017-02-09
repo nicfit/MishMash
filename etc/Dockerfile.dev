@@ -1,0 +1,7 @@
+FROM mishmash-base
+
+#RUN pacman -S --noconfirm git make
+
+#RUN git clone https://github.com/nicfit/mishmash.git /MishMash
+#RUN pip install -r /MishMash/requirements/dev.txt
+#RUN cd /MishMash && make install

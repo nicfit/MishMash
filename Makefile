@@ -244,4 +244,8 @@ cookiecutter:
 	fi
 
 docker:
-	docker build -t mishmash etc/
+	docker build -t mishmash-base -f etc/Dockerfile.base etc
+	docker build -t mishmash-arch -f etc/Dockerfile.arch etc
+	docker build -t mishmash-dev -f etc/Dockerfile.dev etc
+	docker build -t mishmash-dev-arch -f etc/Dockerfile.dev-arch etc
+	docker run --rm -it --user mishmash mishmash-dev-arch

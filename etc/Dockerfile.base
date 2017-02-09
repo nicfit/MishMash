@@ -1,0 +1,4 @@
+FROM python:3.6-alpine
+
+#RUN pacman -Syu --noconfirm
+#RUN pacman -S --noconfirm python python-pip

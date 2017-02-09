@@ -1,0 +1,4 @@
+FROM greyltc/archlinux
+
+RUN pacman -Syu --noconfirm
+RUN pacman -S --noconfirm python python-pip python-virtualenv

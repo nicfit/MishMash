@@ -21,6 +21,7 @@ def getPackageInfo():
     info_dict = {}
     info_keys = ["version", "name", "author", "author_email", "url", "license",
                  "description", "release_name", "github_url"]
+    # FIXME: This remap is the exception, not the rule.
     key_remap = {"name": "pypi_name"}
 
     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
@@ -123,7 +124,7 @@ else:
                                      exclude=["tests", "tests.*"]),
               zip_safe=False,
               platforms=["Any"],
-              keywords=["mishmash"],
+              keywords=["music", "database"],
               install_requires=requirements("requirements.in"),
               tests_require=requirements("test.txt"),
               test_suite="./tests",
