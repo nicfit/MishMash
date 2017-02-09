@@ -131,8 +131,8 @@ else:
               test_suite="./tests",
               long_description=readme + "\n\n" + history,
               include_package_data=True,
-              package_data={"mishmash": ["_default-config.ini", "alembic.ini",
-                                         "alembic"],
+              package_data={"mishmash": ["_default-config.ini", "alembic.ini"] +
+                                        package_files("mishmash/alembic"),
                            },
               entry_points={
                   "console_scripts": [
