@@ -1,0 +1,7 @@
+FROM postgres:9.6-alpine
+
+ENV POSTGRES_DB MishMash
+ENV POSTGRES_USER mishmash
+ENV POSTGRES_PASSWORD FaithSubjectToChange
+
+EXPOSE 5432
