@@ -48,10 +48,8 @@ def upgrade():
     )
     op.bulk_insert(lib_t,
                    [
-                       {"id": mishmash.orm.NULL_LIB_ID,
-                        "name": mishmash.orm.NULL_LIB_NAME},
-                       {"id": mishmash.orm.MAIN_LIB_ID,
-                        "name": mishmash.orm.MAIN_LIB_NAME},
+                       {"name": mishmash.orm.NULL_LIB_NAME},
+                       {"name": mishmash.orm.MAIN_LIB_NAME},
                    ])
 
     meta_t = op.create_table('meta',
@@ -83,8 +81,7 @@ def upgrade():
                                         name=op.f('uq_artists_name'))
     )
     op.bulk_insert(artists_t,
-                   [{"id": mishmash.orm.VARIOUS_ARTISTS_ID,
-                     "lib_id": mishmash.orm.NULL_LIB_ID,
+                   [{"lib_id": mishmash.orm.NULL_LIB_ID,
                      "name": mishmash.orm.VARIOUS_ARTISTS_NAME,
                      "sort_name": mishmash.orm.getSortName(
                                     mishmash.orm.VARIOUS_ARTISTS_NAME),

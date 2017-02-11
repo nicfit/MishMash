@@ -4,7 +4,7 @@ import os
 from nicfit import command
 from eyed3.core import VARIOUS_TYPE
 from eyed3.utils.prompt import prompt
-from eyed3.utils.console import (Style, Fore as fg)
+from nicfit.console.ansi import Style, Fg
 
 from ..orm import Artist
 from ..core import Command
@@ -25,14 +25,14 @@ class SplitArtists(Command):
     def _displayArtistMusic(self, artist, albums, singles):
         if albums:
             print(u"%d albums by %s:" % (len(albums),
-                                         Style.bright(fg.blue(artist.name))))
+                                         Style.bright(Fg.blue(artist.name))))
             for alb in albums:
                 print(u"%s %s" % (str(alb.getBestDate()).center(17),
                                   alb.title))
 
         if singles:
             print(u"%d single tracks by %s" %
-                  (len(singles), Style.bright(fg.blue(artist.name))))
+                  (len(singles), Style.bright(Fg.blue(artist.name))))
             for s in singles:
                 print(u"\t%s" % (s.title))
 
@@ -45,7 +45,7 @@ class SplitArtists(Command):
             print(u"Artist not found: %s" % self.args.artist)
             return 1
         elif len(artists) > 1:
-            artist = selectArtist(fg.blue("Select which '%s' to split...") %
+            artist = selectArtist(Fg.blue("Select which '%s' to split...") %
                                   artists[0].name,
                                   choices=artists, allow_create=False)
         else:
@@ -69,7 +69,7 @@ class SplitArtists(Command):
                    validate=_validN)
         new_artists = []
         for i in range(1, n + 1):
-            print(Style.bright(u"\n%s #%d") % (fg.blue(artist.name), i))
+            print(Style.bright(u"\n%s #%d") % (Fg.blue(artist.name), i))
 
             # Reuse original artist for first
             a = artist if i == 1 else Artist(name=artist.name,
@@ -82,7 +82,7 @@ class SplitArtists(Command):
             new_artists.append(a)
 
         if not Artist.checkUnique(new_artists):
-            print(fg.red("Artists must be unique."))
+            print(Fg.red("Artists must be unique."))
             return 1
 
         for a in new_artists:
@@ -147,7 +147,7 @@ class MergeArtists(Command):
                 merge_list.append(artists[0])
             elif len(artists) > 1:
                 merge_list += selectArtist(
-                        fg.blue("Select the artists to merge..."),
+                        Fg.blue("Select the artists to merge..."),
                         multiselect=True, choices=artists)
 
         if len(merge_list) > 1:

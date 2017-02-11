@@ -4,11 +4,10 @@ import logging
 import logging.config
 
 from sqlalchemy import exc as sql_exceptions
+from nicfit.console import ansi
 from nicfit import Application, ConfigOpts
 
 import eyed3
-from eyed3.utils.console import AnsiCodes
-from eyed3.utils.console import Fore as fg
 from eyed3.utils.prompt import PromptExit
 
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
@@ -19,7 +18,7 @@ eyed3.require("0.8")
 
 
 def _pErr(subject, msg):
-    print(fg.red(subject) + ": %s" % str(msg))
+    print(ansi.Fg.red(subject) + ": %s" % str(msg))
 
 
 def main(args):
@@ -40,8 +39,6 @@ def main(args):
         log.verbose("Using environment MISHMASH_DBURL over configuration: {}"
                     .format(os.environ["MISHMASH_DBURL"]))
         args.config.set(MAIN_SECT, SA_KEY, os.environ["MISHMASH_DBURL"])
-
-    AnsiCodes.init(True)
 
     try:
         # Run command
@@ -70,6 +67,9 @@ class MishMash(Application):
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
         super().__init__(main, name="mishmash", version=version,
                          config_opts=config_opts, pdb_opt=True)
+
+        ansi.init()
+
         desc = "Database command line options (or config) are required by "\
                "most sub commands."
         self.enableCommands(title="Commands", description=desc)

@@ -81,10 +81,10 @@ album_images = sql.Table("album_images", Base.metadata,
 
 
 class OrmObject(object):
-    '''Base classes for all other mishmash.orm classes.'''
+    """Base classes for all other mishmash.orm classes."""
 
     def __repr__(self):
-        '''Dump the object state and return it as a strings.'''
+        """Dump the object state and return it as a strings."""
         attrs = []
         for key in self.__dict__:
             if not key.startswith('_'):
@@ -94,8 +94,8 @@ class OrmObject(object):
 
 
 class Meta(Base, OrmObject):
-    '''Table ``meta`` used for storing database schema version, timestamps,
-    and any other metadata about the music collection.'''
+    """Table ``meta`` used for storing database schema version, timestamps,
+    and any other metadata about the music collection."""
 
     __tablename__ = "meta"
 
@@ -307,8 +307,8 @@ class Track(Base, OrmObject):
     tags = orm.relation("Tag", secondary=track_tags)
 
     def __init__(self, **kwargs):
-        '''Along with the column args a ``audio_file`` keyword may be passed
-        for this class to use for initialization.'''
+        """Along with the column args a ``audio_file`` keyword may be passed
+        for this class to use for initialization."""
 
         if "audio_file" in kwargs:
             self.update(kwargs["audio_file"])

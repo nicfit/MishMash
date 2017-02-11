@@ -13,8 +13,8 @@ from eyed3.utils import art
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils.prompt import PromptExit
 from eyed3.main import main as eyed3_main
-from eyed3.utils.console import Fore as fg
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
+from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
 from ..orm import (Track, Artist, Album, Tag, Meta, Image, Library,
@@ -96,7 +96,7 @@ class SyncPlugin(LoaderPlugin):
                 try:
                     heading = "Multiple artists names '%s'" % \
                               artist_rows[0].name
-                    artist = console.selectArtist(fg.blue(heading),
+                    artist = console.selectArtist(Fg.blue(heading),
                                                   choices=artist_rows,
                                                   allow_create=True)
                 except PromptExit:
@@ -107,7 +107,7 @@ class SyncPlugin(LoaderPlugin):
                     if artist not in artist_rows:
                         session.add(artist)
                         session.flush()
-                        pout(fg.yellow("Updating artist") + ": " + name)
+                        pout(Fg.blue("Updating artist") + ": " + name)
                     resolved_artist = artist
             else:
                 # Artist match
@@ -117,7 +117,7 @@ class SyncPlugin(LoaderPlugin):
             artist = Artist(name=name, lib_id=self._lib_id)
             session.add(artist)
             session.flush()
-            pout(fg.green("Adding artist") + ": " + name)
+            pout(Fg.green("Adding artist") + ": " + name)
 
         return artist, resolved_artist
 
@@ -237,7 +237,7 @@ class SyncPlugin(LoaderPlugin):
                     album.release_date = rel_date
                     album.original_release_date = or_date
                     album.recording_date = rec_date
-                    pout(fg.yellow("Updating album") + ": " + album.title)
+                    pout(Fg.blue("Updating album") + ": " + album.title)
                 elif tag.album:
                     album = Album(title=tag.album, lib_id=self._lib_id,
                                   artist_id=album_artist_id, type=album_type,
@@ -246,18 +246,18 @@ class SyncPlugin(LoaderPlugin):
                                   recording_date=rec_date,
                                   date_added=d_datetime)
                     session.add(album)
-                    pout(fg.green("Adding album") + ": " + album.title)
+                    pout(Fg.green("Adding album") + ": " + album.title)
 
                 session.flush()
 
             if not track:
                 track = Track(audio_file=audio_file, lib_id=self._lib_id)
                 self._num_added += 1
-                pout(fg.green("Adding track") + ": " + path)
+                pout(Fg.green("Adding track") + ": " + path)
             else:
                 track.update(audio_file)
                 self._num_modified += 1
-                pout(fg.yellow("Updating track") + ": " + path)
+                pout(Fg.blue("Updating track") + ": " + path)
 
             genre = tag.genre
             genre_tag = None
@@ -355,7 +355,7 @@ def deleteOrphans(session):
     # Tracks
     for track in session.query(Track).all():
         if not os.path.exists(track.path):
-            pout(fg.red("Removing track") + ": " + track.path)
+            pout(Fg.red("Removing track") + ": " + track.path)
             session.delete(track)
             num_orphaned_tracks += 1
             log.warn("Deleting track: %s" % str(track))
@@ -420,7 +420,7 @@ def syncImage(img, current, session):
                 current.images.remove(db_img)
                 current.images.append(img)
                 session.add(current)
-                pout(fg.green("Updating image") + ": " + _img_str(img))
+                pout(Fg.green("Updating image") + ": " + _img_str(img))
             img = None
             break
 
@@ -428,7 +428,7 @@ def syncImage(img, current, session):
         # Add image
         current.images.append(img)
         session.add(current)
-        pout(fg.green("Adding image") + ": " + _img_str(img))
+        pout(Fg.green("Adding image") + ": " + _img_str(img))
 
 
 @command.register
