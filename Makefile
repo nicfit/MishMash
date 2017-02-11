@@ -1,4 +1,4 @@
-.PHONY: help build test dist install release docs tags changelog
+.PHONY: help build test dist install release docs tags changelog docker
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -242,8 +242,19 @@ cookiecutter:
 	fi
 
 docker:
-	docker build -t mishmash-base -f etc/Dockerfile.base etc
-	docker build -t mishmash-arch -f etc/Dockerfile.arch etc
-	docker build -t mishmash-dev -f etc/Dockerfile.dev etc
-	docker build -t mishmash-dev-arch -f etc/Dockerfile.dev-arch etc
-	docker run --rm -it --user mishmash mishmash-dev-arch
+	${MAKE} -C ./docker all
+
+containers: docker
+	-docker stop dev-MishMash-postgres
+	-docker rm dev-MishMash-postgres
+	docker run --name dev-MishMash-postgres --detach \
+           -e POSTGRES_PASSWORD=FaithSubjectToChange dev-postgres
+	sleep 10
+	docker run --rm -it --user mishmash \
+           -e MISHMASH_DBURL=postgresql://mishmash:FaithSubjectToChange@postgres/MishMash \
+           --link dev-MishMash-postgres:postgres \
+		   -v /etc/localtime:/etc/localtimel:ro \
+		   --volume ~/var/music/:/media/new:ro \
+		   --volume ~/Music/:/media/music:ro \
+		   --volume /mnt/Media/Friends/Music/:/media/friends:ro \
+           dev-mishmash
