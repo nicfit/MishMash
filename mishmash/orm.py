@@ -418,17 +418,6 @@ class Library(Base, OrmObject):
     id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
 
-    @staticmethod
-    def initTable(session, config):
-        null_lib = Library(name=NULL_LIB_NAME)
-        session.add(null_lib)
-        main_lib = Library(name=MAIN_LIB_NAME)
-        session.add(main_lib)
-        session.flush()
-        if (null_lib.id, main_lib.id) != (NULL_LIB_ID, MAIN_LIB_ID):
-            raise RuntimeError(
-                "Unable to provision null/main libs wih expected IDs")
-
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
