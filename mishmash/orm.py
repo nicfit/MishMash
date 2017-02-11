@@ -122,7 +122,7 @@ class Artist(Base, OrmObject):
                                           ), {})
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("artist_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("artists_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(128), nullable=False, index=True)
     sort_name = sql.Column(sql.Unicode(128), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
