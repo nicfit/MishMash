@@ -237,7 +237,7 @@ class Album(Base, OrmObject):
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("album_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("albums_id_seq"), primary_key=True)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
@@ -277,7 +277,7 @@ class Track(Base, OrmObject):
                                           ), {})
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("track_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("tracks_id_seq"), primary_key=True)
     path = sql.Column(sql.String(512), nullable=False, index=True)
     size_bytes = sql.Column(sql.Integer, nullable=False)
     ctime = sql.Column(sql.DateTime(), nullable=False)
@@ -339,7 +339,7 @@ class Tag(Base, OrmObject):
                                           ), {})
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("tag_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("tags_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=False)
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
                         nullable=False, index=True)
@@ -358,7 +358,7 @@ class Image(Base, OrmObject):
                    LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
-    id = sql.Column(sql.Integer, Sequence("img_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("images_id_seq"), primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
     mime_type = sql.Column(sql.String(32), nullable=False)
     md5 = sql.Column(sql.String(32), nullable=False)
@@ -415,7 +415,7 @@ class Library(Base, OrmObject):
     __tablename__ = "libraries"
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("lib_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
 
     @staticmethod
