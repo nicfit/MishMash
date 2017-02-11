@@ -1,4 +1,0 @@
-FROM mishmash-base
-
-RUN git clone https://github.com/nicfit/mishmash.git /opt/MishMash
-RUN cd /opt/MishMash && make install
