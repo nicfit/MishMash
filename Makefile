@@ -235,20 +235,9 @@ cookiecutter:
 		       --extra-merge ${GIT_COMMIT_HOOK} ${GIT_COMMIT_HOOK};\
 	fi
 
-docker:
-	${MAKE} -C ./docker all
 
-containers: docker
-	-docker stop dev-MishMash-postgres
-	-docker rm dev-MishMash-postgres
-	docker run --name dev-MishMash-postgres --detach \
-           -e POSTGRES_PASSWORD=FaithSubjectToChange dev-postgres
-	sleep 10
-	docker run --rm -it --user mishmash \
-           -e MISHMASH_DBURL=postgresql://mishmash:FaithSubjectToChange@postgres/MishMash \
-           --link dev-MishMash-postgres:postgres \
-		   -v /etc/localtime:/etc/localtimel:ro \
-		   --volume ~/var/music/:/media/new:ro \
-		   --volume ~/Music/:/media/music:ro \
-		   --volume /mnt/Media/Friends/Music/:/media/friends:ro \
-           dev-mishmash
+docker:
+	docker-compose -f ./docker/docker-compose.yml build
+	docker-compose -f ./docker/docker-compose.yml up -d
+	#docker logs -f dev-MishMash
+	docker ps | grep -i --color mishmash

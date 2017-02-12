@@ -29,15 +29,13 @@ RUN virtualenv $MM_HOME
 RUN mkdir ${MM_HOME}/etc
 RUN mkdir ${MM_HOME}/var
 
-RUN git clone https://github.com/nicfit/MishMash.git ${MM_HOME}/src && true
+RUN git clone https://github.com/nicfit/MishMash.git ${MM_HOME}/src
 RUN source ${MM_HOME}/bin/activate && \
     pip install -U pip && \
-    pip install -r ${MM_HOME}/src/requirements.txt && \
-    pip install -r ${MM_HOME}/src/requirements/test.txt
-#    pip install -r ${MM_HOME}/src/requirements/dev.txt
+    pip install -r ${MM_HOME}/src/requirements.txt
 
 RUN source ${MM_HOME}/bin/activate && \
-    cd ${MM_HOME}/src && python setup.py test && python setup.py install
+    cd ${MM_HOME}/src && python setup.py install
 
 CMD ["/MishMash/bin/mishmash-init"]
 #CMD ["/bin/bash"]

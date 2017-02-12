@@ -1,7 +1,8 @@
 #!/bin/bash
 source /MishMash/bin/activate
 
-mishmash --pdb info
-mishmash --pdb sync
+mishmash info && \
+mishmash sync && \
+mishmash info
 
 exec /bin/bash
