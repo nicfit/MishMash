@@ -5,7 +5,6 @@ from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
 # FIXME: replace thise console utils with nicfit.console
 from eyed3.utils.console import printError
-from eyed3.utils.console import cprint, cformat
 from .. import version
 from ..core import Command
 from ..orm import Track, Artist, Album, Meta, Tag, Library, NULL_LIB_ID

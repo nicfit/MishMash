@@ -24,4 +24,4 @@ graft mishmash/web
 graft mishmash/alembic
 recursive-include mishmash *.ini
 
-prune etc
+prune docker
