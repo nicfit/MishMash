@@ -52,7 +52,6 @@ htmlcov
 
 # Translations
 *.mo
-*.pot
 
 # Django stuff:
 *.log

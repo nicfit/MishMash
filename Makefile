@@ -75,17 +75,14 @@ lint:
 	flake8 $(SRC_DIRS)
 
 _PYTEST_OPTS=
-
 ifdef TEST_PDB
     _PDB_OPTS=--pdb -s
 endif
-
 test:
 	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) ${TEST_DIR}
 
 test-all:
 	tox
-
 
 coverage:
 	pytest --cov=./mishmash \
@@ -123,6 +120,7 @@ pre-release: lint test changelog
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
+	check-manifest
 	@if git tag -l | grep ${RELEASE_TAG} > /dev/null; then \
         echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \
@@ -133,7 +131,6 @@ pre-release: lint test changelog
 		grep "$$auth" AUTHORS.rst || echo "* $$auth" >> AUTHORS.rst;\
 	done
 	pip-compile requirements/*.in -o ./requirements.txt
-	check-manifest
 	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
 	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
 	@github-release --version    # Just a exe existence check
@@ -169,7 +166,6 @@ tag-release:
 
 release: pre-release freeze-release build-release tag-release upload-release
 
-
 github-release:
 	name="${RELEASE_TAG}"; \
     if test -n "${RELEASE_NAME}"; then \
@@ -190,14 +186,11 @@ github-release:
                    --tag ${RELEASE_TAG} --name $${file} --file dist/$${file}; \
     done
 
-
 web-release:
 	@# Not implemented
 	@true
 
-
 upload-release: github-release pypi-release web-release
-
 
 pypi-release:
 	find dist -type f -exec twine register -r ${PYPI_REPO} {} \;
@@ -211,9 +204,9 @@ sdist: build
 dist: clean sdist docs-dist
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
 	cd dist && \
-    for f in $$(ls); do \
-        md5sum $${f} > $${f}.md5; \
-    done
+	for f in $$(ls); do \
+		md5sum $${f} > $${f}.md5; \
+	done
 	ls -l dist
 
 install: clean
@@ -228,16 +221,17 @@ README.html: README.rst
 		${BROWSER} README.html;\
 	fi
 
-CC_DIFF ?= gvimdiff -geometry 169x60 -f
+CC_MERGE ?= yes
+CC_OPTS ?= --no-input
 GIT_COMMIT_HOOK = .git/hooks/commit-msg
 cookiecutter:
 	rm -rf "${CC_DIR}"
-	if test "${CC_DIFF}" == "no"; then \
-		nicfit cookiecutter --no-input "${TEMP_DIR}"; \
+	if test "${CC_MERGE}" == "no"; then \
+		nicfit cookiecutter ${CC_OPTS} "${TEMP_DIR}"; \
 		git -C "${CC_DIR}" diff; \
 		git -C "${CC_DIR}" status -s -b; \
 	else \
-		nicfit cookiecutter --merge --no-input "${TEMP_DIR}" \
+		nicfit cookiecutter --merge ${CC_OPTS} "${TEMP_DIR}" \
 		       --extra-merge ${GIT_COMMIT_HOOK} ${GIT_COMMIT_HOOK};\
 	fi
 
