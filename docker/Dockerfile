@@ -23,19 +23,21 @@ RUN mkdir $MM_HOME && chown $USER:$USER $MM_HOME
 # VVV user mishmash
 
 USER $USER
+ENV LANG en_US.UTF-8
 RUN virtualenv $MM_HOME
 
 RUN mkdir ${MM_HOME}/etc
 RUN mkdir ${MM_HOME}/var
 
-ENV RECLONE bjm
-RUN git clone https://github.com/nicfit/mishmash.git ${MM_HOME}/src && true
+RUN git clone https://github.com/nicfit/MishMash.git ${MM_HOME}/src && true
 RUN source ${MM_HOME}/bin/activate && \
     pip install -U pip && \
     pip install -r ${MM_HOME}/src/requirements.txt && \
-    pip install -r ${MM_HOME}/src/requirements/test.txt && \
-    pip install -r ${MM_HOME}/src/requirements/dev.txt && \
-    cd ${MM_HOME}/src && python setup.py install
+    pip install -r ${MM_HOME}/src/requirements/test.txt
+#    pip install -r ${MM_HOME}/src/requirements/dev.txt
+
+RUN source ${MM_HOME}/bin/activate && \
+    cd ${MM_HOME}/src && python setup.py test && python setup.py install
 
 CMD ["/MishMash/bin/mishmash-init"]
 #CMD ["/bin/bash"]
@@ -43,4 +45,3 @@ CMD ["/MishMash/bin/mishmash-init"]
 COPY config.ini ${MM_HOME}/etc/
 COPY mishmash-init ${MM_HOME}/bin/
 
-ENV LANG en_US.UTF-8
