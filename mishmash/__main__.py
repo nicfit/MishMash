@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import logging
 import logging.config
+import traceback
 
 from sqlalchemy import exc as sql_exceptions
 from nicfit.console import ansi
@@ -17,8 +19,10 @@ from .commands import *                                                   # noqa
 eyed3.require("0.8")
 
 
-def _pErr(subject, msg):
-    print(ansi.Fg.red(subject) + ": %s" % str(msg))
+def _pErr(msg):
+    print(ansi.Fg.red(str(msg) + ":"))
+    tb = sys.exc_info()
+    traceback.print_exception(tb[0], tb[1], tb[2])
 
 
 def main(args):
@@ -48,11 +52,11 @@ def main(args):
         retval = 0
     except (sql_exceptions.ArgumentError,
             sql_exceptions.OperationalError) as ex:
-        _pErr("Database error", ex)
+        _pErr("Database error")
         retval = 1
     except Exception as ex:
         log.exception(ex)
-        _pErr(ex.__class__.__name__, str(ex))
+        _pErr("General error")
         retval = 2
 
     return retval
