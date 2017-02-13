@@ -1,4 +1,4 @@
-.PHONY: help build test dist install release docs tags changelog docker
+.PHONY: help build test dist docs tags cookiecutter docker
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -39,6 +39,8 @@ help:
 	@echo "Options:"
 	@echo "TEST_PDB - If defined PDB options are added when 'pytest' is invoked"
 	@echo "BROWSER - HTML viewer used by docs-view/coverage-view"
+	@echo "CC_MERGE - Set to no to disable cookiecutter merging."
+	@echo "CC_OPTS - OVerrided the default options (--no-input) with your own."
 
 build:
 	python setup.py build

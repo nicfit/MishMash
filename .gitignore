@@ -1,4 +1,5 @@
 .cookiecutter.md5
+_misc/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -22,7 +23,6 @@ lib64/
 parts/
 sdist/
 tags
-tmp/
 var/
 *.egg-info/
 .installed.cfg
