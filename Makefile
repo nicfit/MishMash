@@ -49,7 +49,7 @@ clean: clean-local clean-build clean-pyc clean-test clean-patch clean-docs
 	rm -rf tags
 
 clean-local:
-	@# XXX Add new clean targets here.
+	-rm requirements/extra_example.in
 
 clean-build:
 	rm -fr build/
