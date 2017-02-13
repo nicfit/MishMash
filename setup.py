@@ -104,11 +104,15 @@ pkg_info["download_url"] = (
 )
 
 
-def package_files(directory):
+def package_files(directory, prefix=".."):
     paths = []
     for (path, _, filenames) in os.walk(directory):
+        if "__pycache__" in path:
+            continue
         for filename in filenames:
-            paths.append(os.path.join("..", path, filename))
+            if filename.endswith(".pyc"):
+                continue
+            paths.append(os.path.join(prefix, path, filename))
     return paths
 
 
@@ -132,9 +136,14 @@ else:
               test_suite="./tests",
               long_description=readme + "\n\n" + history,
               include_package_data=True,
-              package_data={"mishmash": ["_default-config.ini", "alembic.ini"] +
-                                        package_files("mishmash/alembic"),
-                           },
+              package_data={
+                  "mishmash": ["_default-config.ini", "alembic.ini"] +
+                              package_files("mishmash/alembic"),
+                  "mishmash.web": package_files("mishmash/web/static",
+                                                "../..") +
+                                  package_files("mishmash/web/templates",
+                                                "../.."),
+              },
               entry_points={
                   "console_scripts": [
                       "mishmash = mishmash.__main__:app.run",
