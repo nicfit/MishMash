@@ -8,6 +8,6 @@ check-manifest==0.35
 #gitchangelog
 git+https://github.com/nicfit/gitchangelog.git
 pyramid-debugtoolbar==3.0.5
-sphinx_bootstrap_theme
+sphinx-bootstrap-theme==0.4.14
 ipdb
 pip-tools
