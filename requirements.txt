@@ -13,14 +13,14 @@ chardet==2.3.0            # via binaryornot
 click==6.7                # via cookiecutter
 cookiecutter==1.5.1       # via nicfit.py
 countrycode==0.2
-eyeD3==0.8.0a5
+eyeD3==0.8.0b0
 future==0.16.0            # via cookiecutter
 hupper==0.4.2             # via pyramid
 jinja2-time==0.2.0        # via cookiecutter
 jinja2==2.9.5             # via cookiecutter, jinja2-time
 mako==1.0.6               # via alembic
 markupsafe==0.23          # via jinja2, mako
-nicfit.py==0.5.11
+nicfit.py==0.5.12
 packaging==16.8           # via setuptools
 pastedeploy==1.5.2        # via pyramid
 poyo==0.4.0               # via cookiecutter
