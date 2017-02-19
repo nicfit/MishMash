@@ -29,7 +29,7 @@ def main(args):
         return 1
 
     logging.config.fileConfig(args.config)
-    # In the case fileConfig undid the command line, typically not necessary.
+    # In the case fileConfig undid the command line, which has precedence.
     args.applyLoggingOpts(args.log_levels, args.log_files)
 
     if args.db_url:
