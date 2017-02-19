@@ -378,7 +378,7 @@ class Image(Base, OrmObject):
 
     @staticmethod
     def fromTagFrame(img, type_):
-        if not Image._validMimeType(str(img.mime_type, "ascii")):
+        if not Image._validMimeType(img.mime_type):
             return None
 
         md5hash = md5()
@@ -386,7 +386,7 @@ class Image(Base, OrmObject):
 
         return Image(type=type_,
                      description=img.description,
-                     mime_type=str(img.mime_type, "ascii"),
+                     mime_type=img.mime_type,
                      md5=md5hash.hexdigest(),
                      size=len(img.image_data),
                      data=img.image_data)

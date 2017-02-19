@@ -2,6 +2,14 @@ version: "2"
 
 services:
 
+    #    arch:
+    #    build:
+    #        context: .
+    #        dockerfile: Dockerfile.arch
+    #    image: "mishmash-arch"
+
+
+
     postgres:
         build:
             context: .
@@ -9,7 +17,7 @@ services:
 
         image: "dev-postgres"
 
-        container_name: dev-MishMash-postgres
+        container_name: dev-PostgreSql
 
         environment:
             POSTGRES_PASSWORD: FaithSubjectToChange
@@ -17,7 +25,7 @@ services:
     mishmash:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.dev
 
         image: "dev-mishmash"
 
@@ -26,7 +34,8 @@ services:
             - postgres
 
         environment:
-            MISHMASH_DBURL: postgresql://mishmash:FaithSubjectToChange@postgres/MishMash
+            #MISHMASH_DBURL: postgresql://mishmash:FaithSubjectToChange@postgres/MishMash
+           MISHMASH_DBURL: postgresql://mishmash:FaithSubjectToChange@postgres/MishMash
 
         links:
             - postgres:postgres

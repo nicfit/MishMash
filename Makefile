@@ -117,7 +117,7 @@ clean-docs:
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-pre-release: lint test changelog
+pre-release: lint test changelog pip-reqs
 	@echo "VERSION: $(VERSION)"
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
@@ -132,10 +132,12 @@ pre-release: lint test changelog
 		echo "Checking $$auth...";\
 		grep "$$auth" AUTHORS.rst || echo "* $$auth" >> AUTHORS.rst;\
 	done
-	pip-compile requirements/*.in -o ./requirements.txt
 	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
 	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
 	@github-release --version    # Just a exe existence check
+
+pip-reqs:
+	pip-compile requirements/*.in -o ./requirements.txt
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\
@@ -195,6 +197,7 @@ web-release:
 upload-release: github-release pypi-release web-release
 
 pypi-release:
+	# FIXME: gotta skip docs, md5s, etc.
 	find dist -type f -exec twine register -r ${PYPI_REPO} {} \;
 	find dist -type f -exec twine upload -r ${PYPI_REPO} --skip-existing {} \;
 
@@ -239,7 +242,13 @@ cookiecutter:
 
 
 docker:
+	docker build -f ./docker/Dockerfile.arch -t mishmash-arch docker/
+	rm -rf docker/src && mkdir docker/src
+	git ls-files -z | grep -vz docker/ | while IFS= read -r -d '' file; do \
+		mkdir -p docker/src/`dirname $$file`;\
+		cp "$$file" ./docker/src/$$file;\
+	done
 	docker-compose -f ./docker/docker-compose.yml build
 	docker-compose -f ./docker/docker-compose.yml up -d
-	#docker logs -f dev-MishMash
+	docker logs dev-MishMash
 	docker ps | grep -i --color mishmash

@@ -28,6 +28,8 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
     alembic_d = Path(__file__).parent
     alembic_cfg = Config(str(alembic_d / "alembic.ini"))
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
+    #import ipdb; ipdb.set_trace()
+    #alembic_cfg.file_config.update(config)
 
     log.debug("Checking for database '%s'" % db_url)
     if not database_exists(db_url):
