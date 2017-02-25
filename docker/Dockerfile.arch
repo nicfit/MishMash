@@ -1,6 +1,12 @@
 FROM greyltc/archlinux
 MAINTAINER Travis Shirk <travis@pobox.com>
 
+#RUN curl -o /etc/pacman.d/mirrorlist "https://www.archlinux.org/mirrorlist/?country=all&protocol=https&ip_version=6&use_mirror_status=on" && \
+
+RUN cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.unranked
+RUN sed -i 's/^#//' /etc/pacman.d/mirrorlist.unranked
+RUN rankmirrors -n 6 /etc/pacman.d/mirrorlist.unranked >| \
+                     /etc/pacman.d/mirrorlist
 RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm python python-virtualenv python-pip postgresql-libs
 
