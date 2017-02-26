@@ -3,7 +3,7 @@ Release History
 
 .. :changelog:
 
-v0.2b1 (2017-01-21)
+v0.3a0 (2017-02-24)
 -------------------------
 
 * Initial release

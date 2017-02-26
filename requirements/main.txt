@@ -1,8 +1,8 @@
-eyeD3>=0.8.0b0
-nicfit.py>=0.5.12
 SQLAlchemy
 alembic
 countrycode
+eyeD3>=0.8.0b0
+nicfit.py>=0.5.13
 pyfiglet
 pyramid
 pyramid_chameleon

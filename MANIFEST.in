@@ -18,8 +18,8 @@ global-exclude .editorconfig
 global-exclude *.py[co]
 
 include requirements.txt
-recursive-include requirements *.txt *.in
-
+recursive-include requirements *.txt *.yml
+graft locale
 graft mishmash/web
 graft mishmash/alembic
 recursive-include mishmash *.ini

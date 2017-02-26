@@ -67,7 +67,8 @@ class MishMash(Application):
                                  default_config_opt="--default-config",
                                  ConfigClass=Config, env_var=CONFIG_ENV_VAR)
         super().__init__(main, name="mishmash", version=version,
-                         config_opts=config_opts, pdb_opt=True)
+                         config_opts=config_opts, pdb_opt=True,
+                         gettext_domain="MishMash")
 
         ansi.init()
 

@@ -24,6 +24,7 @@ def getPackageInfo():
     # FIXME: This remap is the exception, not the rule.
     key_remap = {"name": "pypi_name"}
 
+    # __about__
     with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                            ".",
                            "mishmash",
@@ -44,63 +45,75 @@ def getPackageInfo():
     else:
         vparts = info_dict["version"].split("-", 1)
     info_dict["release"] = vparts[1] if len(vparts) > 1 else "final"
-    return info_dict
+
+    # Requirements
+    requirements, extras = requirements_yaml()
+    info_dict["install_requires"] = requirements["main"] \
+                                        if "main" in requirements else []
+    info_dict["tests_require"] = requirements["test"] \
+                                     if "test" in requirements else []
+    info_dict["extras_require"] = extras
+
+    # Info
+    readme = ""
+    if os.path.exists("README.rst"):
+        with open("README.rst") as readme_file:
+            readme = readme_file.read()
+    history = ""
+    if os.path.exists("HISTORY.rst"):
+        with open("HISTORY.rst") as history_file:
+            history = history_file.read().replace(".. :changelog:", "")
+    info_dict["long_description"] = readme + "\n\n" + history
+
+    return info_dict, requirements
 
 
-readme = ""
-if os.path.exists("README.rst"):
-    with open("README.rst") as readme_file:
-        readme = readme_file.read()
-
-history = ""
-if os.path.exists("HISTORY.rst"):
-    with open("HISTORY.rst") as history_file:
-        history = history_file.read().replace(".. :changelog:", "")
-
-
-def requirements(filename):
-    reqfile = os.path.join("requirements", filename)
+def requirements_yaml():
+    EXTRA = "extra_"
+    reqs = {}
+    reqfile = os.path.join("requirements", "requirements.yml")
     if os.path.exists(reqfile):
-        return [l.strip() for l in open(reqfile).read().splitlines()
-                    if l.strip() and not l.strip().startswith("#")]
-    else:
-        return []
+        with open(reqfile) as fp:
+            curr = None
+            for line in [l for l in fp.readlines() if l.strip()]:
+                if curr is None or line.lstrip()[0] != "-":
+                    curr = line.split(":")[0]
+                    reqs[curr] = []
+                else:
+                    line = line.strip()
+                    assert line[0] == "-"
+                    r = line[1:].strip()
+                    if r:
+                        reqs[curr].append(r)
 
-
-def extra_requirements():
-    ereqs = {}
-    px, sx = "extra_", ".in"
-    for f in os.listdir("requirements"):
-        if (os.path.isfile(os.path.join("requirements", f)) and
-                f.startswith(px) and f.endswith(sx)):
-            ereqs[f[len(px):-len(sx)]] = requirements(f)
-    return ereqs
+    return (reqs, {x[len(EXTRA):]: vals
+                     for x, vals in reqs.items() if x.startswith(EXTRA)})
 
 
 class PipInstallCommand(install, object):
     def run(self):
-        reqs = " ".join(["'%s'" % r for r in requirements("requirements.in")])
+        reqs = " ".join(["'%s'" % r for r in PKG_INFO["install_requires"]])
         os.system("pip install " + reqs)
         # XXX: py27 compatible
         return super(PipInstallCommand, self).run()
 
 
-pkg_info = getPackageInfo()
-if pkg_info["release"].startswith("a"):
+PKG_INFO, REQUIREMENTS = getPackageInfo()
+if PKG_INFO["release"].startswith("a"):
     #classifiers.append("Development Status :: 1 - Planning")
     #classifiers.append("Development Status :: 2 - Pre-Alpha")
     classifiers.append("Development Status :: 3 - Alpha")
-elif pkg_info["release"].startswith("b"):
+elif PKG_INFO["release"].startswith("b"):
     classifiers.append("Development Status :: 4 - Beta")
 else:
     classifiers.append("Development Status :: 5 - Production/Stable")
     #classifiers.append("Development Status :: 6 - Mature")
     #classifiers.append("Development Status :: 7 - Inactive")
 
-gz = "{name}-{version}.tar.gz".format(**pkg_info)
-pkg_info["download_url"] = (
+gz = "{name}-{version}.tar.gz".format(**PKG_INFO)
+PKG_INFO["download_url"] = (
     "{github_url}/releases/downloads/v{version}/{gz}"
-    .format(gz=gz, **pkg_info)
+    .format(gz=gz, **PKG_INFO)
 )
 
 
@@ -117,7 +130,7 @@ def package_files(directory, prefix=".."):
 
 
 if sys.argv[1:] and sys.argv[1] == "--release-name":
-    print(pkg_info["release_name"])
+    print(PKG_INFO["release_name"])
     sys.exit(0)
 else:
     # The extra command line options we added cause warnings, quell that.
@@ -131,10 +144,7 @@ else:
               zip_safe=False,
               platforms=["Any"],
               keywords=["music", "database"],
-              install_requires=requirements("requirements.in"),
-              tests_require=requirements("test.txt"),
               test_suite="./tests",
-              long_description=readme + "\n\n" + history,
               include_package_data=True,
               package_data={
                   "mishmash": ["_default-config.ini", "alembic.ini"] +
@@ -152,6 +162,5 @@ else:
               cmdclass={
                   "install": PipInstallCommand,
               },
-              extras_require=extra_requirements(),
-              **pkg_info
+              **PKG_INFO
         )

@@ -1,4 +1,4 @@
-.PHONY: help build test dist docs tags cookiecutter docker
+.PHONY: help build test dist docs tags cookiecutter docker requirements
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
 TEMP_DIR ?= ./tmp
@@ -31,7 +31,7 @@ help:
 	@echo "test-all - run tests on various Python versions with tox"
 	@echo "release - package and upload a release"
 	@echo "          PYPI_REPO=[pypitest]|pypi"
-	@echo "pre-release - check repo and show version, generate changelog, etc.
+	@echo "pre-release - check repo and show version, generate changelog, etc."
 	@echo "dist - package"
 	@echo "install - install the package to the active Python's site-packages"
 	@echo "build - build package source files"
@@ -46,10 +46,10 @@ build:
 	python setup.py build
 
 clean: clean-local clean-build clean-pyc clean-test clean-patch clean-docs
-	rm -rf tags
 
 clean-local:
-	-rm requirements/extra_example.in
+	-rm tags
+	@# XXX Add new clean targets here.
 
 clean-build:
 	rm -fr build/
@@ -57,6 +57,7 @@ clean-build:
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
+	find ./locale -name \*.mo -exec rm {} \;
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
@@ -74,7 +75,7 @@ clean-patch:
 	find . -name '*.orig' -exec rm -f '{}' \;
 
 lint:
-	flake8 $(SRC_DIRS)
+	flake8 --builtins=_ $(SRC_DIRS)
 
 _PYTEST_OPTS=
 ifdef TEST_PDB
@@ -117,7 +118,7 @@ clean-docs:
 servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-pre-release: lint test changelog pip-reqs
+pre-release: lint test changelog requirements
 	@echo "VERSION: $(VERSION)"
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
@@ -135,16 +136,19 @@ pre-release: lint test changelog pip-reqs
 	@test -n "${GITHUB_USER}" || (echo "GITHUB_USER not set, needed for github" && false)
 	@test -n "${GITHUB_TOKEN}" || (echo "GITHUB_TOKEN not set, needed for github" && false)
 	@github-release --version    # Just a exe existence check
+	@git status -s -b
 
-pip-reqs:
-	pip-compile requirements/*.in -o ./requirements.txt
+requirements:
+	nicfit requirements
+	pip-compile -U requirements.txt -o ./requirements.txt
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\
 	if ! grep "${CHANGELOG_HEADER}" ${CHANGELOG} > /dev/null; then \
 		rm -f ${CHANGELOG}.new; \
 		if test -n "$$last"; then \
-			gitchangelog show --author-format=email $${last}..HEAD |\
+			gitchangelog show --author-format=email \
+			                  --omit-author="travis@pobox.com" $${last}..HEAD |\
 			  sed "s|^%%version%% .*|${CHANGELOG_HEADER}|" |\
 			  sed '/^.. :changelog:/ r/dev/stdin' ${CHANGELOG} \
 			 > ${CHANGELOG}.new; \
@@ -159,7 +163,6 @@ changelog:
 build-release: test-all dist
 
 freeze-release:
-	@# TODO: check for incoming
 	@(git diff --quiet && git diff --quiet --staged) || \
         (printf "\n!!! Working repo has uncommited/unstaged changes. !!!\n" && \
          printf "\nCommit and try again.\n" && false)
@@ -197,16 +200,20 @@ web-release:
 upload-release: github-release pypi-release web-release
 
 pypi-release:
-	# FIXME: gotta skip docs, md5s, etc.
-	find dist -type f -exec twine register -r ${PYPI_REPO} {} \;
-	find dist -type f -exec twine upload -r ${PYPI_REPO} --skip-existing {} \;
+	for f in `find dist -type f -name ${PROJECT_NAME}-${VERSION}.tar.gz \
+              -o -name \*.egg -o -name \*.whl`; do \
+        if test -f $$f ; then \
+            twine register -r ${PYPI_REPO} $$f && \
+            twine upload -r ${PYPI_REPO} --skip-existing $$f ; \
+        fi \
+	done
 
 sdist: build
 	python setup.py sdist --formats=gztar,zip
 	python setup.py bdist_egg
 	python setup.py bdist_wheel
 
-dist: clean sdist docs-dist
+dist: clean gettext sdist docs-dist
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
 	cd dist && \
 	for f in $$(ls); do \
@@ -230,8 +237,8 @@ CC_MERGE ?= yes
 CC_OPTS ?= --no-input
 GIT_COMMIT_HOOK = .git/hooks/commit-msg
 cookiecutter:
-	rm -rf "${CC_DIR}"
-	if test "${CC_MERGE}" == "no"; then \
+	@rm -rf "${CC_DIR}"
+	@if test "${CC_MERGE}" == "no"; then \
 		nicfit cookiecutter ${CC_OPTS} "${TEMP_DIR}"; \
 		git -C "${CC_DIR}" diff; \
 		git -C "${CC_DIR}" status -s -b; \
@@ -240,6 +247,8 @@ cookiecutter:
 		       --extra-merge ${GIT_COMMIT_HOOK} ${GIT_COMMIT_HOOK};\
 	fi
 
+DEF_MSG_CAT = locale/en_US/LC_MESSAGES/MishMash.po
+MSG_CAT_TMPL = locale/MishMash.pot
 
 docker:
 	docker build -f ./docker/Dockerfile.arch -t mishmash-arch docker/
@@ -257,3 +266,12 @@ docker-run:
 
 docker-publish: docker
 	# TODO
+
+gettext-po:
+	pybabel extract --no-location -o ${MSG_CAT_TMPL} -w 80 ${SRC_DIRS}
+	test -f ${DEF_MSG_CAT} || \
+		pybabel init -D MishMash -i ${MSG_CAT_TMPL}  -d locale -l en_US
+	pybabel update -D MishMash -i ${MSG_CAT_TMPL}  -d locale
+
+gettext:
+	pybabel compile --statistics -D MishMash -d locale
