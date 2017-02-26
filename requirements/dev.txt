@@ -4,7 +4,7 @@ tox
 flake8
 twine
 Sphinx==1.5.2
-check-manifest
+check-manifest==0.35
 #gitchangelog
 git+https://github.com/nicfit/gitchangelog.git
 pyramid_debugtoolbar
