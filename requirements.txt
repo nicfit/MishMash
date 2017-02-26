@@ -6,7 +6,12 @@
 #
 alembic==0.8.10
 appdirs==1.4.2            # via setuptools
-Chameleon==3.1            # via pyramid-chameleon
+arrow==0.10.0             # via jinja2-time
+binaryornot==0.4.0        # via cookiecutter
+chameleon==3.1            # via pyramid-chameleon
+chardet==2.3.0            # via binaryornot
+click==6.7                # via cookiecutter
+cookiecutter==1.5.1       # via nicfit.py
 countrycode==0.2
 eyeD3==0.8.0b0
 hupper==0.4.2             # via pyramid
@@ -21,13 +26,14 @@ pyparsing==2.1.10         # via packaging
 pyramid-chameleon==0.3
 pyramid-layout==1.0
 pyramid-tm==1.1.1
-pyramid==1.8.1
+pyramid==1.8.2
+python-dateutil==2.6.0    # via arrow
 python-editor==1.0.3      # via alembic
 repoze.lru==0.6           # via pyramid
 six==1.10.0               # via packaging, setuptools, sqlalchemy-utils
 sqlalchemy-utils==0.32.12
-SQLAlchemy==1.1.5         # via alembic, sqlalchemy-utils, zope.sqlalchemy
-transaction==2.0.3
+sqlalchemy==1.1.5
+transaction==2.1.0
 translationstring==1.3    # via pyramid
 venusian==1.0             # via pyramid
 waitress==1.0.2
