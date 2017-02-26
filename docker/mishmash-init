@@ -2,9 +2,8 @@
 source /MishMash/bin/activate
 
 mishmash info && \
-mishmash -l debug -l mishmash:debug sync && \
-mishmash info
-
-mishmash -l debug -l mishmash:debug web
+mishmash sync && \
+mishmash info && \
+mishmash web
 
 exec /bin/bash
