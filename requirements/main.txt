@@ -10,5 +10,5 @@ pyramid_layout
 pyramid_tm
 sqlalchemy-utils==0.32.12
 transaction
-waitress
+waitress==1.0.2
 zope.sqlalchemy==0.7.7
