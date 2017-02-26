@@ -13,7 +13,7 @@ chardet==2.3.0            # via binaryornot
 click==6.7                # via cookiecutter
 cookiecutter==1.5.1       # via nicfit.py
 countrycode==0.2
-eyeD3==0.8.0b0
+eyed3==0.8.0b0
 future==0.16.0            # via cookiecutter
 hupper==0.4.2             # via pyramid
 jinja2-time==0.2.0        # via cookiecutter

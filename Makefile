@@ -248,7 +248,12 @@ docker:
 		mkdir -p docker/src/`dirname $$file`;\
 		cp "$$file" ./docker/src/$$file;\
 	done
-	docker-compose -f ./docker/docker-compose.yml build
-	docker-compose -f ./docker/docker-compose.yml up -d
+	VERSION=${VERSION} docker-compose -f ./docker/docker-compose.yml build
+
+docker-run:
+	VERSION=${VERSION} docker-compose -f ./docker/docker-compose.yml up -d
 	docker logs dev-MishMash
 	docker ps | grep -i --color mishmash
+
+docker-publish: docker
+	# TODO

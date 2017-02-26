@@ -14,7 +14,7 @@ RUN source ${MM_HOME}/bin/activate && \
 
 # Copy rest of source
 COPY ./src/ ${MM_HOME}/src/
-##RUN git clone https://github.com/nicfit/MishMash.git ${MM_HOME}/src
+#RUN git clone https://github.com/nicfit/MishMash.git ${MM_HOME}/src
 RUN source ${MM_HOME}/bin/activate && \
     cd ${MM_HOME}/src && python setup.py install
 

@@ -21,7 +21,7 @@ services:
             context: .
             dockerfile: Dockerfile.dev
 
-        image: "dev-mishmash"
+        image: "nicfit/dev-mishmash:$VERSION"
 
         container_name: dev-MishMash
         depends_on:
@@ -35,9 +35,7 @@ services:
 
         volumes:
             - /etc/localtime:/etc/localtimel:ro
-            - ~/var/music/:/media/new:ro
-            - ~/Music/:/media/music:ro
-            - /mnt/Media/Friends/Music/:/media/friends:ro
+            - ${MUSIC_DIR}:/media/music:ro
 
         ports:
             - "6229:6229"
