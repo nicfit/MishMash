@@ -1,4 +1,4 @@
-SQLAlchemy
+SQLAlchemy==1.1.5
 alembic
 countrycode
 eyeD3>=0.8.0b0
