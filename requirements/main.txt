@@ -9,6 +9,6 @@ pyramid_chameleon
 pyramid_layout
 pyramid_tm
 sqlalchemy-utils==0.32.12
-transaction
+transaction==2.1.0
 waitress
 zope.sqlalchemy==0.7.7
