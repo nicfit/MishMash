@@ -30,7 +30,7 @@ pyparsing==2.1.10         # via packaging
 pyramid-chameleon==0.3
 pyramid-layout==1.0
 pyramid-tm==1.1.1
-pyramid==1.8.1
+pyramid==1.8.2
 python-dateutil==2.6.0    # via arrow
 python-editor==1.0.3      # via alembic
 repoze.lru==0.6           # via pyramid
