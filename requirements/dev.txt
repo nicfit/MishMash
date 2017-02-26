@@ -1,4 +1,4 @@
-wheel
+wheel==0.29.0
 watchdog
 tox
 flake8
