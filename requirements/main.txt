@@ -1,6 +1,6 @@
 SQLAlchemy==1.1.5
 alembic
-countrycode
+countrycode==0.2
 eyeD3>=0.8.0b0
 nicfit.py>=0.5.13
 pyfiglet
