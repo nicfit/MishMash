@@ -6,7 +6,7 @@ pyramid-debugtoolbar==3.0.5
 sphinx_bootstrap_theme==0.4.14
 ipdb==0.10.2
 pip-tools==1.8.0
-pyramid_debugtoolbar
+pyramid-debugtoolbar==3.0.5
 tox==2.6.0
 twine==1.8.1
 watchdog==0.8.3
