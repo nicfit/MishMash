@@ -10,5 +10,5 @@ pyramid_layout
 pyramid_tm
 sqlalchemy-utils
 transaction
-waitress
+waitress==1.0.2
 zope.sqlalchemy
