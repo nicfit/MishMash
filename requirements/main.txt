@@ -7,7 +7,7 @@ pyfiglet
 pyramid==1.8.2
 pyramid_chameleon
 pyramid_layout
-pyramid_tm
+pyramid-tm==1.1.1
 sqlalchemy-utils==0.32.12
 transaction
 waitress==1.0.2
