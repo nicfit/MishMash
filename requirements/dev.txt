@@ -3,7 +3,7 @@ watchdog
 tox
 flake8
 twine
-Sphinx
+Sphinx==1.5.2
 check-manifest
 #gitchangelog
 git+https://github.com/nicfit/gitchangelog.git
