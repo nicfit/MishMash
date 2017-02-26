@@ -23,6 +23,7 @@ test:
     - pytest-runner
 
 dev:
+    - nicfit.py[cookiecutter]
     - Sphinx
     - babel
     - check-manifest

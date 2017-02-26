@@ -252,20 +252,26 @@ MSG_CAT_TMPL = locale/MishMash.pot
 
 docker:
 	docker build -f ./docker/Dockerfile.arch -t mishmash-arch docker/
+	VERSION=${VERSION} \
+        docker-compose -f ./docker/docker-compose.yml build mishmash
+
+docker-dev: docker
 	rm -rf docker/src && mkdir docker/src
 	git ls-files -z | grep -vz docker/ | while IFS= read -r -d '' file; do \
 		mkdir -p docker/src/`dirname $$file`;\
 		cp "$$file" ./docker/src/$$file;\
 	done
-	VERSION=${VERSION} docker-compose -f ./docker/docker-compose.yml build
+	VERSION=${VERSION} \
+        docker-compose -f ./docker/docker-compose.yml build dev
 
-docker-run:
-	VERSION=${VERSION} docker-compose -f ./docker/docker-compose.yml up -d
-	docker logs dev-MishMash
-	docker ps | grep -i --color mishmash
+docker-up:
+	VERSION=${VERSION} \
+        docker-compose -f ./docker/docker-compose.yml up -d \
+		               postgres mishmash
 
-docker-publish: docker
-	# TODO
+docker-publish: docker docker-dev
+	VERSION=${VERSION} \
+        docker-compose -f docker/docker-compose.yml push mishmash dev
 
 gettext-po:
 	pybabel extract --no-location -o ${MSG_CAT_TMPL} -w 80 ${SRC_DIRS}

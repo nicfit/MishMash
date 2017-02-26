@@ -10,32 +10,36 @@ services:
                 POSTGRES_PASSWORD: FaithSubjectToChange
 
         image: "dev-postgres"
-
         container_name: dev-PostgreSql
-
         environment:
             POSTGRES_PASSWORD: FaithSubjectToChange
 
-    dev:
+    mishmash: &mishmash
         build:
             context: .
-            dockerfile: Dockerfile.dev
+            dockerfile: Dockerfile
 
-        image: "nicfit/dev-mishmash:$VERSION"
-
-        container_name: dev-MishMash
-        depends_on:
-            - postgres
-
+        image: "nicfit/mishmash:$VERSION"
+        container_name: MishMash
         environment:
-           MISHMASH_DBURL: postgresql://mishmash:FaithSubjectToChange@postgres/MishMash
-
+            MISHMASH_DBURL: postgresql://mishmash:FaithSubjectToChange@postgres/MishMash
         links:
             - postgres:postgres
-
         volumes:
             - /etc/localtime:/etc/localtimel:ro
             - ${MUSIC_DIR}:/media/music:ro
-
         ports:
             - "6229:6229"
+        depends_on:
+            - postgres
+
+    dev:
+        <<: *mishmash
+
+        build: &common-build
+            context: .
+            <<: *common-build
+            dockerfile: Dockerfile.dev
+
+        image: "nicfit/dev-mishmash:$VERSION"
+        container_name: dev-MishMash
