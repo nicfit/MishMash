@@ -6,7 +6,7 @@ nicfit.py>=0.5.13
 pyfiglet
 pyramid==1.8.2
 pyramid_chameleon
-pyramid_layout
+pyramid-layout==1.0
 pyramid_tm
 sqlalchemy-utils==0.32.12
 transaction
