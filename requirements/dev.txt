@@ -1,7 +1,7 @@
 wheel==0.29.0
 watchdog
 tox
-flake8
+flake8==3.3.0
 twine
 Sphinx
 check-manifest==0.35
