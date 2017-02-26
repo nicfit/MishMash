@@ -7,7 +7,7 @@ Sphinx
 check-manifest==0.35
 #gitchangelog
 git+https://github.com/nicfit/gitchangelog.git
-pyramid_debugtoolbar
+pyramid-debugtoolbar==3.0.5
 sphinx_bootstrap_theme
 ipdb==0.10.2
 pip-tools
