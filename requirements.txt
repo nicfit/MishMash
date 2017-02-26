@@ -8,7 +8,7 @@ alembic==0.8.10
 appdirs==1.4.2            # via setuptools
 arrow==0.10.0             # via jinja2-time
 binaryornot==0.4.0        # via cookiecutter
-chameleon==3.0            # via pyramid-chameleon
+chameleon==3.1            # via pyramid-chameleon
 chardet==2.3.0            # via binaryornot
 click==6.7                # via cookiecutter
 cookiecutter==1.5.1       # via nicfit.py
