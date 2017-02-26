@@ -5,7 +5,7 @@ eyeD3>=0.8.0b0
 nicfit.py>=0.5.13
 pyfiglet
 pyramid==1.8.2
-pyramid_chameleon
+pyramid-chameleon==0.3
 pyramid_layout
 pyramid-tm==1.1.1
 sqlalchemy-utils==0.32.12
