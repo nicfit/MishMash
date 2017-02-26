@@ -1,7 +1,7 @@
 wheel
 watchdog
 tox
-flake8
+flake8==3.3.0
 twine
 Sphinx
 check-manifest
