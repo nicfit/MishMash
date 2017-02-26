@@ -10,7 +10,7 @@ def __parse_version(v):
     return v, "final"
 
 
-__version__ = "0.3b0"
+__version__ = "0.3b1"
 __release_name__ = "Nine Patriotic Hymns For Children"
 __years__ = "2013-2017"
 

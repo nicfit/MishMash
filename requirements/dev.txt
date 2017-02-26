@@ -2,8 +2,8 @@ Sphinx==1.5.3
 babel==2.3.4
 check-manifest==0.35
 flake8==3.3.0
-git+https://github.com/nicfit/gitchangelog.git
 ipdb==0.10.2
+nicfit.py[cookiecutter]
 pip-tools==1.8.0
 pyramid_debugtoolbar==3.0.5
 sphinx_bootstrap_theme==0.4.14

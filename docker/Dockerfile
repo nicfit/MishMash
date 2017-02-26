@@ -13,6 +13,6 @@ USER $USER
 ENV LANG en_US.UTF-8
 CMD ["/MishMash/bin/mishmash-init"]
 
-COPY config.ini ${MM_HOME}/etc/
+COPY config.ini config-dev.ini ${MM_HOME}/etc/
 # TODO: eyeD3 should be at error log level
 COPY mishmash-init ${MM_HOME}/bin/
