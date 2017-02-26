@@ -10,4 +10,4 @@ git+https://github.com/nicfit/gitchangelog.git
 pyramid_debugtoolbar
 sphinx_bootstrap_theme
 ipdb
-pip-tools
+pip-tools==1.8.0
