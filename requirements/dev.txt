@@ -9,5 +9,5 @@ check-manifest==0.35
 git+https://github.com/nicfit/gitchangelog.git
 pyramid_debugtoolbar
 sphinx_bootstrap_theme
-ipdb
+ipdb==0.10.2
 pip-tools
