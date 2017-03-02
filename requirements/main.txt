@@ -1,5 +1,5 @@
 SQLAlchemy==1.1.6
-alembic==0.8.10
+alembic==0.9.1
 countrycode==0.2
 eyeD3>=0.8.0b0
 nicfit.py>=0.5.14
