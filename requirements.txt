@@ -17,7 +17,7 @@ packaging==16.8           # via setuptools
 PasteDeploy==1.5.2        # via pyramid
 psycopg2==2.7
 pyfiglet==0.7.5
-pyparsing==2.1.10         # via packaging
+pyparsing==2.2.0         # via packaging
 pyramid-chameleon==0.3
 pyramid-layout==1.0
 pyramid-tm==1.1.1
