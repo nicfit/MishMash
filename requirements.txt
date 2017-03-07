@@ -11,7 +11,7 @@ countrycode==0.2
 eyeD3==0.8.0b0
 hupper==0.4.2             # via pyramid
 Mako==1.0.6               # via alembic
-MarkupSafe==0.23          # via mako
+MarkupSafe==1.0          # via mako
 nicfit.py==0.5.14
 packaging==16.8           # via setuptools
 PasteDeploy==1.5.2        # via pyramid
