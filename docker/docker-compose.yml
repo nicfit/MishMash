@@ -2,44 +2,42 @@ version: "2"
 
 services:
 
-    postgres:
-        build:
-            context: .
-            dockerfile: Dockerfile.postgres
-            args:
-                POSTGRES_PASSWORD: FaithSubjectToChange
-
-        image: "dev-postgres"
-        container_name: dev-PostgreSql
-        environment:
-            POSTGRES_PASSWORD: FaithSubjectToChange
-
-    mishmash: &mishmash
+    mishmash:
+        image: nicfit/mishmash:$VERSION
         build:
             context: .
             dockerfile: Dockerfile
 
-        image: "nicfit/mishmash:$VERSION"
-        container_name: MishMash
+    postgres:
+        container_name: PostgreSql-mishmash
+        image: postgres:9.6-alpine
         environment:
-            MISHMASH_DBURL: postgresql://mishmash:FaithSubjectToChange@postgres/MishMash
-        links:
-            - postgres:postgres
+            POSTGRES_DB: music-dev
+            POSTGRES_USER: mishmash
+            POSTGRES_PASSWORD: TheFaithSubjectToChange
+
+    mishmash-base: &mishmash-container
+        image: nicfit/mishmash:$VERSION
         volumes:
             - /etc/localtime:/etc/localtimel:ro
             - ${MUSIC_DIR}:/media/music:ro
+
+    mishmash-sqlite:
+        <<: *mishmash-container
+        container_name: MishMash-sqlite
+        environment:
+            MISHMASH_DBURL: sqlite:////MishMash/var/music-dev.db
         ports:
-            - "6229:6229"
+            - "16229:6229"
+
+    mishmash-postgres:
+        <<: *mishmash-container
+        environment:
+            POSTGRES_PASSWORD: TheFaithSubjectToChange
+            MISHMASH_DBURL: postgresql://mishmash:TheFaithSubjectToChange@postgres/music-dev
+        links:
+            - postgres:postgres
+        ports:
+            - "26229:6229"
         depends_on:
             - postgres
-
-    dev:
-        <<: *mishmash
-
-        build: &common-build
-            context: .
-            <<: *common-build
-            dockerfile: Dockerfile.dev
-
-        image: "nicfit/dev-mishmash:$VERSION"
-        container_name: dev-MishMash

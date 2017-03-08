@@ -147,8 +147,8 @@ changelog:
 	if ! grep "${CHANGELOG_HEADER}" ${CHANGELOG} > /dev/null; then \
 		rm -f ${CHANGELOG}.new; \
 		if test -n "$$last"; then \
-			gitchangelog show --author-format=email \
-			                  --omit-author="travis@pobox.com" $${last}..HEAD |\
+			gitchangelog --author-format=email \
+			             --omit-author="travis@pobox.com" $${last}..HEAD |\
 			  sed "s|^%%version%% .*|${CHANGELOG_HEADER}|" |\
 			  sed '/^.. :changelog:/ r/dev/stdin' ${CHANGELOG} \
 			 > ${CHANGELOG}.new; \
@@ -233,6 +233,7 @@ README.html: README.rst
 		${BROWSER} README.html;\
 	fi
 
+
 CC_MERGE ?= yes
 CC_OPTS ?= --no-input
 GIT_COMMIT_HOOK = .git/hooks/commit-msg
@@ -247,31 +248,35 @@ cookiecutter:
 		       --extra-merge ${GIT_COMMIT_HOOK} ${GIT_COMMIT_HOOK};\
 	fi
 
+
+DOCKER_COMPOSE := VERSION=${VERSION} docker-compose -f docker/docker-compose.yml
+docker:
+	@$(DOCKER_COMPOSE) build
+
+docker-sqlite: docker
+	@test -n "${MUSIC_DIR}" || (echo "MUSIC_DIR volume directy required" && false)
+	@$(DOCKER_COMPOSE) create --no-recreate
+	$(DOCKER_COMPOSE) up mishmash-sqlite
+
+docker-postgres: docker
+	@test -n "${MUSIC_DIR}" || (echo "MUSIC_DIR volume directy required" && false)
+	@$(DOCKER_COMPOSE) up -d postgres
+	@sleep 3
+	@$(DOCKER_COMPOSE) up mishmash-postgres
+
+docker-clean:
+	-for cont in PostgreSql-mishmash MishMash-sqlite MishMash-postgres; do \
+        docker stop $$cont;\
+        docker rm $$cont;\
+    done
+	-docker rmi -f mishmash
+
+docker-publish: docker
+	@$(DOCKER_COMPOSE) push mishmash
+
+
 DEF_MSG_CAT = locale/en_US/LC_MESSAGES/MishMash.po
 MSG_CAT_TMPL = locale/MishMash.pot
-
-docker:
-	docker build -f ./docker/Dockerfile.arch -t mishmash-arch docker/
-	VERSION=${VERSION} \
-        docker-compose -f ./docker/docker-compose.yml build mishmash
-
-docker-dev: docker
-	rm -rf docker/src && mkdir docker/src
-	git ls-files -z | grep -vz docker/ | while IFS= read -r -d '' file; do \
-		mkdir -p docker/src/`dirname $$file`;\
-		cp "$$file" ./docker/src/$$file;\
-	done
-	VERSION=${VERSION} \
-        docker-compose -f ./docker/docker-compose.yml build dev
-
-docker-up:
-	VERSION=${VERSION} \
-        docker-compose -f ./docker/docker-compose.yml up -d \
-		               postgres mishmash
-
-docker-publish: docker docker-dev
-	VERSION=${VERSION} \
-        docker-compose -f docker/docker-compose.yml push mishmash dev
 
 gettext-po:
 	pybabel extract --no-location -o ${MSG_CAT_TMPL} -w 80 ${SRC_DIRS}
