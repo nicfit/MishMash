@@ -7,6 +7,7 @@ Using pip
 At the command line::
 
     $ pip install mishmash
+    $ pip install mishmash[postgres]
 
 Or, if you have virtualenvwrapper installed::
 

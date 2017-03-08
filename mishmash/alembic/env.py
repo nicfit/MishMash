@@ -16,7 +16,7 @@ target_metadata = mishmash.orm.Base.metadata
 # ... etc.
 
 
-def run_migrations_offline():
+def run_migrations_offline():                                  # pragma: nocover
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -59,6 +59,6 @@ def run_migrations_online():
 
 
 if context.is_offline_mode():
-    run_migrations_offline()
+    run_migrations_offline()                                   # pragma: nocover
 else:
     run_migrations_online()
