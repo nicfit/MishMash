@@ -1,0 +1,9 @@
+#!/bin/bash
+source /MishMash/bin/activate
+
+mishmash info && \
+mishmash sync && \
+mishmash info && \
+mishmash web
+
+exec /bin/bash

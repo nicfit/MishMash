@@ -120,7 +120,7 @@ class SyncPlugin(LoaderPlugin):
                     if artist not in artist_rows:
                         session.add(artist)
                         session.flush()
-                        pout(Fg.yellow("Updating artist") + ": " + name)
+                        pout(Fg.blue("Updating artist") + ": " + name)
                     resolved_artist = artist
             else:
                 # Artist match

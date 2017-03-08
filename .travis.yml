@@ -8,6 +8,7 @@ cache:
     pip: true
 
 install:
+    - pip install -U -r requirements.txt
     - pip install -U -r requirements/test.txt
     - pip install coveralls
     - pip install -e .

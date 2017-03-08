@@ -28,6 +28,14 @@ mishmash.console module
     :undoc-members:
     :show-inheritance:
 
+mishmash.core module
+--------------------
+
+.. automodule:: mishmash.core
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 mishmash.database module
 ------------------------
 

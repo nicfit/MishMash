@@ -1,16 +1,11 @@
 from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
 import mishmash.orm
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-fileConfig(config.config_file_name)
 
 # add your model's MetaData object here for 'autogenerate' support
 target_metadata = mishmash.orm.Base.metadata
@@ -21,7 +16,7 @@ target_metadata = mishmash.orm.Base.metadata
 # ... etc.
 
 
-def run_migrations_offline():
+def run_migrations_offline():                                  # pragma: nocover
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -64,6 +59,6 @@ def run_migrations_online():
 
 
 if context.is_offline_mode():
-    run_migrations_offline()
+    run_migrations_offline()                                   # pragma: nocover
 else:
     run_migrations_online()

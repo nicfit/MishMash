@@ -81,10 +81,10 @@ album_images = sql.Table("album_images", Base.metadata,
 
 
 class OrmObject(object):
-    '''Base classes for all other mishmash.orm classes.'''
+    """Base classes for all other mishmash.orm classes."""
 
     def __repr__(self):
-        '''Dump the object state and return it as a strings.'''
+        """Dump the object state and return it as a strings."""
         attrs = []
         for key in self.__dict__:
             if not key.startswith('_'):
@@ -94,8 +94,8 @@ class OrmObject(object):
 
 
 class Meta(Base, OrmObject):
-    '''Table ``meta`` used for storing database schema version, timestamps,
-    and any other metadata about the music collection.'''
+    """Table ``meta`` used for storing database schema version, timestamps,
+    and any other metadata about the music collection."""
 
     __tablename__ = "meta"
 
@@ -122,7 +122,7 @@ class Artist(Base, OrmObject):
                                           ), {})
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("artist_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("artists_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(128), nullable=False, index=True)
     sort_name = sql.Column(sql.Unicode(128), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
@@ -237,7 +237,7 @@ class Album(Base, OrmObject):
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("album_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("albums_id_seq"), primary_key=True)
     title = sql.Column(sql.Unicode(128), nullable=False, index=True)
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
@@ -277,7 +277,7 @@ class Track(Base, OrmObject):
                                           ), {})
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("track_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("tracks_id_seq"), primary_key=True)
     path = sql.Column(sql.String(512), nullable=False, index=True)
     size_bytes = sql.Column(sql.Integer, nullable=False)
     ctime = sql.Column(sql.DateTime(), nullable=False)
@@ -307,8 +307,8 @@ class Track(Base, OrmObject):
     tags = orm.relation("Tag", secondary=track_tags)
 
     def __init__(self, **kwargs):
-        '''Along with the column args a ``audio_file`` keyword may be passed
-        for this class to use for initialization.'''
+        """Along with the column args a ``audio_file`` keyword may be passed
+        for this class to use for initialization."""
 
         if "audio_file" in kwargs:
             self.update(kwargs["audio_file"])
@@ -339,7 +339,7 @@ class Tag(Base, OrmObject):
                                           ), {})
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("tag_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("tags_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=False)
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
                         nullable=False, index=True)
@@ -358,7 +358,7 @@ class Image(Base, OrmObject):
                    LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
-    id = sql.Column(sql.Integer, Sequence("img_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("images_id_seq"), primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
     mime_type = sql.Column(sql.String(32), nullable=False)
     md5 = sql.Column(sql.String(32), nullable=False)
@@ -378,7 +378,7 @@ class Image(Base, OrmObject):
 
     @staticmethod
     def fromTagFrame(img, type_):
-        if not Image._validMimeType(str(img.mime_type, "ascii")):
+        if not Image._validMimeType(img.mime_type):
             return None
 
         md5hash = md5()
@@ -386,7 +386,7 @@ class Image(Base, OrmObject):
 
         return Image(type=type_,
                      description=img.description,
-                     mime_type=str(img.mime_type, "ascii"),
+                     mime_type=img.mime_type,
                      md5=md5hash.hexdigest(),
                      size=len(img.image_data),
                      data=img.image_data)
@@ -415,19 +415,8 @@ class Library(Base, OrmObject):
     __tablename__ = "libraries"
 
     # Columns
-    id = sql.Column(sql.Integer, Sequence("lib_id_seq"), primary_key=True)
+    id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
-
-    @staticmethod
-    def initTable(session, config):
-        null_lib = Library(name=NULL_LIB_NAME)
-        session.add(null_lib)
-        main_lib = Library(name=MAIN_LIB_NAME)
-        session.add(main_lib)
-        session.flush()
-        if (null_lib.id, main_lib.id) != (NULL_LIB_ID, MAIN_LIB_ID):
-            raise RuntimeError(
-                "Unable to provision null/main libs wih expected IDs")
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]

@@ -10,7 +10,7 @@ class Command(BaseCommand):
         from . import database
 
         self.config = config
-        self.db_engine, Session = database.init(self.config)
+        self.db_engine, Session = database.init(self.config.db_url)
         self.db_session = Session()
 
         try:

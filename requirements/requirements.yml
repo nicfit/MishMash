@@ -1,0 +1,39 @@
+main:
+    - eyeD3>=0.8.0b0
+    - nicfit.py
+    - SQLAlchemy
+    - alembic
+    - countrycode
+    - pyfiglet
+    - sqlalchemy-utils
+    - pyramid
+    - pyramid_chameleon
+    - pyramid_layout
+    - pyramid_tm
+    - transaction
+    - zope.sqlalchemy
+    - waitress
+    - pyramid_debugtoolbar
+
+extra_postgres:
+    - psycopg2
+
+test:
+    - pytest
+    - pytest-cov
+    - pytest-runner
+
+dev:
+    - nicfit.py[cookiecutter]
+    - Sphinx
+    - babel
+    - check-manifest
+    - flake8
+    - git+https://github.com/nicfit/gitchangelog.git
+    - ipdb
+    - pip-tools
+    - tox
+    - twine
+    - watchdog
+    - wheel
+    - sphinx_bootstrap_theme

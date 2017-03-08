@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+from nicfit.console.ansi import Fg
 from eyed3.utils.prompt import prompt, parseIntList
-from eyed3.utils.console import Fore as fg
 from .orm import Artist
 
 
 def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
-    color = fg.green
+    color = Fg.green
     artist = None
     name = None
 
@@ -51,7 +51,7 @@ def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
             artist = promptArtist(None, name=name)
             if choices:
                 if not Artist.checkUnique(choices + [artist]):
-                    print(fg.red("Artist entered is not unique, try again..."))
+                    print(Fg.red("Artist entered is not unique, try again..."))
                     artist = None
 
     assert(artist)
@@ -64,11 +64,11 @@ def promptArtist(text, name=None, default_name=None, default_city=None,
         print(text)
 
     if name is None:
-        name = prompt(fg.green("Artist name"), default=default_name)
+        name = prompt(Fg.green("Artist name"), default=default_name)
 
     origin = {}
     for o in ("city", "state", "country"):
-        origin["origin_%s" % o] = prompt("   %s" % fg.green(o.title()),
+        origin["origin_%s" % o] = prompt("   %s" % Fg.green(o.title()),
                                          default=locals()["default_%s" % o],
                                          required=False)
 

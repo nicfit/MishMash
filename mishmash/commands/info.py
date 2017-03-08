@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from nicfit import command
+from nicfit.console.ansi import Fg, Style
 from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
+# FIXME: replace thise console utils with nicfit.console
 from eyed3.utils.console import printError
-from eyed3.utils.console import cprint, cformat, Fore, Style
 from .. import version
 from ..core import Command
 from ..orm import Track, Artist, Album, Meta, Tag, Library, NULL_LIB_ID
@@ -24,21 +25,27 @@ class Info(Command):
 
         _output = []
 
-        def _addOutput(_k, _v):
-            _output.append(tuple((_k, _v)))
+        def _addOutput(k, v):
+            _output.append(tuple((k, v)))
 
-        def _printOutput(_format, _olist, key_fg=None):
+        def _printOutput(_format, _olist):
             k_width = max([len(k) for k, v in _olist if k])
             for k, v in _olist:
-                print(_format % (cformat(k.ljust(k_width), key_fg), v)
-                        if k else "")
+                if k:
+                    print(_format.format(k=k.ljust(k_width), v=v))
             _olist.clear()
 
-        cprint(figlet_format("``MishMash``", font="graffiti"), Fore.GREEN,
-                styles=[Style.BRIGHT])
+        logo = figlet_format("``MishMash``", font="graffiti")
+        print(Fg.green(logo, Style.BRIGHT))
 
-        _addOutput("Version", version)
-        _addOutput("Database URL", self.config.db_url)
+        def mkkey(k):
+            return Style.bright(Fg.blue(str(k)))
+
+        def mkval(v):
+            return Style.bright(Fg.blue(str(v)))
+
+        _addOutput(mkkey("Version"), mkval(version))
+        _addOutput(mkkey("Database URL"), mkval(self.config.db_url))
 
         try:
             meta = session.query(Meta).one()
@@ -47,15 +54,19 @@ class Info(Command):
                        "initialized: %s" % str(ex))
             return 1
 
-        _addOutput("Database version", meta.version)
-        _addOutput("Last sync", meta.last_sync or "Never")
-        _addOutput("Configuration file ", self.args.config.filename or "None")
-        _printOutput("%s : %s", _output, key_fg=Fore.BLUE)
+        _addOutput(mkkey("Database version"), mkval(meta.version))
+        _addOutput(mkkey("Last sync"), mkval(meta.last_sync or "Never"))
+        _addOutput(mkkey("Configuration file "),
+                   mkval(self.args.config.filename or "None"))
+        _printOutput("{k} : {v}", _output)
+
+        def mkkey(k):
+            return Style.bright(str(k))
 
         print("")
         for lib in session.query(Library)\
                           .filter(Library.id > NULL_LIB_ID).all():
-            cprint("\n=== {} library ===".format(lib.name), Fore.YELLOW)
+            print(Fg.yellow("\n=== {} library ===").format(lib.name))
             _addOutput(None, None)
             for name, orm_type in [("tracks", Track), ("artists", Artist),
                                   ("albums", Album), ("tags", Tag),
@@ -63,5 +74,5 @@ class Info(Command):
                 count = session.query(orm_type).filter_by(lib_id=lib.id)\
                                .count()
 
-                _addOutput(str(count), name)
-            _printOutput("%s music %s", _output)
+                _addOutput(mkkey(count), name)
+            _printOutput("{k} music {v}", _output)

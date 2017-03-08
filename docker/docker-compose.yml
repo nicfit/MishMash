@@ -1,0 +1,43 @@
+version: "2"
+
+services:
+
+    mishmash:
+        image: nicfit/mishmash:$VERSION
+        build:
+            context: .
+            dockerfile: Dockerfile
+
+    postgres:
+        container_name: PostgreSql-mishmash
+        image: postgres:9.6-alpine
+        environment:
+            POSTGRES_DB: music-dev
+            POSTGRES_USER: mishmash
+            POSTGRES_PASSWORD: TheFaithSubjectToChange
+
+    mishmash-base: &mishmash-container
+        image: nicfit/mishmash:$VERSION
+        volumes:
+            - /etc/localtime:/etc/localtimel:ro
+            - ${MUSIC_DIR}:/media/music:ro
+
+    mishmash-sqlite:
+        <<: *mishmash-container
+        container_name: MishMash-sqlite
+        environment:
+            MISHMASH_DBURL: sqlite:////MishMash/var/music-dev.db
+        ports:
+            - "16229:6229"
+
+    mishmash-postgres:
+        <<: *mishmash-container
+        environment:
+            POSTGRES_PASSWORD: TheFaithSubjectToChange
+            MISHMASH_DBURL: postgresql://mishmash:TheFaithSubjectToChange@postgres/music-dev
+        links:
+            - postgres:postgres
+        ports:
+            - "26229:6229"
+        depends_on:
+            - postgres
