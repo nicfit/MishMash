@@ -17,9 +17,9 @@ SYNC_INTERVAL = 10
 class Monitor(multiprocessing.Process):
 
     def __init__(self):
-
         self._inotify = Inotify()
-        self._inotify_mask = IN_ALL_EVENTS & (~IN_ACCESS & ~IN_OPEN &
+        self._inotify_mask = IN_ALL_EVENTS & (~IN_ACCESS &
+                                              ~IN_OPEN &
                                               ~IN_CLOSE_NOWRITE &
                                               ~IN_CLOSE_WRITE)
 
@@ -55,7 +55,7 @@ class Monitor(multiprocessing.Process):
                         num_dirs += 1
 
                     print("Monitoring {:d} director{} for file changes"
-                        .format(num_dirs, "y" if num_dirs == 1 else "ies"))
+                          .format(num_dirs, "y" if num_dirs == 1 else "ies"))
 
                 # Process Inotify
                 for event in self._inotify.event_gen():

@@ -42,6 +42,7 @@ class SyncPlugin(LoaderPlugin):
     DESCRIPTION = u""
 
     def __init__(self, arg_parser):
+        """Constructor"""
         super().__init__(arg_parser, cache_files=True, track_images=True)
 
         eyed3.main.setFileScannerOpts(
@@ -91,10 +92,11 @@ class SyncPlugin(LoaderPlugin):
         self._lib_name = lib.name
         self._lib_id = lib.id
 
-        if self.args.monitor and self.monitor_proc is None:
-            self.monitor_proc = Monitor()
-            # Watch library root paths
-            for p in args.paths:
+        if self.args.monitor:
+            if self.monitor_proc is None:
+                self.monitor_proc = Monitor()
+            # Monitor roots, file dir are watched as the files are traversed
+            for p in self.args.paths:
                 self._watchDir(p)
 
     def _getArtist(self, session, name, resolved_artist):
@@ -328,7 +330,7 @@ class SyncPlugin(LoaderPlugin):
                 img_type = art.matchArtFile(img_file)
                 if img_type is None:
                     log.warn("Skipping unrecognized image file: %s" %
-                              img_file)
+                             img_file)
                     continue
 
                 new_img = Image.fromFile(img_file, img_type)
@@ -344,7 +346,30 @@ class SyncPlugin(LoaderPlugin):
             self._watchDir(d)
 
     def _watchDir(self, d):
-        self.monitor_proc.dir_queue.put((self._lib_name, Path(d)))
+        valid_path = False
+        dirpath = Path(d)
+        for root in [Path(p) for p in self.args.paths]:
+            try:
+                dirpath.relative_to(root)
+            except ValueError:
+                continue
+            else:
+                valid_path = True
+                self.monitor_proc.dir_queue.put((self._lib_name, dirpath))
+                # Add parents up to root. It is safe to all the same directory to
+                # the  Monitor
+                parent = dirpath.parent
+                try:
+                    parent.relative_to(root)
+                except ValueError:
+                    # Added a root
+                    pass
+                else:
+                    while parent != root:
+                        self.monitor_proc.dir_queue.put((self._lib_name, parent))
+                        parent = parent.parent
+                break
+        assert valid_path
 
     def handleDone(self):
         t = time.time() - self.start_time
