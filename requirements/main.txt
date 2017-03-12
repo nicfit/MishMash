@@ -2,6 +2,7 @@ SQLAlchemy==1.1.5
 alembic==0.9.1
 countrycode==0.2
 eyeD3>=0.8.0b0
+inotify
 nicfit.py
 pyfiglet==0.7.5
 pyramid==1.8.2
