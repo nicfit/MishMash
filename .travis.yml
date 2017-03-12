@@ -16,9 +16,6 @@ install:
     - pip install coveralls
     - pip install -e .
 
-before_script:
-  - cp .database.yml.travis config/database.yml
-
 # command to run tests
 script: make coverage
 
