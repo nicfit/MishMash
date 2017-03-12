@@ -1,0 +1,6 @@
+connection:
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
+  username: mishmash
+  password:

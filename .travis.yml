@@ -4,6 +4,9 @@ python:
   - "3.6"
   - "3.7-dev"
 
+services:
+    - postgresql
+
 cache:
     pip: true
 
@@ -12,6 +15,9 @@ install:
     - pip install -U -r requirements/test.txt
     - pip install coveralls
     - pip install -e .
+
+before_script:
+  - cp .database.yml.travis config/database.yml
 
 # command to run tests
 script: make coverage

@@ -21,7 +21,7 @@ def database(request):
         engine, SessionMaker = mishmash.database.init(db_url)
     elif request.param == "postgresql":
         uid = str(uuid.uuid4())
-        db_url = f"postgresql://mishmash@localhost/MMTEST_{uid}"
+        db_url = f"postgresql://postgres@localhost/MMTEST_{uid}"
         engine, SessionMaker = mishmash.database.init(db_url)
     else:
         assert not("unhandled db: " + request.param)
