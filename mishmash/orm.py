@@ -34,11 +34,10 @@ convention = {
 
 Base = declarative_base(metadata=sql.MetaData(naming_convention=convention))
 
-# FIXME: label_id cruft-->tag_id
 artist_tags = sql.Table("artist_tags", Base.metadata,
                         sql.Column("artist_id", sql.Integer,
                                    sql.ForeignKey("artists.id")),
-                        sql.Column("label_id", sql.Integer,
+                        sql.Column("tag_id", sql.Integer,
                                    sql.ForeignKey("tags.id")),
                          )
 """Pivot table 'artist_tags' for mapping an artist ID to a value in the
@@ -47,7 +46,7 @@ artist_tags = sql.Table("artist_tags", Base.metadata,
 album_tags = sql.Table("album_tags", Base.metadata,
                        sql.Column("album_id", sql.Integer,
                                   sql.ForeignKey("albums.id")),
-                       sql.Column("label_id", sql.Integer,
+                       sql.Column("tag_id", sql.Integer,
                                   sql.ForeignKey("tags.id")),
                         )
 '''Pivot table 'album_tags' for mapping an album ID to a value in the
@@ -56,7 +55,7 @@ album_tags = sql.Table("album_tags", Base.metadata,
 track_tags = sql.Table("track_tags", Base.metadata,
                        sql.Column("track_id", sql.Integer,
                                   sql.ForeignKey("tracks.id")),
-                       sql.Column("label_id", sql.Integer,
+                       sql.Column("tag_id", sql.Integer,
                                   sql.ForeignKey("tags.id")),
                         )
 '''Pivot table 'track_tags' for mapping a track ID to a value in the
