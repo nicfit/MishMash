@@ -18,3 +18,13 @@ def test_metadata():
     assert mishmash.__about__.__version_info__
     assert mishmash.__about__.__release__
     assert mishmash.__about__.__version_txt__
+
+
+def test_database_fixture(database):
+    assert database.url
+    assert database.engine
+    assert database.SessionMaker
+
+
+def test_session_fixture(session):
+    assert session

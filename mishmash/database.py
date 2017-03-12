@@ -1,5 +1,7 @@
 from pathlib import Path
 import nicfit
+import alembic
+import alembic.config
 from nicfit.util import cd
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
@@ -7,8 +9,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
-from alembic import command
-from alembic.config import Config
 
 from .orm import TYPES
 from .orm import Artist, Track, Album
@@ -23,10 +23,9 @@ DEFAULT_SESSION_ARGS = {
 log = nicfit.getLogger(__name__)
 
 
-def init(config, engine_args=None, session_args=None, trans_mgr=None):
-    db_url = config.db_url
+def init(db_url, engine_args=None, session_args=None, trans_mgr=None):
     alembic_d = Path(__file__).parent
-    alembic_cfg = Config(str(alembic_d / "alembic.ini"))
+    alembic_cfg = alembic.config.Config(str(alembic_d / "alembic.ini"))
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
 
     log.debug("Checking for database '%s'" % db_url)
@@ -49,7 +48,7 @@ def init(config, engine_args=None, session_args=None, trans_mgr=None):
 
     # Upgrade to head (i.e. this) revision, or no-op if they match
     with cd(str(alembic_d)):
-        command.upgrade(alembic_cfg, "head")
+        alembic.command.upgrade(alembic_cfg, "head")
 
     return engine, SessionMaker
 

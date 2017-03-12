@@ -1,18 +1,19 @@
 main:
     - eyeD3>=0.8.0b0
-    - nicfit.py>=0.5.14
+    - nicfit.py
     - SQLAlchemy
     - alembic
     - countrycode
     - pyfiglet
+    - sqlalchemy-utils
     - pyramid
     - pyramid_chameleon
     - pyramid_layout
     - pyramid_tm
-    - sqlalchemy-utils
     - transaction
-    - waitress
     - zope.sqlalchemy
+    - waitress
+    - pyramid_debugtoolbar
 
 extra_postgres:
     - psycopg2
@@ -35,5 +36,4 @@ dev:
     - twine
     - watchdog
     - wheel
-    - pyramid_debugtoolbar
     - sphinx_bootstrap_theme
