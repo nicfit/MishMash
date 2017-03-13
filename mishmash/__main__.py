@@ -23,6 +23,10 @@ def _pErr(msg):
 
 
 def main(args):
+    import multiprocessing
+
+    multiprocessing.set_start_method("fork")
+
     if not args.command:
         # No command was given.
         args.app.arg_parser.print_help()
@@ -86,4 +90,4 @@ class MishMash(Application):
 
 app = MishMash()
 if __name__ == "__main__":
-    app.run()
+    app.run()                                                 # pragma: no cover
