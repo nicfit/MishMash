@@ -25,7 +25,10 @@ def _pErr(msg):
 def main(args):
     import multiprocessing
 
-    multiprocessing.set_start_method("fork")
+    try:
+        multiprocessing.set_start_method("fork")
+    except RuntimeError as ex:
+        log.warn("multiprocessing.set_start_method: " + str(ex))
 
     if not args.command:
         # No command was given.
