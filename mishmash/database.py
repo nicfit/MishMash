@@ -58,6 +58,7 @@ def dropAll(url):
 
 
 def search(session, query):
+    # FIXME
     flat_query = u"".join(query.split())
 
     artists = session.query(Artist).filter(
