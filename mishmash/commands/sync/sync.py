@@ -356,7 +356,7 @@ class SyncPlugin(LoaderPlugin):
             else:
                 valid_path = True
                 self.monitor_proc.dir_queue.put((self._lib_name, dirpath))
-                # Add parents up to root. It is safe to all the same directory to
+                # Add parents up to root. It is safe to all the same dir to
                 # the  Monitor
                 parent = dirpath.parent
                 try:
@@ -366,7 +366,8 @@ class SyncPlugin(LoaderPlugin):
                     pass
                 else:
                     while parent != root:
-                        self.monitor_proc.dir_queue.put((self._lib_name, parent))
+                        self.monitor_proc.dir_queue.put((self._lib_name,
+                                                         parent))
                         parent = parent.parent
                 break
         assert valid_path
