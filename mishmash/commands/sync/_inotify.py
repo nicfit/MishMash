@@ -12,6 +12,7 @@ from inotify.constants import (IN_ACCESS, IN_ALL_EVENTS, IN_ATTRIB,
 from eyed3 import LOCAL_FS_ENCODING
 
 SYNC_INTERVAL = 10
+# FIXME: replace prints with logging
 
 
 class Monitor(multiprocessing.Process):
@@ -62,40 +63,45 @@ class Monitor(multiprocessing.Process):
                     if event is None:
                         break
 
-                    (header, type_names, watch_path, filename) = event
+                    (header,
+                     type_names,
+                     watch_path,
+                     filename) = event
                     watch_path = Path(str(watch_path, LOCAL_FS_ENCODING))
                     filename = Path(str(filename, LOCAL_FS_ENCODING))
-
-                    if header.mask & IN_ISDIR:
-                        if header.mask & IN_CREATE:
-                            raise NotImplementedError("FIXME")
-                        elif header.mask & IN_DELETE:
-                            raise NotImplementedError("FIXME")
 
                     print("WD=({:d}) MASK=({:d}) "
                           "MASK->NAMES={} WATCH-PATH={} FILENAME={}"
                           .format(header.wd, header.mask,
-                                  type_names, watch_path,
-                                  filename))
+                                  type_names, watch_path, filename))
 
                     if header.mask & (IN_ATTRIB | IN_CREATE | IN_DELETE |
                                       IN_MODIFY | IN_MOVED_TO | IN_MOVED_FROM):
-                        if IN_ISDIR & header.mask:
-                            # 2 events occur:
-                            #   dir, file
-                            #   dir/file, .
-                            # These should reduce to 1 via samefile()
+                        if IN_ISDIR & header.mask and header.mask & IN_CREATE:
                             watch_path = watch_path / filename
+                        elif IN_ISDIR & header.mask and header.mask & IN_DELETE:
+                            self._inotify.remove_watch(
+                                    str(watch_path).encode(LOCAL_FS_ENCODING))
+
                         sync_dirs.add(watch_path)
+
+                def _reqSync(l, d):
+                    if d.exists():
+                        sync_queue.put((lib, d))
+                        print("Requesting sync {} (lib: {})" .format(d, l))
 
                 if time() > next_sync_t:
                     for d in sync_dirs:
                         for lib in self._watched_dirs:
                             lib_paths = self._watched_dirs[lib]
                             if d in lib_paths:
-                                sync_queue.put((lib, d))
-                                print("Requesting sync {} (lib: {})"
-                                      .format(d, lib))
+                                _reqSync(lib, d)
+                                if not d.exists():
+                                    self._watched_dirs[lib].remove(d)
+                            elif d.parent in lib_paths:
+                                _reqSync(lib, d)
+                                self.dir_queue.put((lib, d))
+
                     sync_dirs.clear()
                     next_sync_t = time() + SYNC_INTERVAL
 
