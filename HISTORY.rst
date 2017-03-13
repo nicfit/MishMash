@@ -3,6 +3,15 @@ Release History
 
 .. :changelog:
 
+v0.3b2 (2017-03-12) : Nine Patriotic Hymns For Children
+-------------------------------------------------------
+
+Fix
+~~~
+- Protect against not being the first to call
+  multiprocessing.set_start_method.
+
+
 v0.3b1 (2017-03-12) : Nine Patriotic Hymns For Children
 -------------------------------------------------------
 
