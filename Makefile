@@ -105,11 +105,6 @@ docs:
 docs-view: docs
 	$(BROWSER) docs/_build/html/index.html
 
-docs-dist: clean-docs docs
-	test -d dist || mkdir dist
-	cd docs/_build && \
-	    tar czvf ../../dist/${PROJECT_NAME}-${VERSION}_docs.tar.gz html
-
 clean-docs:
 	$(MAKE) -C docs clean
 	-rm README.html
@@ -119,6 +114,9 @@ servedocs: docs
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 pre-release: lint test changelog requirements
+	@# Keep docs off pre-release target list, else it is pruned during 'release' but
+	@# after a clean.
+	@$(MAKE) docs
 	@echo "VERSION: $(VERSION)"
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
@@ -213,7 +211,9 @@ sdist: build
 	python setup.py bdist_egg
 	python setup.py bdist_wheel
 
-dist: clean gettext sdist docs-dist
+dist: clean gettext sdist docs
+	cd docs/_build && \
+	    tar czvf ../../dist/${PROJECT_NAME}-${VERSION}_docs.tar.gz html
 	@# The cd dist keeps the dist/ prefix out of the md5sum files
 	cd dist && \
 	for f in $$(ls); do \

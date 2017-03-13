@@ -149,11 +149,11 @@ def upgrade():
     )
     op.create_table('artist_tags',
                     sa.Column('artist_id', sa.Integer(), nullable=True),
-                    sa.Column('label_id', sa.Integer(), nullable=True),
+                    sa.Column('tag_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['artist_id'], ['artists.id'],
                             name=op.f('fk_artist_tags_artist_id_artists')),
-    sa.ForeignKeyConstraint(['label_id'], ['tags.id'],
-                            name=op.f('fk_artist_tags_label_id_tags'))
+    sa.ForeignKeyConstraint(['tag_id'], ['tags.id'],
+                            name=op.f('fk_artist_tags_tag_id_tags'))
     )
     op.create_table('album_images',
                     sa.Column('album_id', sa.Integer(), nullable=True),
@@ -167,13 +167,13 @@ def upgrade():
     )
     op.create_table('album_tags',
                     sa.Column('album_id', sa.Integer(), nullable=True),
-                    sa.Column('label_id', sa.Integer(), nullable=True),
+                    sa.Column('tag_id', sa.Integer(), nullable=True),
                     sa.ForeignKeyConstraint(
                         ['album_id'], ['albums.id'],
                         name=op.f('fk_album_tags_album_id_albums')),
                     sa.ForeignKeyConstraint(
-                        ['label_id'], ['tags.id'],
-                        name=op.f('fk_album_tags_label_id_tags'))
+                        ['tag_id'], ['tags.id'],
+                        name=op.f('fk_album_tags_tag_id_tags'))
     )
     op.create_table('tracks',
                     sa.Column('id', sa.Integer(), nullable=False),
@@ -217,10 +217,10 @@ def upgrade():
     op.create_index(op.f('ix_tracks_title'), 'tracks', ['title'], unique=False)
     op.create_table('track_tags',
                     sa.Column('track_id', sa.Integer(), nullable=True),
-                    sa.Column('label_id', sa.Integer(), nullable=True),
+                    sa.Column('tag_id', sa.Integer(), nullable=True),
                               sa.ForeignKeyConstraint(
-                                  ['label_id'], ['tags.id'],
-                                  name=op.f('fk_track_tags_label_id_tags')),
+                                  ['tag_id'], ['tags.id'],
+                                  name=op.f('fk_track_tags_tag_id_tags')),
                               sa.ForeignKeyConstraint(
                                   ['track_id'], ['tracks.id'],
                                   name=op.f('fk_track_tags_track_id_tracks'))
