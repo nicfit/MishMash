@@ -16,7 +16,7 @@ MarkupSafe==1.0           # via mako
 nicfit.py==0.5.15
 packaging==16.8           # via setuptools
 PasteDeploy==1.5.2        # via pyramid
-psycopg2==2.7
+psycopg2==2.7.1
 pyfiglet==0.7.5
 Pygments==2.2.0           # via pyramid-debugtoolbar
 pyparsing==2.2.0          # via packaging
