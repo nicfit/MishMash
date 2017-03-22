@@ -103,7 +103,7 @@ class Meta(Base, OrmObject):
     version = sql.Column(sql.String(32), nullable=False, primary_key=True)
     '''The MishMash version defines the database schema.'''
     last_sync = sql.Column(sql.DateTime)
-    '''A timestamp of the last sync operation.'''
+    '''A UTC timestamp of the last sync operation.'''
 
 
 def getSortName(name):
@@ -417,6 +417,7 @@ class Library(Base, OrmObject):
     # Columns
     id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
+    last_sync = sql.Column(sql.DateTime)
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]

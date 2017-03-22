@@ -89,8 +89,7 @@ class SyncPlugin(LoaderPlugin):
             lib = Library(name=args._library.name)
             self._db_session.add(lib)
             self._db_session.flush()
-        self._lib_name = lib.name
-        self._lib_id = lib.id
+        self._lib = lib
 
         if self.args.monitor:
             if self.monitor_proc is None:
@@ -101,7 +100,7 @@ class SyncPlugin(LoaderPlugin):
 
     def _getArtist(self, session, name, resolved_artist):
         artist_rows = session.query(Artist).filter_by(name=name,
-                                                      lib_id=self._lib_id).all()
+                                                      lib_id=self._lib.id).all()
         if artist_rows:
             if len(artist_rows) > 1 and resolved_artist:
                 # Use previously resolved artist for this directory.
@@ -129,7 +128,7 @@ class SyncPlugin(LoaderPlugin):
                 artist = artist_rows[0]
         else:
             # New artist
-            artist = Artist(name=name, lib_id=self._lib_id)
+            artist = Artist(name=name, lib_id=self._lib.id)
             session.add(artist)
             session.flush()
             pout(Fg.green("Adding artist") + ": " + name)
@@ -159,7 +158,7 @@ class SyncPlugin(LoaderPlugin):
 
         try:
             track = session.query(Track)\
-                           .filter_by(path=path, lib_id=self._lib_id).one()
+                           .filter_by(path=path, lib_id=self._lib.id).one()
         except NoResultFound:
             track = None
         else:
@@ -191,7 +190,7 @@ class SyncPlugin(LoaderPlugin):
                                               else VARIOUS_ARTISTS_ID
             album_rows = session.query(Album)\
                                 .filter_by(title=tag.album,
-                                           lib_id=self._lib_id,
+                                           lib_id=self._lib.id,
                                            artist_id=album_artist_id).all()
             rel_date = tag.release_date
             rec_date = tag.recording_date
@@ -210,7 +209,7 @@ class SyncPlugin(LoaderPlugin):
                 album.recording_date = rec_date
                 pout(Fg.yellow("Updating album") + ": " + album.title)
             elif tag.album:
-                album = Album(title=tag.album, lib_id=self._lib_id,
+                album = Album(title=tag.album, lib_id=self._lib.id,
                               artist_id=album_artist_id, type=album_type,
                               release_date=rel_date,
                               original_release_date=or_date,
@@ -222,7 +221,7 @@ class SyncPlugin(LoaderPlugin):
             session.flush()
 
         if not track:
-            track = Track(audio_file=audio_file, lib_id=self._lib_id)
+            track = Track(audio_file=audio_file, lib_id=self._lib.id)
             self._num_added += 1
             pout(Fg.green("Adding track") + ": " + path)
         else:
@@ -236,9 +235,9 @@ class SyncPlugin(LoaderPlugin):
             try:
                 genre_tag = session.query(Tag)\
                                    .filter_by(name=genre.name,
-                                              lib_id=self._lib_id).one()
+                                              lib_id=self._lib.id).one()
             except NoResultFound:
-                genre_tag = Tag(name=genre.name, lib_id=self._lib_id)
+                genre_tag = Tag(name=genre.name, lib_id=self._lib.id)
                 session.add(genre_tag)
                 session.flush()
 
@@ -355,7 +354,7 @@ class SyncPlugin(LoaderPlugin):
                 continue
             else:
                 valid_path = True
-                self.monitor_proc.dir_queue.put((self._lib_name, dirpath))
+                self.monitor_proc.dir_queue.put((self._lib.name, dirpath))
                 # Add parents up to root. It is safe to all the same dir to
                 # the  Monitor
                 parent = dirpath.parent
@@ -366,7 +365,7 @@ class SyncPlugin(LoaderPlugin):
                     pass
                 else:
                     while parent != root:
-                        self.monitor_proc.dir_queue.put((self._lib_name,
+                        self.monitor_proc.dir_queue.put((self._lib.name,
                                                          parent))
                         parent = parent.parent
                 break
@@ -376,7 +375,8 @@ class SyncPlugin(LoaderPlugin):
         t = time.time() - self.start_time
         session = self._db_session
 
-        session.query(Meta).one().last_sync = datetime.now()
+        session.query(Meta).one().last_sync = datetime.utcnow()
+        self._lib.last_sync = datetime.utcnow()
 
         num_orphaned_artists = 0
         num_orphaned_albums = 0
@@ -389,7 +389,7 @@ class SyncPlugin(LoaderPlugin):
         if self._num_loaded or self._num_deleted:
             pout("")
             pout("== Library '{}' sync'd [ {:f}s time ({:f} files/s) ] =="
-                .format(self._lib_name, t, self._num_loaded / t))
+                .format(self._lib.name, t, self._num_loaded / t))
             pout("%d files sync'd" % self._num_loaded)
             pout("%d tracks added" % self._num_added)
             pout("%d tracks modified" % self._num_modified)

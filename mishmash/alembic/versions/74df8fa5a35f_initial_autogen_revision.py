@@ -43,6 +43,7 @@ def upgrade():
     lib_t = op.create_table('libraries',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('name', sa.Unicode(length=64), nullable=False),
+                    sa.Column('last_sync', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('id', name=op.f('pk_libraries')),
                     sa.UniqueConstraint('name', name=op.f('uq_libraries_name'))
     )
