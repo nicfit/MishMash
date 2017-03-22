@@ -83,7 +83,7 @@ album_images = sql.Table("album_images", Base.metadata,
 class OrmObject(object):
     """Base classes for all other mishmash.orm classes."""
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: nocover
         """Dump the object state and return it as a strings."""
         attrs = []
         for key in self.__dict__:

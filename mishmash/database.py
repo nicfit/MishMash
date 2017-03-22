@@ -1,4 +1,5 @@
 from pathlib import Path
+from collections import namedtuple
 import nicfit
 import alembic
 import alembic.config
@@ -21,6 +22,9 @@ DEFAULT_SESSION_ARGS = {
         }
 
 log = nicfit.getLogger(__name__)
+DatabaseInfo = namedtuple("DatabaseInfo", ["engine",
+                                           "SessionMaker",
+                                           "connection"])
 
 
 def init(db_url, engine_args=None, session_args=None, trans_mgr=None):
@@ -36,7 +40,7 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None):
     log.debug("Connecting to database '%s'" % db_url)
     args = engine_args or DEFAULT_ENGINE_ARGS
     engine = create_engine(db_url, **args)
-    engine.connect()
+    connection = engine.connect()
 
     args = session_args or DEFAULT_SESSION_ARGS
     if trans_mgr:
@@ -50,7 +54,7 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None):
     with cd(str(alembic_d)):
         alembic.command.upgrade(alembic_cfg, "head")
 
-    return engine, SessionMaker
+    return DatabaseInfo(engine, SessionMaker, connection)
 
 
 def dropAll(url):
