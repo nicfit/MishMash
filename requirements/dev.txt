@@ -1,5 +1,5 @@
 Sphinx==1.5.5
-babel==2.3.4
+babel==2.4.0
 check-manifest==0.35
 flake8==3.3.0
 git+https://github.com/nicfit/gitchangelog.git
