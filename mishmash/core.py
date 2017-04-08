@@ -10,8 +10,8 @@ class Command(BaseCommand):
         from . import database
 
         self.config = config
-        self.db_engine, Session = database.init(self.config.db_url)
-        self.db_session = Session()
+        self.db_engine, SessionMaker, _ = database.init(self.config.db_url)
+        self.db_session = SessionMaker()
 
         try:
             retval = super().run(args)
