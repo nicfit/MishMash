@@ -3,6 +3,21 @@ Release History
 
 .. :changelog:
 
+v0.3b3 (2017-04-09) : Prayers for Rain
+---------------------------------------
+
+New
+~~~
+- UTC sync times and per lib last_sync. Fixes #6, #7.
+- Db test fixtures, etc.
+
+Changes
+~~~~~~~
+- mishmash.data.init now returns the 3-tuple (engine, SessionMaker, connection).
+  Previously a 2-tuple, sans connection, was returned.
+  The new mishmash.database.DatebaseInfo namedtuple is the actual return type,
+  if you prefer not to unpack the return value.
+
 v0.3b2 (2017-03-12) : Nine Patriotic Hymns For Children
 -------------------------------------------------------
 
