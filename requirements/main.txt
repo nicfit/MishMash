@@ -7,7 +7,7 @@ nicfit.py==0.5.15
 pyfiglet==0.7.5
 pyramid==1.8.3
 pyramid_chameleon==0.3
-pyramid_debugtoolbar
+pyramid-debugtoolbar==3.0.5
 pyramid_layout==1.0
 pyramid_tm==1.1.1
 sqlalchemy-utils==0.32.14
