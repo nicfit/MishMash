@@ -9,7 +9,7 @@ pyramid==1.8.3
 pyramid_chameleon==0.3
 pyramid_debugtoolbar
 pyramid_layout==1.0
-pyramid_tm==1.1.1
+pyramid-tm==2.0
 sqlalchemy-utils==0.32.14
 transaction==2.1.2
 waitress==1.0.2
