@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: travis@pobox.com\n"
-"POT-Creation-Date: 2017-02-26 00:06-0700\n"
+"POT-Creation-Date: 2017-04-19 23:00-0600\n"
 "PO-Revision-Date: 2017-02-10 17:38-0700\n"
 "Last-Translator: Travis Shirk <travis@pobox.com>\n"
 "Language: en_US\n"
@@ -17,4 +17,28 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
+
+msgid "LPs"
+msgstr ""
+
+msgid "EPs"
+msgstr ""
+
+msgid "Compilations"
+msgstr ""
+
+msgid "Various Artists"
+msgstr ""
+
+msgid "Live"
+msgstr ""
+
+msgid "Demos"
+msgstr ""
+
+msgid "Singles"
+msgstr ""
+
+msgid "All"
+msgstr ""
 

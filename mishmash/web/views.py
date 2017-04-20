@@ -19,6 +19,7 @@
 ################################################################################
 import os
 import random
+import gettext.gettext as _
 
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -49,17 +50,17 @@ class ResponseDict(dict):
         self.update(_vars)
 
 
-TYPE_DISPLAY_NAMES = {LP_TYPE: "LPs",
-                      EP_TYPE: "EPs",
-                      COMP_TYPE: "Compilations",
-                      VARIOUS_TYPE: "Various Artists",
-                      LIVE_TYPE: "Live",
-                      DEMO_TYPE: "Demos",
-                      SINGLE_TYPE: "Singles",
+TYPE_DISPLAY_NAMES = {LP_TYPE: _("LPs"),
+                      EP_TYPE: _("EPs"),
+                      COMP_TYPE: _("Compilations"),
+                      VARIOUS_TYPE: _("Various Artists"),
+                      LIVE_TYPE: _("Live"),
+                      DEMO_TYPE: _("Demos"),
+                      SINGLE_TYPE: _("Singles"),
                      }
 # Not in eyeD3
 ALL_TYPE = "All"
-TYPE_DISPLAY_NAMES[ALL_TYPE] = "All"
+TYPE_DISPLAY_NAMES[ALL_TYPE] = _("All")
 
 
 @view_config(route_name="home", renderer="templates/home.pt",

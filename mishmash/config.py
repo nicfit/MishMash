@@ -29,9 +29,6 @@ class Config(nicfit.Config):
     def db_url(self):
         return self.get(MAIN_SECT, SA_KEY)
 
-    @property
-    def various_artists_name(self):
-        return self.get(MAIN_SECT, "various_artists_name")
 
     @property
     def music_libs(self):

@@ -10,5 +10,3 @@ def test_Config_nofile():
         assert c.db_url is None
     with pytest.raises(Exception):
         assert c.music_libs is None
-    with pytest.raises(Exception):
-        assert c.various_artists_name is None
