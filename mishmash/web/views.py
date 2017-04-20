@@ -1,22 +1,4 @@
 # -*- coding: utf-8 -*-
-################################################################################
-#  Copyright (C) 2013-2014  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-################################################################################
 import os
 import random
 import gettext.gettext as _
@@ -35,9 +17,9 @@ from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
 from ..__about__ import __project_name__ as PROJECT_NAME
 from ..__about__ import __version__ as VERSION
 
-from ..orm import Artist, Album, Image
 from .. import database
 from .. import util
+from ..orm import Artist, Album, Image, VARIOUS_ARTISTS_NAME
 
 _vars = {"project_name": PROJECT_NAME,
          "project_version": VERSION,
@@ -53,7 +35,7 @@ class ResponseDict(dict):
 TYPE_DISPLAY_NAMES = {LP_TYPE: _("LPs"),
                       EP_TYPE: _("EPs"),
                       COMP_TYPE: _("Compilations"),
-                      VARIOUS_TYPE: _("Various Artists"),
+                      VARIOUS_TYPE: VARIOUS_ARTISTS_NAME,
                       LIVE_TYPE: _("Live"),
                       DEMO_TYPE: _("Demos"),
                       SINGLE_TYPE: _("Singles"),

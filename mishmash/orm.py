@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Object to relational database mappings for all tables.
 """
 import os
-from datetime import datetime
 from hashlib import md5
+from datetime import datetime
+from gettext import gettext as _
 
 import sqlalchemy as sql
 from sqlalchemy import orm, event, types, Sequence
@@ -18,11 +18,11 @@ from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
 VARIOUS_ARTISTS_ID = 1
-VARIOUS_ARTISTS_NAME = "Various Artists"
+VARIOUS_ARTISTS_NAME = _("Various Artists")
 NULL_LIB_ID = 1
 NULL_LIB_NAME = "__null_lib__"
 MAIN_LIB_ID = 2
-MAIN_LIB_NAME = "Music"
+MAIN_LIB_NAME = _("Music")
 
 convention = {
   "ix": 'ix_%(column_0_label)s',

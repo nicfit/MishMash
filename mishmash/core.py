@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 from nicfit.command import Command as BaseCommand
-from nicfit.command import CommandError                                   # noqa
+from nicfit.command import CommandError                             # noqa: F401
 
 
 class Command(BaseCommand):
@@ -10,7 +9,11 @@ class Command(BaseCommand):
         from . import database
 
         self.config = config
-        self.db_engine, SessionMaker, _ = database.init(self.config.db_url)
+
+        (self.db_engine,
+         SessionMaker,
+         self.db_conn) = database.init(self.config.db_url)
+
         self.db_session = SessionMaker()
 
         try:
