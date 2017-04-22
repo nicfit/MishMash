@@ -3,7 +3,7 @@ babel==2.4.0
 check-manifest==0.35
 flake8==3.3.0
 git+https://github.com/nicfit/gitchangelog.git
-ipdb==0.10.2
+ipdb==0.10.3
 nicfit.py[cookiecutter]==0.5.15
 pip-tools==1.9.0
 sphinx_bootstrap_theme==0.4.14
