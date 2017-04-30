@@ -4,5 +4,5 @@ pyramid_debugtoolbar
 pyramid_layout
 pyramid_tm
 transaction
-waitress
+waitress==1.0.2
 zope.sqlalchemy
