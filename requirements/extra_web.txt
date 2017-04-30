@@ -1,7 +1,7 @@
 pyramid==1.8.3
 pyramid_chameleon
 pyramid_debugtoolbar
-pyramid_layout
+pyramid-layout==1.0
 pyramid_tm
 transaction==2.1.2
 waitress
