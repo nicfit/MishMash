@@ -1,4 +1,4 @@
-pyramid
+pyramid==1.8.3
 pyramid_chameleon
 pyramid_debugtoolbar
 pyramid_layout
