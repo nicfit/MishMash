@@ -3,6 +3,6 @@ pyramid_chameleon
 pyramid_debugtoolbar
 pyramid_layout
 pyramid_tm
-transaction
+transaction==2.1.2
 waitress
 zope.sqlalchemy==0.7.7
