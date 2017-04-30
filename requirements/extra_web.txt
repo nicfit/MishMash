@@ -1,6 +1,6 @@
 pyramid
 pyramid_chameleon
-pyramid_debugtoolbar
+pyramid-debugtoolbar==3.0.5
 pyramid_layout
 pyramid_tm
 transaction
