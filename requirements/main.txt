@@ -5,12 +5,4 @@ eyeD3>=0.8.0b0
 inotify==0.2.8
 nicfit.py==0.5.15
 pyfiglet==0.7.5
-pyramid==1.8.3
-pyramid_chameleon==0.3
-pyramid_debugtoolbar
-pyramid_layout==1.0
-pyramid-tm==2.0
 sqlalchemy-utils==0.32.14
-transaction==2.1.2
-waitress==1.0.2
-zope.sqlalchemy==0.7.7

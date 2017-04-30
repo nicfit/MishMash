@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from pathlib import Path
 from configparser import ExtendedInterpolation
 import nicfit
@@ -28,7 +27,6 @@ class Config(nicfit.Config):
     @property
     def db_url(self):
         return self.get(MAIN_SECT, SA_KEY)
-
 
     @property
     def music_libs(self):

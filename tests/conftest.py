@@ -4,8 +4,6 @@ import pytest
 from pathlib import Path
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
-import unittest
-from pyramid import testing
 import mishmash.database
 
 TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
