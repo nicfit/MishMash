@@ -5,7 +5,7 @@ import alembic
 import alembic.config
 from nicfit.util import cd
 from sqlalchemy import create_engine, or_
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
@@ -27,7 +27,8 @@ DatabaseInfo = namedtuple("DatabaseInfo", ["engine",
                                            "connection"])
 
 
-def init(db_url, engine_args=None, session_args=None, trans_mgr=None):
+def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
+         scoped=False):
     alembic_d = Path(__file__).parent
     alembic_cfg = alembic.config.Config(str(alembic_d / "alembic.ini"))
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
@@ -46,6 +47,8 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None):
     if trans_mgr:
         args.update({"extension": trans_mgr})
     SessionMaker = sessionmaker(bind=engine, **args)
+    if scoped:
+        SessionMaker = scoped_session(SessionMaker)
 
     for T in TYPES:
         T.metadata.bind = engine
