@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import random
-import gettext.gettext as _
+from gettext import gettext as _
 
 from pyramid.response import Response
 from pyramid.view import view_config

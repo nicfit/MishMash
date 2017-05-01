@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from . import info                                                # noqa
 from . import sync                                                # noqa
 from . import mgmt                                                # noqa

@@ -17,7 +17,7 @@ else:
         config.include('pyramid_layout')
 
         def _DBSession(request):
-            return DBSession
+            return DBSession()
         config.add_request_method(_DBSession, name="DBSession", reify=True)
 
         config.add_static_view('static', 'mishmash.web:static',
@@ -53,9 +53,10 @@ else:
         engine_args.update(sql_ini_args)
 
         (engine,
-         SessionMaker, _) = database.init(app_config,
-                                          engine_args=engine_args,
-                                          trans_mgr=ZopeTransactionExtension())
+         SessionMaker,
+         connection) = database.init(app_config.db_url,
+                                     engine_args=engine_args, scoped=True,
+                                     trans_mgr=ZopeTransactionExtension())
 
-        pyra_config = _configure(main_settings, SessionMaker())
+        pyra_config = _configure(main_settings, SessionMaker)
         return pyra_config.make_wsgi_app()
