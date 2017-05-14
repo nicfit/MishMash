@@ -8,7 +8,7 @@ alembic==0.9.1
 appdirs==1.4.3            # via setuptools
 Chameleon==3.1            # via pyramid-chameleon
 countrycode==0.2
-eyeD3==0.8.0b1
+eyeD3==0.8
 hupper==0.4.4             # via pyramid
 inotify==0.2.8
 Mako==1.0.6               # via alembic, pyramid-mako
