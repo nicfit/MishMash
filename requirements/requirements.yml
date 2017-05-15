@@ -14,12 +14,12 @@ extra_postgres:
 extra_web:
     - pyramid
     - pyramid_chameleon
-    - pyramid_layout
+    - pyramid-layout
     - pyramid_tm
     - transaction
     - zope.sqlalchemy
     - waitress
-    - pyramid_debugtoolbar
+    - pyramid-debugtoolbar
 
 test:
     - pytest

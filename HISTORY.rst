@@ -3,6 +3,30 @@ Release History
 
 .. :changelog:
 
+v0.3b4 (2017-05-14) : Triumph Of Death
+-----------------------------------------
+
+New
+~~~
+- Init(scope=False), for wrapped SessionMaker with
+  sqlalchemy.orm.scoped_session.
+- Mishmash.web is optional, and packaged as extra [web] install.
+- Mishmash.VARIOUS_ARTISTS_NAME == gettext("Various Artists")
+
+Changes
+~~~~~~~
+- Removed various artist config and started gettext.
+
+Fix
+~~~
+- Mishmash.web working again.
+
+Other
+~~~~~
+- Update eyed3 from 0.8.0b1 to 0.8 (#108) <github-bot@pyup.io>
+- Pin pyramid to latest version 1.8.3 (#94) <github-bot@pyup.io>
+
+
 v0.3b3 (2017-04-09) : Prayers for Rain
 ---------------------------------------
 
