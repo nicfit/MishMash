@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 import uuid
+import shutil
+import tempfile
 import pytest
 from pathlib import Path
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
+
 import mishmash.database
+from factories import Mp3AudioFileFactory, TagFactory
 
 TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
 
@@ -41,7 +45,35 @@ def database(request):
 @pytest.fixture
 def session(database):
     session = database.SessionMaker()
+
     yield session
+
     # ... teardown
     session.rollback()
     session.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mishmash_factories():
+    temp_d = tempfile.TemporaryDirectory()
+    Mp3AudioFileFactory._TEMP_D = temp_d
+
+    yield temp_d.name
+
+    if Path(temp_d.name).exists():
+        temp_d.cleanup()
+
+
+@pytest.fixture(scope="function")
+def mp3audiofile():
+    mp3_file = Mp3AudioFileFactory(tag=TagFactory())
+
+    yield mp3_file
+
+    Path(mp3_file.path).unlink()
+
+
+def _tempCopy(src, dest_dir):
+    testfile = Path(str(dest_dir)) / "{}.mp3".format(uuid.uuid4())
+    shutil.copyfile(str(src), str(testfile))
+    return testfile

@@ -25,6 +25,8 @@ test:
     - pytest
     - pytest-cov
     - pytest-runner
+    - faker
+    - factory-boy
 
 dev:
     - nicfit.py[cookiecutter]
