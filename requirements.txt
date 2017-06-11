@@ -22,7 +22,7 @@ pyramid-debugtoolbar==4.0.1
 pyramid-layout==1.0
 pyramid-mako==1.0.2       # via pyramid-debugtoolbar
 pyramid-tm==2.0
-pyramid==1.8.3
+pyramid==1.8.4
 python-editor==1.0.3      # via alembic
 repoze.lru==0.6           # via pyramid, pyramid-debugtoolbar
 six==1.10.0               # via eyed3, sqlalchemy-utils
