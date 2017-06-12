@@ -1,5 +1,5 @@
 factory-boy
-faker==0.7.15
+faker==0.7.17
 pytest==3.0.7
 pytest-cov==2.5.1
 pytest-runner==2.11.1
