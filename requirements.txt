@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file ./requirements.txt requirements.txt
 #
-alembic==0.9.1
+alembic==0.9.2
 chameleon==3.1            # via pyramid-chameleon
 countrycode==0.2
 eyed3==0.8
@@ -12,7 +12,7 @@ hupper==1.0               # via pyramid
 inotify==0.2.8
 mako==1.0.6               # via alembic, pyramid-mako
 markupsafe==1.0           # via mako
-nicfit.py==0.5.15
+nicfit.py==0.6.1
 pastedeploy==1.5.2        # via pyramid
 psycopg2==2.7.1
 pyfiglet==0.7.5
