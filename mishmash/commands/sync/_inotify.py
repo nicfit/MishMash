@@ -33,7 +33,6 @@ class Monitor(multiprocessing.Process):
 
     def _main(self, dir_queue, sync_queue):
         next_sync_t = time() + SYNC_INTERVAL
-        num_dirs = 0
         sync_dirs = set()
 
         try:
@@ -52,11 +51,8 @@ class Monitor(multiprocessing.Process):
                         self._inotify.add_watch(
                             str(path).encode(LOCAL_FS_ENCODING),
                             self._inotify_mask)
-                        print("Watching {} (lib: {})".format(path, lib))
-                        num_dirs += 1
-
-                    print("Monitoring {:d} director{} for file changes"
-                          .format(num_dirs, "y" if num_dirs == 1 else "ies"))
+                        print("Watching {} (lib: {}) (total dirs: {})"
+                              .format(path, lib, len(watched)))
 
                 # Process Inotify
                 for event in self._inotify.event_gen():

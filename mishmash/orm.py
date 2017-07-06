@@ -331,6 +331,8 @@ class Track(Base, OrmObject):
         self.variable_bit_rate, self.bit_rate = info.bit_rate
         self.media_num, self.media_total = tag.disc_num
 
+        return self
+
 
 class Tag(Base, OrmObject):
     __tablename__ = "tags"
