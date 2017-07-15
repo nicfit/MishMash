@@ -18,7 +18,7 @@ psycopg2==2.7.1
 pyfiglet==0.7.5
 pygments==2.2.0           # via pyramid-debugtoolbar
 pyramid-chameleon==0.3
-pyramid-debugtoolbar==4.0.1
+pyramid-debugtoolbar==4.3
 pyramid-layout==1.0
 pyramid-mako==1.0.2       # via pyramid-debugtoolbar
 pyramid-tm==2.0
