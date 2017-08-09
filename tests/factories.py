@@ -1,7 +1,6 @@
 import random
 import tempfile
 import subprocess
-from pathlib import Path
 
 import faker
 import factory
