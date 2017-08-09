@@ -26,7 +26,4 @@ def test_Mp3AudioFileFactory(mp3audiofile):
     assert mp3audiofile.tag is not None
     assert mp3audiofile.tag.title is not None
     assert mp3audiofile.tag.artist is not None
-    if mp3audiofile.tag.version[0] == 1:
-        assert mp3audiofile.tag.album_artist is None
-    else:
-        assert mp3audiofile.tag.album_artist is not None
+    assert mp3audiofile.tag.album_artist is not None

@@ -1,13 +1,13 @@
-Sphinx==1.5.5
+Sphinx==1.6.3
 babel==2.4.0
 check-manifest==0.35
-flake8==3.3.0
+flake8==3.4.1
 git+https://github.com/nicfit/gitchangelog.git
 ipdb==0.10.3
 nicfit.py[cookiecutter]==0.6.1
 pip-tools==1.9.0
-sphinx_bootstrap_theme==0.4.14
+sphinx_bootstrap_theme==0.6.0
 tox==2.7.0
-twine==1.8.1
+twine==1.9.1
 watchdog==0.8.3
 wheel==0.29.0
