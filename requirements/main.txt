@@ -5,4 +5,4 @@ eyeD3>=0.8.0b0
 inotify==0.2.8
 nicfit.py==0.6.2
 pyfiglet==0.7.5
-sqlalchemy-utils==0.32.14
+sqlalchemy-utils==0.32.16
