@@ -81,14 +81,15 @@ _PYTEST_OPTS=
 ifdef TEST_PDB
     _PDB_OPTS=--pdb -s
 endif
+TEST_DB_OPTS=--pg-image postgres:9.6-alpine --pg-reuse
 test:
-	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) ${TEST_DIR}
+	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) $(TEST_DB_OPTS) ${TEST_DIR}
 
 test-all:
 	tox
 
 coverage:
-	pytest --cov=./mishmash \
+	pytest $(_PYTEST_OPTS) $(TEST_DB_OPTS) --cov=./mishmash \
            --cov-report=html --cov-report term \
            --cov-config=setup.cfg ${TEST_DIR}
 
@@ -139,6 +140,9 @@ pre-release: lint test changelog requirements
 requirements:
 	nicfit requirements
 	pip-compile -U requirements.txt -o ./requirements.txt
+	pip install -U -r requirements.txt
+	pip install -U -r requirements/test.txt
+	pip install -U -r requirements/dev.txt
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\

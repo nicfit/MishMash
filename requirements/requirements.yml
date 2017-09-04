@@ -1,5 +1,5 @@
 main:
-    - eyeD3>=0.8.0b0
+    - eyeD3>=0.8
     - nicfit.py
     - SQLAlchemy
     - inotify
@@ -25,6 +25,7 @@ test:
     - pytest
     - pytest-cov
     - pytest-runner
+    - pytest-postgres
     - faker
     - factory-boy
 
@@ -34,11 +35,10 @@ dev:
     - babel
     - check-manifest
     - flake8
-    - git+https://github.com/nicfit/gitchangelog.git
+    #- git+https://github.com/nicfit/gitchangelog.git
     - ipdb
     - pip-tools
     - tox
     - twine
-    - watchdog
     - wheel
     - sphinx_bootstrap_theme

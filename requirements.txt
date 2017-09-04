@@ -7,13 +7,17 @@
 alembic==0.9.5
 chameleon==3.1            # via pyramid-chameleon
 countrycode==0.2
+deprecation==1.0.1        # via nicfit.py
 eyed3==0.8.1
 hupper==1.0               # via pyramid
 inotify==0.2.8
 mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.0           # via mako
 nicfit.py==0.6.3
-pastedeploy==1.5.2        # via pyramid
+pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid
+pathlib==1.0.1            # via eyed3
+plaster-pastedeploy==0.4.1  # via pyramid
+plaster==0.5              # via plaster-pastedeploy, pyramid
 psycopg2==2.7.3.1
 pyfiglet==0.7.5
 pygments==2.2.0           # via pyramid-debugtoolbar
@@ -23,9 +27,11 @@ pyramid-layout==1.0
 pyramid-mako==1.0.2       # via pyramid-debugtoolbar
 pyramid-tm==2.2
 pyramid==1.9.1
+python-dateutil==2.6.1    # via alembic
 python-editor==1.0.3      # via alembic
+python-magic==0.4.13      # via eyed3
 repoze.lru==0.6           # via pyramid, pyramid-debugtoolbar
-six==1.10.0               # via eyed3, sqlalchemy-utils
+six==1.10.0               # via eyed3, python-dateutil, sqlalchemy-utils
 sqlalchemy-utils==0.32.16
 sqlalchemy==1.1.13        # via alembic, sqlalchemy-utils, zope.sqlalchemy
 transaction==2.1.2

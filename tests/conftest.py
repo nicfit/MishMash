@@ -15,16 +15,17 @@ TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
 
 @pytest.fixture(scope="session",
                 params=["sqlite", "postgresql"])
-def database(request):
+def database(request, pg_server):
     if request.param == "sqlite":
         db_file = NamedTemporaryFile(suffix=".sqlite", delete=False)
         db_file.close()
         db_url = f"sqlite:///{db_file.name}"
     elif request.param == "postgresql":
-        uid = str(uuid.uuid4())
-        db_url = f"postgresql://postgres@localhost/MMTEST_{uid}"
+        db_url = "postgresql://{user}:{password}@{host}:{port}/{database}"\
+                 .format(**pg_server["params"])
     else:
         assert not("unhandled db: " + request.param)
+        return
 
     engine, SessionMaker, connection = mishmash.database.init(db_url)
 
