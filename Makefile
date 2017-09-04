@@ -1,8 +1,6 @@
 .PHONY: help build test dist docs tags cookiecutter docker requirements
 SRC_DIRS = ./mishmash
 TEST_DIR = ./tests
-TEMP_DIR ?= ./tmp
-CC_DIR = ${TEMP_DIR}/MishMash
 NAME ?= Travis Shirk
 EMAIL ?= travis@pobox.com
 GITHUB_USER ?= nicfit
@@ -68,7 +66,6 @@ clean-pyc:
 clean-test:
 	rm -fr .tox/
 	rm -f .coverage
-	rm -rf "${CC_DIR}"
 
 clean-patch:
 	find . -name '*.rej' -exec rm -f '{}' \;
@@ -205,7 +202,6 @@ pypi-release:
 	for f in `find dist -type f -name ${PROJECT_NAME}-${VERSION}.tar.gz \
               -o -name \*.egg -o -name \*.whl`; do \
         if test -f $$f ; then \
-            twine register -r ${PYPI_REPO} $$f && \
             twine upload -r ${PYPI_REPO} --skip-existing $$f ; \
         fi \
 	done
@@ -237,20 +233,20 @@ README.html: README.rst
 		${BROWSER} README.html;\
 	fi
 
-
 CC_MERGE ?= yes
 CC_OPTS ?= --no-input
 GIT_COMMIT_HOOK = .git/hooks/commit-msg
 cookiecutter:
-	@rm -rf "${CC_DIR}"
-	@if test "${CC_MERGE}" == "no"; then \
-		nicfit cookiecutter ${CC_OPTS} "${TEMP_DIR}"; \
-		git -C "${CC_DIR}" diff; \
-		git -C "${CC_DIR}" status -s -b; \
+	tmp_d=`mktemp -d`; cc_d=$$tmp_d/MishMash; \
+	if test "${CC_MERGE}" == "no"; then \
+		nicfit cookiecutter ${CC_OPTS} "$${tmp_d}"; \
+		git -C "$$cc_d" diff; \
+		git -C "$$cc_d" status -s -b; \
 	else \
-		nicfit cookiecutter --merge ${CC_OPTS} "${TEMP_DIR}" \
+		nicfit cookiecutter --merge ${CC_OPTS} "$${tmp_d}" \
 		       --extra-merge ${GIT_COMMIT_HOOK} ${GIT_COMMIT_HOOK};\
-	fi
+	fi; \
+	rm -rf $$tmp_d
 
 
 DOCKER_COMPOSE := VERSION=${VERSION} docker-compose -f docker/docker-compose.yml
