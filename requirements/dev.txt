@@ -6,6 +6,6 @@ ipdb==0.10.3
 nicfit.py[cookiecutter]==0.6.3
 pip-tools==1.9.0
 sphinx_bootstrap_theme==0.6.0
-tox==2.8.0
+tox==2.8.2
 twine==1.9.1
 wheel==0.29.0
