@@ -8,4 +8,4 @@ pip-tools==1.9.0
 sphinx_bootstrap_theme==0.6.0
 tox==2.8.0
 twine==1.9.1
-wheel==0.29.0
+wheel==0.30.0
