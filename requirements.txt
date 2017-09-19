@@ -13,7 +13,7 @@ hupper==1.0               # via pyramid
 inotify==0.2.8
 mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.0           # via mako
-nicfit.py==0.6.3
+nicfit.py==0.6.4
 pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid
 pathlib==1.0.1            # via eyed3
 plaster-pastedeploy==0.4.1  # via pyramid
