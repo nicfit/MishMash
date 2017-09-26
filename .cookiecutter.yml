@@ -27,6 +27,8 @@ default_context:
     pyapp_type: "normal"
     pypi_repo_name: "MishMash"
     pypi_username: "nicfit"
+    pypy: "no"
+    pypy3: "no"
     release_date: "today"
     src_dir: "."
     use_bitbucket: "no"

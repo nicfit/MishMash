@@ -42,3 +42,5 @@ dev:
     - twine
     - wheel
     - sphinx_bootstrap_theme
+    - pyaml
+    - pss
