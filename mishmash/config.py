@@ -21,7 +21,6 @@ class Config(nicfit.Config):
     def __init__(self, filename, **kwargs):
         super().__init__(filename, interpolation=ExtendedInterpolation(),
                          **kwargs)
-        self.add_section(MAIN_SECT)
 
     # XXX: new decorator could simplify these accessors.
     @property
