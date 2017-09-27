@@ -1,11 +1,11 @@
 Sphinx==1.6.3
-babel==2.5.0
+babel==2.5.1
 check-manifest==0.35
 flake8==3.4.1
 ipdb==0.10.3
 nicfit.py[cookiecutter]==0.6.5
 pip-tools==1.9.0
 sphinx_bootstrap_theme==0.6.0
-tox==2.8.0
+tox==2.8.2
 twine==1.9.1
-wheel==0.29.0
+wheel==0.30.0

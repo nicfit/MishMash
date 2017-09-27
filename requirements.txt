@@ -30,7 +30,7 @@ pyramid==1.9.1
 python-dateutil==2.6.1    # via alembic
 python-editor==1.0.3      # via alembic
 python-magic==0.4.13      # via eyed3
-repoze.lru==0.6           # via pyramid, pyramid-debugtoolbar
+repoze.lru==0.7           # via pyramid, pyramid-debugtoolbar
 six==1.10.0               # via eyed3, python-dateutil, sqlalchemy-utils
 sqlalchemy-utils==0.32.16
 sqlalchemy==1.1.14        # via alembic, sqlalchemy-utils, zope.sqlalchemy
@@ -40,5 +40,5 @@ venusian==1.1.0           # via pyramid
 waitress==1.0.2
 webob==1.7.3              # via pyramid
 zope.deprecation==4.3.0   # via pyramid
-zope.interface==4.4.2     # via pyramid, transaction, zope.sqlalchemy
+zope.interface==4.4.3     # via pyramid, transaction, zope.sqlalchemy
 zope.sqlalchemy==0.7.7
