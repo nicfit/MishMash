@@ -1,9 +1,9 @@
-version: "2"
+version: "3"
 
 services:
 
     mishmash:
-        image: nicfit/mishmash:$VERSION
+        image: mishmash:$VERSION
         build:
             context: .
             dockerfile: Dockerfile
@@ -17,7 +17,7 @@ services:
             POSTGRES_PASSWORD: TheFaithSubjectToChange
 
     mishmash-base: &mishmash-container
-        image: nicfit/mishmash:$VERSION
+        image: mishmash:$VERSION
         volumes:
             - /etc/localtime:/etc/localtimel:ro
             - ${MUSIC_DIR}:/media/music:ro

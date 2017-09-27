@@ -107,10 +107,6 @@ clean-docs:
 	$(MAKE) -C docs clean
 	-rm README.html
 
-# FIXME: never been tested
-servedocs: docs
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
-
 pre-release: lint test changelog requirements
 	@# Keep docs off pre-release target list, else it is pruned during 'release' but
 	@# after a clean.
@@ -137,9 +133,6 @@ pre-release: lint test changelog requirements
 requirements:
 	nicfit requirements
 	pip-compile -U requirements.txt -o ./requirements.txt
-	pip install -U -r requirements.txt
-	pip install -U -r requirements/test.txt
-	pip install -U -r requirements/dev.txt
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\
@@ -253,6 +246,9 @@ DOCKER_COMPOSE := VERSION=${VERSION} docker-compose -f docker/docker-compose.yml
 docker:
 	@$(DOCKER_COMPOSE) build
 
+docker-nocache:
+	@$(DOCKER_COMPOSE) build --no-cache
+
 docker-sqlite: docker
 	@test -n "${MUSIC_DIR}" || (echo "MUSIC_DIR volume directy required" && false)
 	@$(DOCKER_COMPOSE) create --no-recreate
@@ -269,7 +265,7 @@ docker-clean:
         docker stop $$cont;\
         docker rm $$cont;\
     done
-	-docker rmi -f mishmash
+	-docker rmi -f mishmash:${VERSION}
 
 docker-publish: docker
 	@$(DOCKER_COMPOSE) push mishmash
