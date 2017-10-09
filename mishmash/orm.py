@@ -24,6 +24,18 @@ NULL_LIB_NAME = "__null_lib__"
 MAIN_LIB_ID = 2
 MAIN_LIB_NAME = _("Music")
 
+ARTIST_NAME_LIMIT = 128
+ARTIST_CITY_LIMIT = 32
+ARTIST_STATE_LIMIT = 32
+ARTIST_COUNTRY_LIMIT = 3
+ALBUM_TITLE_LIMIT = 128
+TRACK_PATH_LIMIT = 512
+TRACK_TITLE_LIMIT = 128
+IMG_MIMETYPE_LIMIT = 32
+IMG_HASH_LIMIT = 32
+IMG_DESC_LIMIT = 1024
+LIB_NAME_LIMIT = 64
+
 convention = {
   "ix": 'ix_%(column_0_label)s',
   "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -49,8 +61,8 @@ album_tags = sql.Table("album_tags", Base.metadata,
                        sql.Column("tag_id", sql.Integer,
                                   sql.ForeignKey("tags.id")),
                         )
-'''Pivot table 'album_tags' for mapping an album ID to a value in the
-`tags` table.'''
+"""Pivot table 'album_tags' for mapping an album ID to a value in the
+`tags` table."""
 
 track_tags = sql.Table("track_tags", Base.metadata,
                        sql.Column("track_id", sql.Integer,
@@ -58,8 +70,8 @@ track_tags = sql.Table("track_tags", Base.metadata,
                        sql.Column("tag_id", sql.Integer,
                                   sql.ForeignKey("tags.id")),
                         )
-'''Pivot table 'track_tags' for mapping a track ID to a value in the
-`tags` table.'''
+"""Pivot table 'track_tags' for mapping a track ID to a value in the
+`tags` table."""
 
 artist_images = sql.Table("artist_images", Base.metadata,
                           sql.Column("artist_id", sql.Integer,
@@ -67,8 +79,8 @@ artist_images = sql.Table("artist_images", Base.metadata,
                           sql.Column("img_id", sql.Integer,
                                      sql.ForeignKey("images.id")),
                          )
-'''Pivot table 'artist_images' for mapping an artist ID to a value in the
-`images` table.'''
+"""Pivot table 'artist_images' for mapping an artist ID to a value in the
+`images` table."""
 
 album_images = sql.Table("album_images", Base.metadata,
                          sql.Column("album_id", sql.Integer,
@@ -76,8 +88,8 @@ album_images = sql.Table("album_images", Base.metadata,
                          sql.Column("img_id", sql.Integer,
                                     sql.ForeignKey("images.id")),
                         )
-'''Pivot table 'album_images' for mapping an album ID to a value in the
-`images` table.'''
+"""Pivot table 'album_images' for mapping an album ID to a value in the
+`images` table."""
 
 
 class OrmObject(object):
@@ -101,15 +113,15 @@ class Meta(Base, OrmObject):
 
     # Columns
     version = sql.Column(sql.String(32), nullable=False, primary_key=True)
-    '''The MishMash version defines the database schema.'''
+    """The MishMash version defines the database schema."""
     last_sync = sql.Column(sql.DateTime)
-    '''A UTC timestamp of the last sync operation.'''
+    """A UTC timestamp of the last sync operation."""
 
 
 def getSortName(name):
     from . import util
     suffix, prefix = util.splitNameByPrefix(name)
-    return u"%s, %s" % (suffix, prefix) if prefix else name
+    return "%s, %s" % (suffix, prefix) if prefix else name
 
 
 class Artist(Base, OrmObject):
@@ -123,13 +135,14 @@ class Artist(Base, OrmObject):
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("artists_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(128), nullable=False, index=True)
-    sort_name = sql.Column(sql.Unicode(128), nullable=False)
+    name = sql.Column(sql.Unicode(ARTIST_NAME_LIMIT), nullable=False,
+                      index=True)
+    sort_name = sql.Column(sql.Unicode(ARTIST_NAME_LIMIT + 2), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    origin_city = sql.Column(sql.Unicode(32))
-    origin_state = sql.Column(sql.Unicode(32))
-    origin_country = sql.Column(sql.String(3))
+    origin_city = sql.Column(sql.Unicode(ARTIST_CITY_LIMIT))
+    origin_state = sql.Column(sql.Unicode(ARTIST_STATE_LIMIT))
+    origin_country = sql.Column(sql.String(ARTIST_COUNTRY_LIMIT))
 
     # Foreign keys
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
@@ -185,7 +198,7 @@ class Artist(Base, OrmObject):
 
     @orm.validates("name")
     def _setName(self, key, value):
-        '''This exists merely to keep sort_name in sync.'''
+        """This exists merely to keep sort_name in sync."""
         if not value:
             raise ValueError("Artist.name is not nullable")
         self.sort_name = getSortName(value)
@@ -210,9 +223,9 @@ class Artist(Base, OrmObject):
 
 
 class AlbumDate(TypeDecorator):
-    '''Custom column type for eyed3.core.Date objects. That is, dates than
+    """Custom column type for eyed3.core.Date objects. That is, dates than
     can have empty rather than default date fields. For example, 1994 with no
-    month and day is different than 1994-01-01, as datetime provides.'''
+    month and day is different than 1994-01-01, as datetime provides."""
     impl = types.String(24)
 
     def process_bind_param(self, value, dialect):
@@ -238,7 +251,8 @@ class Album(Base, OrmObject):
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("albums_id_seq"), primary_key=True)
-    title = sql.Column(sql.Unicode(128), nullable=False, index=True)
+    title = sql.Column(sql.Unicode(ALBUM_TITLE_LIMIT), nullable=False,
+                       index=True)
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
@@ -258,7 +272,7 @@ class Album(Base, OrmObject):
                           cascade="all")
     tags = orm.relation("Tag", secondary=album_tags)
     images = orm.relation("Image", secondary=album_images, cascade="all")
-    '''one-to-many album images.'''
+    """one-to-many album images."""
 
     def getBestDate(self):
         from eyed3.utils import datePicker
@@ -278,14 +292,15 @@ class Track(Base, OrmObject):
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("tracks_id_seq"), primary_key=True)
-    path = sql.Column(sql.String(512), nullable=False, index=True)
+    path = sql.Column(sql.String(TRACK_PATH_LIMIT), nullable=False, index=True)
     size_bytes = sql.Column(sql.Integer, nullable=False)
     ctime = sql.Column(sql.DateTime(), nullable=False)
     mtime = sql.Column(sql.DateTime(), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
     time_secs = sql.Column(sql.Integer, nullable=False)
-    title = sql.Column(sql.Unicode(128), nullable=False, index=True)
+    title = sql.Column(sql.Unicode(TRACK_TITLE_LIMIT), nullable=False,
+                       index=True)
     track_num = sql.Column(sql.SmallInteger)
     track_total = sql.Column(sql.SmallInteger)
     media_num = sql.Column(sql.SmallInteger)
@@ -327,6 +342,11 @@ class Track(Base, OrmObject):
         self.mtime = datetime.fromtimestamp(os.path.getmtime(path))
         self.time_secs = info.time_secs
         self.title = tag.title
+        release_date = tag.release_date if tag.version[0] != 1 else None
+        self.album = Album(title=tag.album,
+                           release_date=release_date,
+                           original_release_date=tag.original_release_date)
+        self.artist = Artist(name=tag.artist)
         self.track_num, self.track_total = tag.track_num
         self.variable_bit_rate, self.bit_rate = info.bit_rate
         self.media_num, self.media_total = tag.disc_num
@@ -362,11 +382,11 @@ class Image(Base, OrmObject):
 
     id = sql.Column(sql.Integer, Sequence("images_id_seq"), primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
-    mime_type = sql.Column(sql.String(32), nullable=False)
-    md5 = sql.Column(sql.String(32), nullable=False)
+    mime_type = sql.Column(sql.String(IMG_MIMETYPE_LIMIT), nullable=False)
+    md5 = sql.Column(sql.String(IMG_HASH_LIMIT), nullable=False)
     size = sql.Column(sql.Integer, nullable=False)
-    description = sql.Column(sql.String(1024), nullable=False)
-    '''The description will be the base file name when the source if a file.'''
+    description = sql.Column(sql.String(IMG_DESC_LIMIT), nullable=False)
+    """The description will be the base file name when the source if a file."""
     data = orm.deferred(sql.Column(sql.LargeBinary, nullable=False))
 
     @staticmethod
@@ -418,15 +438,15 @@ class Library(Base, OrmObject):
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(64), nullable=False, unique=True)
+    name = sql.Column(sql.Unicode(LIB_NAME_LIMIT), nullable=False, unique=True)
     last_sync = sql.Column(sql.DateTime)
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
 TABLES = [T.__table__ for T in TYPES] + TAGS
-'''All the table instances.  Order matters (esp. for postgresql). The
-tables are created in normal order, and dropped in reverse order.'''
+"""All the table instances.  Order matters (esp. for postgresql). The
+tables are created in normal order, and dropped in reverse order."""
 ENUMS = [Image._types_enum, Album._types_enum]
 
 

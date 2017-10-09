@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import uuid
 import shutil
 import tempfile
@@ -8,7 +7,8 @@ from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
 import mishmash.database
-from factories import Mp3AudioFileFactory, TagFactory
+from .factories import (Mp3AudioFileFactory, TagFactory, AlbumFactory,
+                        LibraryFactory)
 
 TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
 
@@ -55,18 +55,21 @@ def session(database):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def mishmash_factories():
-    temp_d = tempfile.TemporaryDirectory()
-    Mp3AudioFileFactory._TEMP_D = temp_d
+def mishmash_tempdir():
+    global TEMP_DIR
 
-    yield temp_d.name
+    temp_d = tempfile.TemporaryDirectory()
+    TEMP_DIR = temp_d
+
+    yield Path(temp_d.name)
 
     if Path(temp_d.name).exists():
         temp_d.cleanup()
 
 
 @pytest.fixture(scope="function")
-def mp3audiofile():
+def mp3audiofile(mishmash_tempdir):
+    path = NamedTemporaryFile(dir=str(mishmash_tempdir), suffix=".mp3")
     mp3_file = Mp3AudioFileFactory(tag=TagFactory())
 
     yield mp3_file
