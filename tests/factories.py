@@ -64,10 +64,12 @@ class TagFactory(factory.Factory):
     track_num = None
 
     @classmethod
-    def create_batch(cls, size, version, **kwargs):
+    def create_batch(cls, size, version, track_titles=None, **kwargs):
         tags = super().create_batch(size, **kwargs)
         for i, t in enumerate(tags, 1):
             t.version = version
+            if track_titles and i <= len(track_titles):
+                t.title = track_titles[i - 1]
             t.track_num = (i, size)
         return tags
 
@@ -108,6 +110,7 @@ class AlbumFactory(factory.Factory):
         num_tracks = factory.fuzzy.FuzzyInteger(*LP_SIZE)
         dir_structure = DirectoryStructure.PREFERRED
         id3_version = factory.Faker("id3_version")
+        track_titles = []
 
     class Meta:
         model = Album
@@ -122,6 +125,7 @@ class AlbumFactory(factory.Factory):
     @factory.lazy_attribute
     def tracks(obj):
         tags = TagFactory.create_batch(obj.num_tracks, obj.id3_version,
+                                       obj.track_titles,
                                        artist=obj.artist,
                                        album=obj.title)
         assert len(tags) == obj.num_tracks
@@ -145,13 +149,8 @@ class AlbumFactory(factory.Factory):
 
         return tracks
 
-    @classmethod
-    def preferredName(cls, tag):
-        return f"{tag.artist} - {tag.track_num[0]} - {tag.title}"
-
 
 class EpFactory(AlbumFactory):
-
     class Params:
         num_tracks = factory.fuzzy.FuzzyInteger(*EP_SIZE)
     type = EP_TYPE
