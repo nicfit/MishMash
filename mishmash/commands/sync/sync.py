@@ -311,11 +311,12 @@ class SyncPlugin(LoaderPlugin):
             else:
                 return hints.pop() if hints else None
 
-        album_type = type_hint() or LP_TYPE
-        if is_various and album_type not in (None, VARIOUS_TYPE):
+        album_type = type_hint()
+        if is_various and album_type != VARIOUS_TYPE:
             # is_various overrides
-            log.warn("Using type various despite files saying %s" % album_type)
-        album_type = VARIOUS_TYPE if is_various else album_type
+            log.warn(f"Using type various for directory '{d}' despite files "
+                     f"saying {album_type}")
+        album_type = VARIOUS_TYPE if is_various else (album_type or LP_TYPE)
 
         album = None
         session = self._db_session
@@ -403,18 +404,18 @@ class SyncPlugin(LoaderPlugin):
 @command.register
 class Sync(Command):
     NAME = "sync"
-    HELP = "Syncronize music directories with database."
+    HELP = "Synchronize music directories with database."
 
     def __init__(self, subparsers):
         super(Sync, self).__init__(subparsers)
         self.plugin = SyncPlugin(self.parser)
         self.args = None
 
+    # TODO: exclude option
     def _run(self, args=None):
         args = args or self.args
         args.plugin = self.plugin
 
-        # FIXME
         # TODO: add CommandException to get rid of return 1 etc at this level
 
         libs = {lib.name: lib for lib in args.config.music_libs}
