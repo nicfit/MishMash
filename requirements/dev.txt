@@ -3,7 +3,7 @@ babel==2.5.1
 check-manifest==0.35
 flake8==3.4.1
 ipdb==0.10.3
-nicfit.py[cookiecutter]==0.6.5
+nicfit.py[cookiecutter]==0.6.6
 pip-tools==1.10.1
 sphinx_bootstrap_theme==0.6.0
 tox==2.9.1
