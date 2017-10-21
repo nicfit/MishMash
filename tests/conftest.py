@@ -6,9 +6,9 @@ from pathlib import Path
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 
+import mishmash.orm
 import mishmash.database
-from .factories import (Mp3AudioFileFactory, TagFactory, AlbumFactory,
-                        LibraryFactory)
+from .factories import Mp3AudioFileFactory, TagFactory, LibraryFactory
 
 TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
 
@@ -69,7 +69,6 @@ def mishmash_tempdir():
 
 @pytest.fixture(scope="function")
 def mp3audiofile(mishmash_tempdir):
-    path = NamedTemporaryFile(dir=str(mishmash_tempdir), suffix=".mp3")
     mp3_file = Mp3AudioFileFactory(tag=TagFactory())
 
     yield mp3_file
@@ -81,3 +80,16 @@ def _tempCopy(src, dest_dir):
     testfile = Path(str(dest_dir)) / "{}.mp3".format(uuid.uuid4())
     shutil.copyfile(str(src), str(testfile))
     return testfile
+
+
+@pytest.fixture(scope="function")
+def db_library(session):
+    lib = LibraryFactory()
+    session.add(lib)
+    session.commit()
+
+    yield lib
+
+    # ... teardown
+    # the session is getting popped, so do nothing
+

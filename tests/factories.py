@@ -13,7 +13,7 @@ from eyed3.core import Date, AudioFile, LP_TYPE, EP_TYPE
 from eyed3.id3 import (ID3_V1_0, ID3_V1_1,
                        ID3_V2_2, ID3_V2_3, ID3_V2_4)
 from faker.providers import BaseProvider
-from mishmash.orm import Album, Track, Library
+from mishmash.orm import Artist, Album, Track, Library
 
 EP_SIZE = (2, 9)
 LP_SIZE = (10, 20)
@@ -28,26 +28,26 @@ class DirectoryStructure(Enum):
         tag = file.tag
         assert tag.file_info.name == file.path
 
-        tmp_d = Path(Mp3AudioFileFactory._TEMP_D.name)
-        assert tmp_d.exists()
-
         if self == DirectoryStructure.NONE:
             return file.path
         else:
             assert self == DirectoryStructure.PREFERRED
-            return tmp_d / f"{tag.artist}" / \
-                   f"{tag.original_release_date} - {tag.album}" / \
-                   f"{tag.artist} - {tag.track_num[0]} - {tag.title}"
+            return Path().joinpath(
+                f"{tag.artist}",
+                f"{tag.original_release_date} - {tag.album}",
+                f"{tag.artist} - {tag.track_num[0]} - {tag.title}")
 
-    def apply(self, file):
-        curr_path = Path(file.path)
-        new_path = self.structuredPath(file)
+    def apply(self, *files, root_dir="./"):
+        root_dir = Path(root_dir)
+        for file in files:
+            curr_path = Path(file.path)
+            new_path = root_dir / self.structuredPath(file)
 
-        if not new_path.parent.exists():
-            new_path.parent.mkdir(parents=True)
+            if not new_path.parent.exists():
+                new_path.parent.mkdir(parents=True)
 
-        if curr_path.name != new_path.name:
-            file.rename(str(new_path))
+            if curr_path.name != new_path.name:
+                file.rename(str(new_path))
 
 
 class TagFactory(factory.Factory):
@@ -87,12 +87,13 @@ class Mp3AudioFileFactory(factory.Factory):
 
     class Params:
         id3_version = factory.Faker("id3_version")
+        temp_dir = None
 
     @factory.lazy_attribute
     def path(obj):
-        if Mp3AudioFileFactory._TEMP_D is None:
-            Mp3AudioFileFactory._TEMP_D = tempfile.TemporaryDirectory()
-        mp3 = tempfile.NamedTemporaryFile(dir=Mp3AudioFileFactory._TEMP_D.name,
+        tmp_dir = str(obj.temp_dir) if obj.temp_dir \
+                                    else Mp3AudioFileFactory.getTempDir()
+        mp3 = tempfile.NamedTemporaryFile(dir=str(tmp_dir),
                                           suffix=".mp3", delete=False)
         mp3.write(Mp3AudioFileFactory._SAMPLE_MP3)
         mp3.close()
@@ -104,6 +105,17 @@ class Mp3AudioFileFactory(factory.Factory):
             obj.tag = extracted
             obj.tag.save(version=obj._tag_version)
 
+    @classmethod
+    def getTempDir(cls):
+        if cls._TEMP_D is None:
+            cls._TEMP_D = tempfile.TemporaryDirectory()
+        return Path(cls._TEMP_D.name)
+
+
+class ArtistFactory(factory.Factory):
+    class Meta:
+        model = Artist
+
 
 class AlbumFactory(factory.Factory):
     class Params:
@@ -111,6 +123,7 @@ class AlbumFactory(factory.Factory):
         dir_structure = DirectoryStructure.PREFERRED
         id3_version = factory.Faker("id3_version")
         track_titles = []
+        temp_dir = None
 
     class Meta:
         model = Album
@@ -140,12 +153,20 @@ class AlbumFactory(factory.Factory):
                 # TODO: allow for different, but greater than, value
                 t.release_date = obj.original_release_date
 
-            mp3 = Mp3AudioFileFactory(tag=t)
+            mp3 = Mp3AudioFileFactory(tag=t, temp_dir=obj.temp_dir)
             assert hasattr(t, "file_info") and t.file_info.name,\
                         "Tag is not attached to a file"
 
-            obj.dir_structure.apply(mp3)
-            tracks.append(Track().update(mp3))
+            track = Track().update(mp3)
+            track._mp3_file = mp3
+            track.artist = ArtistFactory(name=obj.artist)
+            # Note, cannot call AlbumFactory here as calling this function is
+            # required to do so.
+            track.album = Album(title=obj.title, type=obj.type,
+                                artist=obj.artist,
+                                original_release_date=obj.original_release_date,
+                                release_date=obj.release_date)
+            tracks.append(track)
 
         return tracks
 
@@ -163,6 +184,7 @@ class LibraryFactory(factory.Factory):
 
     name = factory.Faker("id3_title")
     last_sync = None
+
 
 
 class Id3Provider(BaseProvider):

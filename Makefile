@@ -78,7 +78,7 @@ _PYTEST_OPTS=
 ifdef TEST_PDB
     _PDB_OPTS=--pdb -s
 endif
-TEST_DB_OPTS=--pg-image postgres:9.6-alpine --pg-reuse
+TEST_DB_OPTS=--pg-image postgres:9.6-alpine --pg-name MishMash-pgtest
 test:
 	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) $(TEST_DB_OPTS) ${TEST_DIR}
 
