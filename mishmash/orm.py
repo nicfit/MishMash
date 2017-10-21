@@ -25,16 +25,20 @@ MAIN_LIB_ID = 2
 MAIN_LIB_NAME = _("Music")
 
 ARTIST_NAME_LIMIT = 128
+ARTIST_SORT_NAME_LIMIT = ARTIST_NAME_LIMIT + 2
 ARTIST_CITY_LIMIT = 32
 ARTIST_STATE_LIMIT = 32
 ARTIST_COUNTRY_LIMIT = 3
 ALBUM_TITLE_LIMIT = 128
+ALBUM_DATE_LIMIT = 24
 TRACK_PATH_LIMIT = 512
 TRACK_TITLE_LIMIT = 128
 IMG_MIMETYPE_LIMIT = 32
 IMG_HASH_LIMIT = 32
 IMG_DESC_LIMIT = 1024
 LIB_NAME_LIMIT = 64
+TAG_NAME_LIMIT = 64
+META_VERSION_LIMIT = 32
 
 convention = {
   "ix": 'ix_%(column_0_label)s',
@@ -112,7 +116,8 @@ class Meta(Base, OrmObject):
     __tablename__ = "meta"
 
     # Columns
-    version = sql.Column(sql.String(32), nullable=False, primary_key=True)
+    version = sql.Column(sql.String(META_VERSION_LIMIT), nullable=False,
+                         primary_key=True)
     """The MishMash version defines the database schema."""
     last_sync = sql.Column(sql.DateTime)
     """A UTC timestamp of the last sync operation."""
@@ -137,7 +142,7 @@ class Artist(Base, OrmObject):
     id = sql.Column(sql.Integer, Sequence("artists_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(ARTIST_NAME_LIMIT), nullable=False,
                       index=True)
-    sort_name = sql.Column(sql.Unicode(ARTIST_NAME_LIMIT + 2), nullable=False)
+    sort_name = sql.Column(sql.Unicode(ARTIST_SORT_NAME_LIMIT), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
     origin_city = sql.Column(sql.Unicode(ARTIST_CITY_LIMIT))
@@ -150,13 +155,13 @@ class Artist(Base, OrmObject):
 
     # Relations
     albums = orm.relation("Album", cascade="all")
-    '''all albums by the artist'''
+    """all albums by the artist"""
     tracks = orm.relation("Track", cascade="all")
-    '''all tracks by the artist'''
+    """all tracks by the artist"""
     tags = orm.relation("Tag", secondary=artist_tags)
-    '''one-to-many (artist->label) and many-to-one (label->artist)'''
+    """one-to-many (artist->label) and many-to-one (label->artist)"""
     images = orm.relation("Image", secondary=artist_images, cascade="all")
-    '''one-to-many artist images.'''
+    """one-to-many artist images."""
 
     def getAlbumsByType(self, album_type):
         if album_type == VARIOUS_TYPE:
@@ -226,7 +231,7 @@ class AlbumDate(TypeDecorator):
     """Custom column type for eyed3.core.Date objects. That is, dates than
     can have empty rather than default date fields. For example, 1994 with no
     month and day is different than 1994-01-01, as datetime provides."""
-    impl = types.String(24)
+    impl = types.String(ALBUM_DATE_LIMIT)
 
     def process_bind_param(self, value, dialect):
         if isinstance(value, Eyed3Date):
@@ -321,6 +326,9 @@ class Track(Base, OrmObject):
     album = orm.relation("Album")
     tags = orm.relation("Tag", secondary=track_tags)
 
+    # TEST-ONLY
+    _mp3_file = None
+
     def __init__(self, **kwargs):
         """Along with the column args a ``audio_file`` keyword may be passed
         for this class to use for initialization."""
@@ -342,11 +350,6 @@ class Track(Base, OrmObject):
         self.mtime = datetime.fromtimestamp(os.path.getmtime(path))
         self.time_secs = info.time_secs
         self.title = tag.title
-        release_date = tag.release_date if tag.version[0] != 1 else None
-        self.album = Album(title=tag.album,
-                           release_date=release_date,
-                           original_release_date=tag.original_release_date)
-        self.artist = Artist(name=tag.artist)
         self.track_num, self.track_total = tag.track_num
         self.variable_bit_rate, self.bit_rate = info.bit_rate
         self.media_num, self.media_total = tag.disc_num
@@ -362,7 +365,7 @@ class Tag(Base, OrmObject):
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("tags_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(64), nullable=False, unique=False)
+    name = sql.Column(sql.Unicode(TAG_NAME_LIMIT), nullable=False, unique=False)
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
                         nullable=False, index=True)
 
@@ -440,6 +443,13 @@ class Library(Base, OrmObject):
     id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(LIB_NAME_LIMIT), nullable=False, unique=True)
     last_sync = sql.Column(sql.DateTime)
+
+    _music = []
+
+    def add(self, album):
+        self._music.append(album)
+        return self
+
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]

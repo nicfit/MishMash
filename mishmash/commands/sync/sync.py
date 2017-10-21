@@ -411,13 +411,11 @@ class Sync(Command):
         self.plugin = SyncPlugin(self.parser)
         self.args = None
 
-    # TODO: exclude option
     def _run(self, args=None):
         args = args or self.args
         args.plugin = self.plugin
 
-        # TODO: add CommandException to get rid of return 1 etc at this level
-
+        # TODO: exclude option
         libs = {lib.name: lib for lib in args.config.music_libs}
         if not libs and not args.paths:
             perr("\nMissing at least one path/library in which to sync!\n")
@@ -487,6 +485,7 @@ class Sync(Command):
                     if result != 0:
                         return result
                     self.db_session.commit()
+
             monitor.join()
 
 
