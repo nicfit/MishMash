@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import time
 from pathlib import Path
@@ -273,6 +272,7 @@ class SyncPlugin(LoaderPlugin):
         return album
 
     def handleDirectory(self, d, _):
+        pout(Fg.blue("Syncing directory") + ": " + str(d))
         audio_files = list(self._file_cache)
         self._file_cache = []
 
@@ -342,6 +342,7 @@ class SyncPlugin(LoaderPlugin):
                 else:
                     log.warn("Invalid image file: " + img_file)
 
+        session.commit()
         if self.args.monitor:
             self._watchDir(d)
 
@@ -441,12 +442,16 @@ class Sync(Command):
 
         def _syncLib(lib):
             args._library = lib
+
             args.paths = []
             for p in lib.paths:
                 args.paths.append(str(p) if isinstance(p, Path) else p)
+
             pout("{}yncing library '{}': paths={}"
                  .format("Force s" if args.force else "S", lib.name, lib.paths),
                  log=log)
+
+            args.excludes = lib.excludes
             return eyed3_main(args, None)
 
         try:
