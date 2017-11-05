@@ -8,6 +8,7 @@ from tempfile import NamedTemporaryFile
 
 import mishmash.orm
 import mishmash.database
+from mishmash.__main__ import MishMash
 from .factories import Mp3AudioFileFactory, TagFactory, LibraryFactory
 
 TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
@@ -93,3 +94,15 @@ def db_library(session):
     # ... teardown
     # the session is getting popped, so do nothing
 
+
+@pytest.fixture(scope="session")
+def mishmash_cmd():
+    def func(args, expected_retval=0):
+        app = MishMash()
+        try:
+            retval = app._run(args)
+        except SystemExit as exit:
+            retval = exit.code
+        assert retval == expected_retval
+
+    return func
