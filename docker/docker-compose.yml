@@ -2,11 +2,15 @@ version: "3"
 
 services:
 
-    mishmash:
+    mishmash: &mishmash-image
         image: mishmash:$VERSION
         build:
             context: .
             dockerfile: Dockerfile
+
+    mishmash-publish:
+        <<: *mishmash-image
+        image: nicfit/mishmash:$VERSION
 
     postgres:
         container_name: PostgreSql-mishmash

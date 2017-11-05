@@ -268,7 +268,7 @@ docker-clean:
 	-docker rmi -f mishmash:${VERSION}
 
 docker-publish: docker
-	@$(DOCKER_COMPOSE) push mishmash
+	@$(DOCKER_COMPOSE) push mishmash-publish
 
 
 DEF_MSG_CAT = locale/en_US/LC_MESSAGES/MishMash.po
