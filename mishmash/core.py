@@ -1,5 +1,7 @@
 from nicfit.command import Command as BaseCommand
-from nicfit.command import CommandError                             # noqa: F401
+from nicfit.command import CommandError
+
+__all__ = ["Command", "CommandError"]
 
 
 class Command(BaseCommand):
@@ -24,5 +26,6 @@ class Command(BaseCommand):
             raise
         finally:
             self.db_session.close()
+            self.db_conn.close()
 
         return retval
