@@ -7,13 +7,13 @@ from datetime import datetime
 from gettext import gettext as _
 
 import sqlalchemy as sql
-from sqlalchemy import orm, event, types, Sequence
 from sqlalchemy.engine import Engine
 from sqlalchemy.types import TypeDecorator
+from sqlalchemy import orm, event, types, Sequence
 from sqlalchemy.ext.declarative import declarative_base
 
-from eyed3.utils import guessMimetype
 from eyed3.utils import art
+from eyed3.utils import guessMimetype
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
 
@@ -99,6 +99,14 @@ album_images = sql.Table("album_images", Base.metadata,
 class OrmObject(object):
     """Base classes for all other mishmash.orm classes."""
 
+    @staticmethod
+    def _truncate(string, limit):
+        # TODO: Append invisible marker to signal truncation as to NOT reflect
+        # TODO: in the original source
+        if string and len(string) > limit:
+            string = string[:limit]
+        return string
+
     def __repr__(self):  # pragma: nocover
         """Dump the object state and return it as a strings."""
         attrs = []
@@ -159,7 +167,7 @@ class Artist(Base, OrmObject):
     tracks = orm.relation("Track", cascade="all")
     """all tracks by the artist"""
     tags = orm.relation("Tag", secondary=artist_tags)
-    """one-to-many (artist->label) and many-to-one (label->artist)"""
+    """one-to-many (artist->tag) and many-to-one (tag->artist)"""
     images = orm.relation("Image", secondary=artist_images, cascade="all")
     """one-to-many artist images."""
 
@@ -203,9 +211,9 @@ class Artist(Base, OrmObject):
 
     @orm.validates("name")
     def _setName(self, key, value):
-        """This exists merely to keep sort_name in sync."""
         if not value:
             raise ValueError("Artist.name is not nullable")
+        value = self._truncate(value, ARTIST_NAME_LIMIT)
         self.sort_name = getSortName(value)
         return value
 
@@ -349,7 +357,8 @@ class Track(Base, OrmObject):
         self.ctime = datetime.fromtimestamp(os.path.getctime(path))
         self.mtime = datetime.fromtimestamp(os.path.getmtime(path))
         self.time_secs = info.time_secs
-        self.title = tag.title
+        self.title = (tag.title if "\x00" not in tag.title
+                                else tag.title.split("\x00")[0])
         self.track_num, self.track_total = tag.track_num
         self.variable_bit_rate, self.bit_rate = info.bit_rate
         self.media_num, self.media_total = tag.disc_num
@@ -368,6 +377,10 @@ class Tag(Base, OrmObject):
     name = sql.Column(sql.Unicode(TAG_NAME_LIMIT), nullable=False, unique=False)
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
                         nullable=False, index=True)
+
+    @orm.validates("name")
+    def _truncateName(self, key, value):
+        return self._truncate(value, ARTIST_NAME_LIMIT)
 
 
 class Image(Base, OrmObject):
