@@ -8,6 +8,7 @@ At the command line::
 
     $ pip install mishmash
     $ pip install mishmash[postgres]
+    $ pip install mishmash[web]
 
 Or, if you have virtualenvwrapper installed::
 

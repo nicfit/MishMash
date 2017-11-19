@@ -251,7 +251,7 @@ docker-nocache:
 
 docker-sqlite: docker
 	@test -n "${MUSIC_DIR}" || (echo "MUSIC_DIR volume directy required" && false)
-	@$(DOCKER_COMPOSE) create --no-recreate
+	@$(DOCKER_COMPOSE) up --no-start --no-recreate
 	$(DOCKER_COMPOSE) up mishmash-sqlite
 
 docker-postgres: docker

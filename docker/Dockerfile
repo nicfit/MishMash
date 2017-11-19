@@ -27,11 +27,12 @@ ENV MISHMASH_DBURL=${MISHMASH_DBURL} \
 
 RUN useradd -m -d ${HOME} --uid 6229 mishmash
 
-RUN mkdir -p ${APP_DIR} && chown mishmash:mishmash ${APP_DIR}
+RUN mkdir -p ${APP_DIR}/bin ${APP_DIR}/etc ${APP_DIR}/var &&
+    chown mishmash:mishmash ${APP_DIR}
 WORKDIR $APP_DIR
-CMD ["/MishMash/bin/mishmash-init"]
 
 USER mishmash
+CMD ["/MishMash/bin/mishmash-init"]
 
 COPY mishmash-init ${APP_DIR}/bin/
 COPY config.ini config-dev.ini ${APP_DIR}/etc/

@@ -44,4 +44,6 @@ Features
 
 Getting Started
 ----------------
+::
 
+    $ mishmash info
