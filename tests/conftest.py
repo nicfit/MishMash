@@ -14,9 +14,10 @@ from .factories import Mp3AudioFileFactory, TagFactory, LibraryFactory
 TestDatabase = namedtuple("TestDatabase", ["url", "engine", "SessionMaker"])
 
 
-@pytest.fixture(scope="session",
+@pytest.fixture(scope="function",
                 params=["sqlite", "postgresql"])
 def database(request, pg_server):
+    db_file = None
     if request.param == "sqlite":
         db_file = NamedTemporaryFile(suffix=".sqlite", delete=False)
         db_file.close()
@@ -39,6 +40,7 @@ def database(request, pg_server):
     connection.close()
 
     if request.param == "sqlite":
+        assert db_file
         Path(db_file.name).unlink()
     else:
         mishmash.database.dropAll(db_url)
@@ -97,7 +99,10 @@ def db_library(session):
 
 @pytest.fixture(scope="session")
 def mishmash_cmd():
-    def func(args, expected_retval=0):
+    def func(args, expected_retval=0, db_url=None):
+        if database:
+            args = ["--database", db_url] + args
+
         app = MishMash()
         try:
             retval = app._run(args)

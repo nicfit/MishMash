@@ -60,7 +60,7 @@ class TagFactory(factory.Factory):
     title = factory.Sequence(lambda n: "Track title #{:d}".format(n))
     artist = "Artist"
     album = "Album"
-    album_artist = artist
+    album_artist = None
     track_num = None
 
     @classmethod
@@ -79,8 +79,6 @@ class Mp3AudioFileFactory(factory.Factory):
     _SAMPLE_MP3 = subprocess.run("dd if=/dev/zero bs=1MB count=10 | lame -r -",
                                  shell=True, check=True,
                                  stdout=subprocess.PIPE).stdout
-
-    version = factory.LazyAttribute(lambda obj: obj.id3_version)
 
     class Meta:
         model = eyed3.mp3.Mp3AudioFile
@@ -148,9 +146,10 @@ class AlbumFactory(factory.Factory):
 
         tracks = []
         for t in tags:
+            t.album_type = obj.type
             t.original_release_date = obj.original_release_date
             if obj.id3_version[0] != 1:
-                # TODO: allow for different, but greater than, value
+                # TODO: allow for different, but greater than, values
                 t.release_date = obj.original_release_date
 
             mp3 = Mp3AudioFileFactory(tag=t, temp_dir=obj.temp_dir)
@@ -177,6 +176,12 @@ class EpFactory(AlbumFactory):
     type = EP_TYPE
 
 
+class LpFactory(AlbumFactory):
+    class Params:
+        num_tracks = factory.fuzzy.FuzzyInteger(*LP_SIZE)
+    type = LP_TYPE
+
+
 class LibraryFactory(factory.Factory):
 
     class Meta:
@@ -185,33 +190,43 @@ class LibraryFactory(factory.Factory):
     name = factory.Faker("id3_title")
     last_sync = None
 
+    '''
+    def defaultDir(self, tmpdir):
+        self._tmdir = tmpdir
+
+    def addEp(self, *args, **kwargs):
+        # TODO
+        # TODO: use self._tmpdir if set
+        return self
+    '''
 
 
 class Id3Provider(BaseProvider):
-    _fake = faker.Faker()
-    VERSION_WEIGHTS = [(ID3_V1_0, 5), (ID3_V1_1, 15),
-                       (ID3_V2_2, 5), (ID3_V2_3, 60), (ID3_V2_4, 40)]
+ _fake = faker.Faker()
+ V1_VERSION_WEIGHTS = [(ID3_V1_0, 5), (ID3_V1_1, 15)]
+ V2_VERSION_WEIGHTS = [(ID3_V2_2, 5), (ID3_V2_3, 60), (ID3_V2_4, 40)]
+ VERSION_WEIGHTS = V1_VERSION_WEIGHTS + V2_VERSION_WEIGHTS
 
-    def id3_version(self):
-        return random.choices(
-            [v for v, _ in self.VERSION_WEIGHTS],
-            cum_weights=[w for _, w in self.VERSION_WEIGHTS])[0]
+ def id3_version(self):
+     return random.choices(
+         [v for v, _ in self.VERSION_WEIGHTS],
+         cum_weights=[w for _, w in self.VERSION_WEIGHTS])[0]
 
-    def id3_title(self):
-        return " ".join(self._fake.words(random.randint(1, 5)))
+ def id3_title(self):
+     return " ".join(self._fake.words(random.randint(1, 5)))
 
-    def id3_artist(self):
-        return " ".join(self._fake.words(random.randint(1, 3)))
+ def id3_artist(self):
+     return " ".join(self._fake.words(random.randint(1, 3)))
 
-    def id3_date(self):
-        d = self._fake.date_object()
-        full_date = random.choices(["y", "n"], cum_weights=[15, 85]) == "y"
-        return Date(year=d.year,
-                    month=d.month if full_date else None,
-                    day=d.day if full_date else None)
+ def id3_date(self):
+     d = self._fake.date_object()
+     full_date = random.choices(["y", "n"], cum_weights=[15, 85]) == "y"
+     return Date(year=d.year,
+                 month=d.month if full_date else None,
+                 day=d.day if full_date else None)
 
-    def id3_tag(self, **kwargs):
-        return TagFactory(**kwargs)
+ def id3_tag(self, **kwargs):
+     return TagFactory(**kwargs)
 
 
 factory.Faker.add_provider(Id3Provider)
