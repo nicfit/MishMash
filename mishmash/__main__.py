@@ -1,7 +1,5 @@
 import os
 import sys
-import logging
-import logging.config
 import traceback
 
 from sqlalchemy import exc as sql_exceptions
@@ -34,7 +32,6 @@ def main(args):
         args.app.arg_parser.print_help()
         return 1
 
-    logging.config.fileConfig(args.config)
     # In the case fileConfig undid the command line, which has precedence.
     args.applyLoggingOpts(args.log_levels, args.log_files)
 
@@ -71,7 +68,8 @@ class MishMash(Application):
         config_opts = ConfigOpts(required=False,
                                  default_config=DEFAULT_CONFIG(),
                                  default_config_opt="--default-config",
-                                 ConfigClass=Config, env_var=CONFIG_ENV_VAR)
+                                 ConfigClass=Config, env_var=CONFIG_ENV_VAR,
+                                 init_logging_fileConfig=True)
         super().__init__(main, name=progname, version=version,
                          config_opts=config_opts, pdb_opt=True,
                          gettext_domain="MishMash")

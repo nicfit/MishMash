@@ -6,13 +6,14 @@ import alembic.config
 from nicfit.util import cd
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm.exc import NoResultFound
 
 from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
 
-from .orm import TYPES
 from .orm import Artist, Track, Album
+from .orm import TYPES, TAG_NAME_LIMIT
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
@@ -62,6 +63,24 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
 
 def dropAll(url):
     drop_database(url)
+
+##############################################################################3
+## Works-in-progress, subject to change
+##############################################################################3
+from .orm import Tag
+
+
+def getTag(t, session, lid, add=False):
+    tag = None
+    t = t[:TAG_NAME_LIMIT]
+    try:
+        tag = session.query(Tag).filter_by(name=t, lib_id=lid).one()
+    except NoResultFound:
+        if add:
+            tag = Tag(name=t, lib_id=lid)
+            session.add(tag)
+            session.flush()
+    return tag
 
 
 def search(session, query):

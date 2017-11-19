@@ -18,8 +18,9 @@ from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
 from ...orm import (Track, Artist, Album, Tag, Meta, Image, Library,
-                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
+                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME, TAG_NAME_LIMIT)
 from ... import console
+from ... import database as db
 from ...core import Command
 from ...library import MusicLibrary
 
@@ -228,22 +229,15 @@ class SyncPlugin(LoaderPlugin):
             self._num_modified += 1
             pout(Fg.yellow("Updating track") + ": " + path)
 
-        genre = tag.genre
-        genre_tag = None
-        if genre:
-            try:
-                genre_tag = session.query(Tag)\
-                                   .filter_by(name=genre.name,
-                                              lib_id=self._lib.id).one()
-            except NoResultFound:
-                genre_tag = Tag(name=genre.name, lib_id=self._lib.id)
-                session.add(genre_tag)
-                session.flush()
-
         track.artist_id = artist.id
         track.album_id = album.id if album else None
-        if genre_tag:
-            track.tags.append(genre_tag)
+
+        if tag.genre:
+            # Not uncommon for multiple genres to be 0x00 delimited
+            for genre in tag.genre.name.split("\x00"):
+                genre_tag = db.getTag(genre, session, self._lib.id, add=True)
+                track.tags.append(genre_tag)
+
         session.add(track)
 
         if album:
@@ -321,8 +315,13 @@ class SyncPlugin(LoaderPlugin):
         album = None
         session = self._db_session
         for audio_file in audio_files:
-            album = self._syncAudioFile(audio_file, album_type, d_datetime,
-                                        session)
+            try:
+                album = self._syncAudioFile(audio_file, album_type, d_datetime,
+                                            session)
+            except Exception as ex:
+                # TODO: log and skip????
+                #import ipdb; ipdb.set_trace()   # FIXME
+                raise
 
         if album:
             # Directory images.
@@ -416,7 +415,6 @@ class Sync(Command):
         args = args or self.args
         args.plugin = self.plugin
 
-        # TODO: exclude option
         libs = {lib.name: lib for lib in args.config.music_libs}
         if not libs and not args.paths:
             perr("\nMissing at least one path/library in which to sync!\n")
@@ -473,25 +471,26 @@ class Sync(Command):
             self.db_session.commit()
 
             monitor.start()
-            while True:
-                if monitor.sync_queue.empty():
-                    time.sleep(SYNC_INTERVAL / 2)
-                    continue
+            try:
+                while True:
+                    if monitor.sync_queue.empty():
+                        time.sleep(SYNC_INTERVAL / 2)
+                        continue
 
-                sync_libs = {}
-                for i in range(monitor.sync_queue.qsize()):
-                    lib, path = monitor.sync_queue.get_nowait()
-                    if lib not in sync_libs:
-                        sync_libs[lib] = set()
-                    sync_libs[lib].add(path)
+                    sync_libs = {}
+                    for i in range(monitor.sync_queue.qsize()):
+                        lib, path = monitor.sync_queue.get_nowait()
+                        if lib not in sync_libs:
+                            sync_libs[lib] = set()
+                        sync_libs[lib].add(path)
 
-                for lib, paths in sync_libs.items():
-                    result = _syncLib(MusicLibrary(lib, paths=paths))
-                    if result != 0:
-                        return result
-                    self.db_session.commit()
-
-            monitor.join()
+                    for lib, paths in sync_libs.items():
+                        result = _syncLib(MusicLibrary(lib, paths=paths))
+                        if result != 0:
+                            return result
+                        self.db_session.commit()
+            finally:
+                monitor.join()
 
 
 """

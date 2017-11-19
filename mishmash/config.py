@@ -25,7 +25,7 @@ class Config(nicfit.Config):
     # XXX: new decorator could simplify these accessors.
     @property
     def db_url(self):
-        return self.get(MAIN_SECT, SA_KEY)
+        return self.get(MAIN_SECT, SA_KEY).strip()
 
     @property
     def music_libs(self):
