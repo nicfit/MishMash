@@ -3,6 +3,6 @@ alembic==0.9.6
 countrycode==0.2
 eyeD3>=0.8
 inotify==0.2.8
-nicfit.py==0.6.6
+nicfit.py==0.7
 pyfiglet==0.7.5
 sqlalchemy-utils==0.32.21
