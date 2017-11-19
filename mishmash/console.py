@@ -36,7 +36,7 @@ def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
                         _ints = [_i for _i in parseIntList(_resp)
                                     if _i in range(1, menu_num + 1)]
                         return bool(_ints)
-                    except:
+                    except Exception:
                         return False
 
                 resp = prompt(color("Choose one or more artists"),

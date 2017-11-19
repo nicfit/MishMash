@@ -12,8 +12,8 @@ from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
 
-from .orm import Artist, Track, Album
 from .orm import TYPES, TAG_NAME_LIMIT
+from .orm import Artist, Track, Album, Tag
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
@@ -64,10 +64,9 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
 def dropAll(url):
     drop_database(url)
 
-##############################################################################3
+## ###########################################################################3
 ## Works-in-progress, subject to change
-##############################################################################3
-from .orm import Tag
+## ###########################################################################3
 
 
 def getTag(t, session, lid, add=False):

@@ -464,7 +464,6 @@ class Library(Base, OrmObject):
         return self
 
 
-
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
 TABLES = [T.__table__ for T in TYPES] + TAGS

@@ -1,7 +1,9 @@
+from nicfit import getLogger
 from nicfit.command import Command as BaseCommand
 from nicfit.command import CommandError
 
 __all__ = ["Command", "CommandError"]
+log = getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -21,7 +23,7 @@ class Command(BaseCommand):
         try:
             retval = super().run(args)
             self.db_session.commit()
-        except:
+        except Exception:
             self.db_session.rollback()
             raise
         finally:

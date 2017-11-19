@@ -17,8 +17,8 @@ from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
 from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
-from ...orm import (Track, Artist, Album, Tag, Meta, Image, Library,
-                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME, TAG_NAME_LIMIT)
+from ...orm import (Track, Artist, Album, Meta, Image, Library,
+                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from ... import console
 from ... import database as db
 from ...core import Command
@@ -320,7 +320,6 @@ class SyncPlugin(LoaderPlugin):
                                             session)
             except Exception as ex:
                 # TODO: log and skip????
-                #import ipdb; ipdb.set_trace()   # FIXME
                 raise
 
         if album:

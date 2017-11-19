@@ -61,11 +61,11 @@ def allArtistsView(request):
     artist_dict = {}
 
     def _whichBucket(name):
-        l = name[0].upper()
-        if not l.isalpha():
-            l = NUMBER if l.isnumeric() else OTHER
-        buckets.add(l)
-        return l
+        first_l = name[0].upper()
+        if not first_l.isalpha():
+            first_l = NUMBER if first_l.isnumeric() else OTHER
+        buckets.add(first_l)
+        return first_l
 
     session = request.DBSession
     for artist in session.query(Artist)\
