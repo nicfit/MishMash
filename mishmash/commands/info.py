@@ -56,8 +56,8 @@ class Info(Command):
 
         _addOutput(mkkey("Database version"), mkval(meta.version))
         _addOutput(mkkey("Last sync"), mkval(meta.last_sync or "Never"))
-        _addOutput(mkkey("Configuration file "),
-                   mkval(self.args.config.filename or "None"))
+        _addOutput(mkkey("Configuration files "),
+                   mkval(", ".join(self.args.config.input_filenames)))
         _printOutput("{k} : {v}", _output)
 
         def mkkey(k):
