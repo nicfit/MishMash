@@ -8,7 +8,7 @@ nicfit.py[cookiecutter]==0.7
 pip-tools==1.10.1
 pss
 pyaml
-sphinx_rtd_theme
+sphinx_rtd_theme==0.2.4
 tox==2.9.1
 twine==1.9.1
 wheel==0.30.0
