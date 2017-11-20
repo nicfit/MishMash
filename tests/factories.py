@@ -9,14 +9,14 @@ import factory
 import factory.fuzzy
 import eyed3.id3
 import eyed3.mp3
-from eyed3.core import Date, AudioFile, LP_TYPE, EP_TYPE
+from eyed3.core import Date, AudioFile, LP_TYPE, EP_TYPE, EP_MAX_SIZE_HINT
 from eyed3.id3 import (ID3_V1_0, ID3_V1_1,
                        ID3_V2_2, ID3_V2_3, ID3_V2_4)
 from faker.providers import BaseProvider
 from mishmash.orm import Artist, Album, Track, Library
 
-EP_SIZE = (2, 9)
-LP_SIZE = (10, 20)
+EP_SIZE = (2, EP_MAX_SIZE_HINT)
+LP_SIZE = (EP_MAX_SIZE_HINT + 1, 24)
 
 
 class DirectoryStructure(Enum):
@@ -101,7 +101,7 @@ class Mp3AudioFileFactory(factory.Factory):
     def tag(obj, create, extracted, **kwargs):
         if create:
             obj.tag = extracted
-            obj.tag.save(version=obj._tag_version)
+            obj.tag.save(version=obj.tag.version)
 
     @classmethod
     def getTempDir(cls):

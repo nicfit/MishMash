@@ -1,8 +1,10 @@
 import os
 import time
+import collections
 from pathlib import Path
 from os.path import getctime
 from datetime import datetime
+
 
 from nicfit import command, getLogger
 from sqlalchemy.orm.exc import NoResultFound
@@ -13,7 +15,8 @@ from eyed3.utils import art
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils.prompt import PromptExit
 from eyed3.main import main as eyed3_main
-from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE
+from eyed3.core import (TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE,
+                        EP_TYPE, EP_MAX_SIZE_HINT)
 from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
@@ -22,7 +25,7 @@ from ...orm import (Track, Artist, Album, Meta, Image, Library,
 from ... import console
 from ... import database as db
 from ...core import Command
-from ...library import MusicLibrary
+from ...config import MusicLibrary
 
 from ._inotify import Monitor, SYNC_INTERVAL
 from .utils import syncImage, deleteOrphans
@@ -265,6 +268,24 @@ class SyncPlugin(LoaderPlugin):
 
         return album
 
+    def _albumTypeHint(self, audio_files):
+        types = collections.Counter()
+
+        for tag in [f.tag for f in audio_files if f.tag]:
+            album_type = tag.user_text_frames.get(TXXX_ALBUM_TYPE)
+            if album_type:
+                types[album_type.text] += 1
+
+        if len(types) == 1:
+            return types.most_common()[0][0]
+
+        if len(types) == 0:
+            return EP_TYPE if len(audio_files) < EP_MAX_SIZE_HINT else LP_TYPE
+
+        if len(types) > 1:
+            log.warn("Inconsistent type hints: %s" % str(types.keys()))
+            return None
+
     def handleDirectory(self, d, _):
         pout(Fg.blue("Syncing directory") + ": " + str(d))
         audio_files = list(self._file_cache)
@@ -293,19 +314,7 @@ class SyncPlugin(LoaderPlugin):
         is_various = (len(artists) > 1 and len(album_artists) == 0 and
                       len(albums) == 1)
 
-        def type_hint():
-            hints = set()
-            for tag in [f.tag for f in audio_files if f.tag]:
-                hint_frame = tag.user_text_frames.get(TXXX_ALBUM_TYPE)
-                if hint_frame:
-                    hints.add(hint_frame.text)
-            if len(hints) > 1:
-                log.warn("Inconsistent type hints: %s" % str(hints))
-                return None
-            else:
-                return hints.pop() if hints else None
-
-        album_type = type_hint()
+        album_type = self._albumTypeHint(audio_files)
         if is_various and album_type != VARIOUS_TYPE:
             # is_various overrides
             log.warn(f"Using type various for directory '{d}' despite files "

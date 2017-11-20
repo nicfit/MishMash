@@ -1,8 +1,8 @@
 import datetime
 import pytest
-from sqlalchemy.exc import IntegrityError, DataError
+from sqlalchemy.exc import IntegrityError
 import mishmash
-from mishmash.orm import (Meta, Library, Artist, ARTIST_NAME_LIMIT,
+from mishmash.orm import (Meta, Library, Artist, Track,
                           NULL_LIB_ID, NULL_LIB_NAME,
                           MAIN_LIB_ID, MAIN_LIB_NAME)
 
@@ -49,21 +49,13 @@ def test_Artist(session, db_library):
     session.commit()
     assert session.query(Artist).filter_by(name="The Roots", lib_id=lid).one()
 
-def test_ArtistBig(session, db_library):
+
+def test_Track(session, db_library, mp3audiofile):
     lid = db_library.id
-    godflesh = "!" * ARTIST_NAME_LIMIT
-    session.add(Artist(name=godflesh, lib_id=lid))
+    artist = Artist(name=mp3audiofile.tag.artist, lib_id=lid)
+    session.add(artist)
+    session.flush()
+    session.add(Track(audio_file=mp3audiofile, lib_id=lid, artist_id=artist.id))
     session.commit()
-    assert session.query(Artist).filter_by(name=godflesh, lib_id=lid).one()
-
-def test_ArtistTooBig(session, db_library, request):
-    lid = db_library.id
-    godflesh = "!" * (ARTIST_NAME_LIMIT + 1)
-    session.add(Artist(name=godflesh, lib_id=lid))
-    if "sqlite" in request.keywords:
-        session.commit()
-        assert session.query(Artist).filter_by(name=godflesh, lib_id=lid).one()
-    else:
-        with pytest.raises(DataError):
-            session.commit()
-
+    assert session.query(Track).filter_by(title=mp3audiofile.tag.title,
+                                          lib_id=lid).one()

@@ -10,14 +10,14 @@ def test_TagFactory():
     assert tag.title.startswith("Track title #")
     assert tag.artist == "Artist"
     assert tag.album == "Album"
-    assert tag.album_artist == tag.artist
+    assert tag.album_artist == None
     assert tag.track_num == (None, None)
 
     tag2 = factories.TagFactory.build(title="Another title", track_num=2)
     assert tag2.title == "Another title"
     assert tag2.artist == tag.artist
     assert tag2.album == tag.album
-    assert tag2.album_artist == tag.album_artist
+    assert tag2.album_artist == None
     assert tag2.track_num == (2, None)
 
 
@@ -27,7 +27,7 @@ def test_Mp3AudioFileFactory(mp3audiofile):
     assert mp3audiofile.tag is not None
     assert mp3audiofile.tag.title is not None
     assert mp3audiofile.tag.artist is not None
-    assert mp3audiofile.tag.album_artist is not None
+    assert mp3audiofile.tag.album_artist is None
 
 
 def test_AlbumFactory():
