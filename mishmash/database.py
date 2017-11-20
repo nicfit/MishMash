@@ -12,7 +12,7 @@ from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
 
-from .orm import TYPES, TAG_NAME_LIMIT
+from .orm import TYPES, Tag
 from .orm import Artist, Track, Album, Tag
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
@@ -71,7 +71,7 @@ def dropAll(url):
 
 def getTag(t, session, lid, add=False):
     tag = None
-    t = t[:TAG_NAME_LIMIT]
+    t = t[:Tag.NAME_LIMIT]
     try:
         tag = session.query(Tag).filter_by(name=t, lib_id=lid).one()
     except NoResultFound:

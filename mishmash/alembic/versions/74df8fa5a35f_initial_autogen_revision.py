@@ -9,12 +9,8 @@ import datetime
 from alembic import op
 import sqlalchemy as sa
 import mishmash
-from mishmash.orm import (IMG_DESC_LIMIT, IMG_MIMETYPE_LIMIT, IMG_HASH_LIMIT,
-                          LIB_NAME_LIMIT, ARTIST_NAME_LIMIT, ARTIST_CITY_LIMIT,
-                          ARTIST_STATE_LIMIT, ARTIST_COUNTRY_LIMIT,
-                          ARTIST_SORT_NAME_LIMIT, ALBUM_TITLE_LIMIT,
-                          ALBUM_DATE_LIMIT, TRACK_TITLE_LIMIT, TRACK_PATH_LIMIT,
-                          TAG_NAME_LIMIT, META_VERSION_LIMIT)
+from mishmash.orm import Library, Artist, Album, Track, Image, Tag, Meta
+from mishmash.orm import AlbumDate
 
 
 # revision identifiers, used by Alembic.
@@ -36,12 +32,13 @@ def upgrade():
                                               'LIVE',
                                               name='image_types'),
                               nullable=False),
-                    sa.Column('mime_type', sa.String(length=IMG_MIMETYPE_LIMIT),
+                    sa.Column('mime_type',
+                              sa.String(length=Image.MIMETYPE_LIMIT),
                               nullable=False),
-                    sa.Column('md5', sa.String(length=IMG_HASH_LIMIT),
+                    sa.Column('md5', sa.String(length=Image.HASH_LIMIT),
                               nullable=False),
                     sa.Column('size', sa.Integer(), nullable=False),
-                    sa.Column('description', sa.String(length=IMG_DESC_LIMIT),
+                    sa.Column('description', sa.String(length=Image.DESC_LIMIT),
                               nullable=False),
                     sa.Column('data', sa.LargeBinary(), nullable=False),
                     sa.PrimaryKeyConstraint('id', name=op.f('pk_images'))
@@ -49,7 +46,7 @@ def upgrade():
 
     lib_t = op.create_table('libraries',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('name', sa.Unicode(length=LIB_NAME_LIMIT),
+                    sa.Column('name', sa.Unicode(length=Library.NAME_LIMIT),
                               nullable=False),
                     sa.Column('last_sync', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('id', name=op.f('pk_libraries')),
@@ -62,7 +59,8 @@ def upgrade():
                    ])
 
     meta_t = op.create_table('meta',
-                    sa.Column('version', sa.String(length=META_VERSION_LIMIT),
+                    sa.Column('version',
+                              sa.String(length=Meta.VERSION_LIMIT),
                               nullable=False),
                     sa.Column('last_sync', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('version', name=op.f('pk_meta'))
@@ -71,20 +69,20 @@ def upgrade():
 
     artists_t = op.create_table('artists',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('name', sa.Unicode(length=ARTIST_NAME_LIMIT),
+                    sa.Column('name', sa.Unicode(length=Artist.NAME_LIMIT),
                               nullable=False),
                     sa.Column('sort_name',
-                              sa.Unicode(length=ARTIST_SORT_NAME_LIMIT),
+                              sa.Unicode(length=Artist.SORT_NAME_LIMIT),
                               nullable=False),
                     sa.Column('date_added', sa.DateTime(), nullable=False),
                     sa.Column('origin_city',
-                              sa.Unicode(length=ARTIST_CITY_LIMIT),
+                              sa.Unicode(length=Artist.CITY_LIMIT),
                               nullable=True),
                     sa.Column('origin_state',
-                              sa.Unicode(length=ARTIST_STATE_LIMIT),
+                              sa.Unicode(length=Artist.STATE_LIMIT),
                               nullable=True),
                     sa.Column('origin_country',
-                              sa.String(length=ARTIST_COUNTRY_LIMIT),
+                              sa.String(length=Artist.COUNTRY_LIMIT),
                               nullable=True),
                     sa.Column('lib_id', sa.Integer(), nullable=False),
                     sa.ForeignKeyConstraint(
@@ -109,7 +107,7 @@ def upgrade():
                     unique=False)
     op.create_table('tags',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('name', sa.Unicode(length=TAG_NAME_LIMIT),
+                    sa.Column('name', sa.Unicode(length=Tag.NAME_LIMIT),
                               nullable=False),
                     sa.Column('lib_id', sa.Integer(), nullable=False),
                     sa.ForeignKeyConstraint(
@@ -122,7 +120,7 @@ def upgrade():
     op.create_index(op.f('ix_tags_lib_id'), 'tags', ['lib_id'], unique=False)
     op.create_table('albums',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('title', sa.Unicode(length=ALBUM_TITLE_LIMIT),
+                    sa.Column('title', sa.Unicode(length=Album.TITLE_LIMIT),
                               nullable=False),
                     sa.Column('type', sa.Enum('lp', 'ep', 'compilation',
                                               'live', 'various', 'demo',
@@ -131,13 +129,13 @@ def upgrade():
                               nullable=False),
                     sa.Column('date_added', sa.DateTime(), nullable=False),
                     sa.Column('release_date',
-                              mishmash.orm.AlbumDate(length=ALBUM_DATE_LIMIT),
+                              AlbumDate(length=Album.DATE_LIMIT),
                               nullable=True),
                     sa.Column('original_release_date',
-                              mishmash.orm.AlbumDate(length=ALBUM_DATE_LIMIT),
+                              AlbumDate(length=Album.DATE_LIMIT),
                               nullable=True),
                     sa.Column('recording_date',
-                              mishmash.orm.AlbumDate(length=ALBUM_DATE_LIMIT),
+                              AlbumDate(length=Album.DATE_LIMIT),
                               nullable=True),
                     sa.Column('artist_id', sa.Integer(), nullable=False),
                     sa.Column('lib_id', sa.Integer(), nullable=False),
@@ -197,14 +195,14 @@ def upgrade():
     )
     op.create_table('tracks',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('path', sa.String(length=TRACK_PATH_LIMIT),
+                    sa.Column('path', sa.String(length=Track.PATH_LIMIT),
                               nullable=False),
                     sa.Column('size_bytes', sa.Integer(), nullable=False),
                     sa.Column('ctime', sa.DateTime(), nullable=False),
                     sa.Column('mtime', sa.DateTime(), nullable=False),
                     sa.Column('date_added', sa.DateTime(), nullable=False),
                     sa.Column('time_secs', sa.Integer(), nullable=False),
-                    sa.Column('title', sa.Unicode(length=TRACK_TITLE_LIMIT),
+                    sa.Column('title', sa.Unicode(length=Track.TITLE_LIMIT),
                               nullable=False),
                     sa.Column('track_num', sa.SmallInteger(), nullable=True),
                     sa.Column('track_total', sa.SmallInteger(), nullable=True),

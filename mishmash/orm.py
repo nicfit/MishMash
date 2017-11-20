@@ -25,22 +25,7 @@ NULL_LIB_ID = 1
 NULL_LIB_NAME = "__null_lib__"
 MAIN_LIB_ID = 2
 MAIN_LIB_NAME = _("Music")
-
-ARTIST_NAME_LIMIT = 128
-ARTIST_SORT_NAME_LIMIT = ARTIST_NAME_LIMIT + 2
-ARTIST_CITY_LIMIT = 32
-ARTIST_STATE_LIMIT = 32
-ARTIST_COUNTRY_LIMIT = 3
-ALBUM_TITLE_LIMIT = 128
-ALBUM_DATE_LIMIT = 24
-TRACK_PATH_LIMIT = 512
-TRACK_TITLE_LIMIT = 128
-IMG_MIMETYPE_LIMIT = 32
-IMG_HASH_LIMIT = 32
-IMG_DESC_LIMIT = 1024
-LIB_NAME_LIMIT = 64
-TAG_NAME_LIMIT = 64
-META_VERSION_LIMIT = 32
+DATE_LIMIT = 24
 
 convention = {
   "ix": 'ix_%(column_0_label)s',
@@ -122,11 +107,11 @@ class OrmObject(object):
 class Meta(Base, OrmObject):
     """Table ``meta`` used for storing database schema version, timestamps,
     and any other metadata about the music collection."""
-
     __tablename__ = "meta"
+    VERSION_LIMIT = 32
 
     # Columns
-    version = sql.Column(sql.String(META_VERSION_LIMIT), nullable=False,
+    version = sql.Column(sql.String(VERSION_LIMIT), nullable=False,
                          primary_key=True)
     """The MishMash version defines the database schema."""
     last_sync = sql.Column(sql.DateTime)
@@ -148,16 +133,22 @@ class Artist(Base, OrmObject):
                                            "lib_id",
                                           ), {})
 
+    NAME_LIMIT = 128
+    SORT_NAME_LIMIT = NAME_LIMIT + 2
+    CITY_LIMIT = 32
+    STATE_LIMIT = 32
+    COUNTRY_LIMIT = 3
+
     # Columns
     id = sql.Column(sql.Integer, Sequence("artists_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(ARTIST_NAME_LIMIT), nullable=False,
+    name = sql.Column(sql.Unicode(NAME_LIMIT), nullable=False,
                       index=True)
-    sort_name = sql.Column(sql.Unicode(ARTIST_SORT_NAME_LIMIT), nullable=False)
+    sort_name = sql.Column(sql.Unicode(SORT_NAME_LIMIT), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    origin_city = sql.Column(sql.Unicode(ARTIST_CITY_LIMIT))
-    origin_state = sql.Column(sql.Unicode(ARTIST_STATE_LIMIT))
-    origin_country = sql.Column(sql.String(ARTIST_COUNTRY_LIMIT))
+    origin_city = sql.Column(sql.Unicode(CITY_LIMIT))
+    origin_state = sql.Column(sql.Unicode(STATE_LIMIT))
+    origin_country = sql.Column(sql.String(COUNTRY_LIMIT))
 
     # Foreign keys
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
@@ -215,7 +206,7 @@ class Artist(Base, OrmObject):
     def _setName(self, key, value):
         if not value:
             raise ValueError("Artist.name is not nullable")
-        value = self._truncate(value, ARTIST_NAME_LIMIT)
+        value = self._truncate(value, self.NAME_LIMIT)
         self.sort_name = getSortName(value)
         return value
 
@@ -241,7 +232,7 @@ class AlbumDate(TypeDecorator):
     """Custom column type for eyed3.core.Date objects. That is, dates than
     can have empty rather than default date fields. For example, 1994 with no
     month and day is different than 1994-01-01, as datetime provides."""
-    impl = types.String(ALBUM_DATE_LIMIT)
+    impl = types.String(DATE_LIMIT)
 
     def process_bind_param(self, value, dialect):
         if isinstance(value, Eyed3Date):
@@ -262,11 +253,13 @@ class Album(Base, OrmObject):
                                            "lib_id",
                                           ), {})
 
+    TITLE_LIMIT = 128
+    DATE_LIMIT = DATE_LIMIT
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("albums_id_seq"), primary_key=True)
-    title = sql.Column(sql.Unicode(ALBUM_TITLE_LIMIT), nullable=False,
+    title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False,
                        index=True)
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
@@ -309,18 +302,19 @@ class Track(Base, OrmObject):
                             for v in (ID3_V1_0, ID3_V1_1, ID3_V2_2, ID3_V2_3,
                                       ID3_V2_4)]
     _metadata_enum = sql.Enum(*METADATA_FORMATS, name="metadata_format")
+    PATH_LIMIT = 512
+    TITLE_LIMIT = 128
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("tracks_id_seq"), primary_key=True)
-    path = sql.Column(sql.String(TRACK_PATH_LIMIT), nullable=False, index=True)
+    path = sql.Column(sql.String(PATH_LIMIT), nullable=False, index=True)
     size_bytes = sql.Column(sql.Integer, nullable=False)
     ctime = sql.Column(sql.DateTime(), nullable=False)
     mtime = sql.Column(sql.DateTime(), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
     time_secs = sql.Column(sql.Integer, nullable=False)
-    title = sql.Column(sql.Unicode(TRACK_TITLE_LIMIT), nullable=False,
-                       index=True)
+    title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False, index=True)
     track_num = sql.Column(sql.SmallInteger)
     track_total = sql.Column(sql.SmallInteger)
     media_num = sql.Column(sql.SmallInteger)
@@ -381,15 +375,17 @@ class Tag(Base, OrmObject):
                                            "lib_id",
                                           ), {})
 
+    NAME_LIMIT = 64
+
     # Columns
     id = sql.Column(sql.Integer, Sequence("tags_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(TAG_NAME_LIMIT), nullable=False, unique=False)
+    name = sql.Column(sql.Unicode(NAME_LIMIT), nullable=False, unique=False)
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
                         nullable=False, index=True)
 
     @orm.validates("name")
     def _truncateName(self, key, value):
-        return self._truncate(value, ARTIST_NAME_LIMIT)
+        return self._truncate(value, self.NAME_LIMIT)
 
 
 class Image(Base, OrmObject):
@@ -403,14 +399,17 @@ class Image(Base, OrmObject):
     LIVE_TYPE = art.LIVE
     IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE, MISC_COVER_TYPE,
                    LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
+    MIMETYPE_LIMIT = 32
+    HASH_LIMIT = 32
+    DESC_LIMIT = 1024
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
     id = sql.Column(sql.Integer, Sequence("images_id_seq"), primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
-    mime_type = sql.Column(sql.String(IMG_MIMETYPE_LIMIT), nullable=False)
-    md5 = sql.Column(sql.String(IMG_HASH_LIMIT), nullable=False)
+    mime_type = sql.Column(sql.String(MIMETYPE_LIMIT), nullable=False)
+    md5 = sql.Column(sql.String(HASH_LIMIT), nullable=False)
     size = sql.Column(sql.Integer, nullable=False)
-    description = sql.Column(sql.String(IMG_DESC_LIMIT), nullable=False)
+    description = sql.Column(sql.String(DESC_LIMIT), nullable=False)
     """The description will be the base file name when the source if a file."""
     data = orm.deferred(sql.Column(sql.LargeBinary, nullable=False))
 
@@ -460,10 +459,11 @@ class Image(Base, OrmObject):
 
 class Library(Base, OrmObject):
     __tablename__ = "libraries"
+    NAME_LIMIT = 64
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("libraries_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(LIB_NAME_LIMIT), nullable=False, unique=True)
+    name = sql.Column(sql.Unicode(NAME_LIMIT), nullable=False, unique=True)
     last_sync = sql.Column(sql.DateTime)
 
     _music = []
