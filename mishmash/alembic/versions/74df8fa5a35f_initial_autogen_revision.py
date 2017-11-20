@@ -216,6 +216,10 @@ def upgrade():
                     sa.Column('artist_id', sa.Integer(), nullable=False),
                     sa.Column('album_id', sa.Integer(), nullable=True),
                     sa.Column('lib_id', sa.Integer(), nullable=False),
+                    sa.Column('metadata_format',
+                              sa.Enum(*['ID3v1.0', 'ID3v1.1', 'ID3v2.2',
+                                        'ID3v2.3', 'ID3v2.4'],
+                                      name='metadata_formats')),
                     sa.ForeignKeyConstraint(
                         ['album_id'], ['albums.id'],
                         name=op.f('fk_tracks_album_id_albums')),

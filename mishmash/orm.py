@@ -16,6 +16,8 @@ from eyed3.utils import art
 from eyed3.utils import guessMimetype
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
+from eyed3.id3 import (ID3_V1_0, ID3_V1_1, ID3_V2_2, ID3_V2_3, ID3_V2_4,
+                       versionToString)
 
 VARIOUS_ARTISTS_ID = 1
 VARIOUS_ARTISTS_NAME = _("Various Artists")
@@ -303,6 +305,11 @@ class Track(Base, OrmObject):
                                            "lib_id",
                                           ), {})
 
+    METADATA_FORMATS = ["ID3{}".format(versionToString(v))
+                            for v in (ID3_V1_0, ID3_V1_1, ID3_V2_2, ID3_V2_3,
+                                      ID3_V2_4)]
+    _metadata_enum = sql.Enum(*METADATA_FORMATS, name="metadata_format")
+
     # Columns
     id = sql.Column(sql.Integer, Sequence("tracks_id_seq"), primary_key=True)
     path = sql.Column(sql.String(TRACK_PATH_LIMIT), nullable=False, index=True)
@@ -320,6 +327,7 @@ class Track(Base, OrmObject):
     media_total = sql.Column(sql.SmallInteger)
     bit_rate = sql.Column(sql.SmallInteger)
     variable_bit_rate = sql.Column(sql.Boolean)
+    metadata_format = sql.Column(_metadata_enum, nullable=False)
 
     # Foreign keys
     artist_id = sql.Column(sql.Integer, sql.ForeignKey("artists.id"),
@@ -362,6 +370,7 @@ class Track(Base, OrmObject):
         self.track_num, self.track_total = tag.track_num
         self.variable_bit_rate, self.bit_rate = info.bit_rate
         self.media_num, self.media_total = tag.disc_num
+        self.metadata_format = "ID3{}".format(versionToString(tag.version))
 
         return self
 
@@ -462,6 +471,10 @@ class Library(Base, OrmObject):
     def add(self, album):
         self._music.append(album)
         return self
+
+    def albums(self):
+        for alb in self._music:
+            yield alb
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
