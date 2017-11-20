@@ -16,7 +16,7 @@ from eyed3.plugins import LoaderPlugin
 from eyed3.utils.prompt import PromptExit
 from eyed3.main import main as eyed3_main
 from eyed3.core import (TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE,
-                        EP_TYPE, EP_MAX_SIZE_HINT)
+                        EP_TYPE)
 from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
@@ -24,7 +24,7 @@ from ...orm import (Track, Artist, Album, Meta, Image, Library,
                     VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
 from ... import console
 from ... import database as db
-from ...core import Command
+from ...core import Command, EP_MAX_SIZE_HINT
 from ...config import MusicLibrary
 
 from ._inotify import Monitor, SYNC_INTERVAL
