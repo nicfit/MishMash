@@ -16,7 +16,7 @@ markupsafe==1.0           # via mako
 nicfit.py==0.7
 pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid
 pathlib==1.0.1            # via eyed3
-plaster-pastedeploy==0.4.1  # via pyramid
+plaster-pastedeploy==0.4.2  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
 psycopg2==2.7.3.2
 pyfiglet==0.7.5
