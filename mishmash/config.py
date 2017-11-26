@@ -13,6 +13,7 @@ LOG_FORMAT = "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s"
 
 def DEFAULT_CONFIG():
     from .orm import MAIN_LIB_NAME
+    # TODO: dev config option?
     default = Path(__file__).parent / "_default-config.ini"
     return default.read_text().format(MAIN_LIB_NAME=MAIN_LIB_NAME, **globals())
 

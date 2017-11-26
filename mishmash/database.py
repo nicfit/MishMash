@@ -12,8 +12,9 @@ from sqlalchemy_utils.functions import (database_exists,
                                         create_database,
                                         drop_database)
 
-from .orm import TYPES, Tag
+from .orm import TYPES
 from .orm import Artist, Track, Album, Tag
+from .util import safeDbUrl
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
                        "encoding": "utf8",
@@ -34,12 +35,12 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
     alembic_cfg = alembic.config.Config(str(alembic_d / "alembic.ini"))
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
 
-    log.debug("Checking for database '%s'" % db_url)
+    log.debug("Checking for database '%s'" % safeDbUrl(db_url))
     if not database_exists(db_url):
-        log.info("Creating database '%s'" % db_url)
+        log.info("Creating database '%s'" % safeDbUrl(db_url))
         create_database(db_url, template="template0")
 
-    log.debug("Connecting to database '%s'" % db_url)
+    log.debug("Connecting to database '%s'" % safeDbUrl(db_url))
     args = engine_args or DEFAULT_ENGINE_ARGS
     engine = create_engine(db_url, **args)
     connection = engine.connect()

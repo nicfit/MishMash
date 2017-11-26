@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 import os
+import re
 from eyed3.utils import datePicker
 from countrycode.countrycode import countrycode
 
@@ -67,3 +67,11 @@ def mostCommonItem(lst):
         return max(set(lst), key=lst.count)
     else:
         return None
+
+
+def safeDbUrl(db_url):
+    if db_url.startswith("postgres"):
+        m = re.compile(r"(\w+)://(\w+):(?P<password>\w+)@.*$").match(db_url)
+        if m:
+            db_url = db_url.replace(m.group("password"), "*" * 10)
+    return db_url
