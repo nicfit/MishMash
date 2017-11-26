@@ -271,6 +271,12 @@ class SyncPlugin(LoaderPlugin):
     def _albumTypeHint(self, audio_files):
         types = collections.Counter()
 
+        # This directory of files can be:
+        # 1) an album by a single artist (tag.artist, or tag.album_artist and
+        #    tag.album all equal)
+        # 2) a comp (tag.album equal, tag.artist differ)
+        # 3) not associated with a collection (tag.artist and tag.album differ)
+
         for tag in [f.tag for f in audio_files if f.tag]:
             album_type = tag.user_text_frames.get(TXXX_ALBUM_TYPE)
             if album_type:
@@ -280,7 +286,24 @@ class SyncPlugin(LoaderPlugin):
             return types.most_common()[0][0]
 
         if len(types) == 0:
-            return EP_TYPE if len(audio_files) < EP_MAX_SIZE_HINT else LP_TYPE
+            artists = set()
+            album_artists = set()
+            albums = set()
+            for tag in [tag for f in audio_files if f.tag]:
+                if tag.artist:
+                    artists.add(tag.artist)
+                if tag.album_artist:
+                    album_artists.add(tag.album_artist)
+                if tag.album:
+                    albums.add(tag.album)
+
+            is_various = (len(artists) > 1 and len(album_artists) == 0 and
+                          len(albums) == 1)
+            if is_various:
+                return VARIOUS_TYPE
+            else:
+                return EP_TYPE if len(audio_files) < EP_MAX_SIZE_HINT \
+                               else LP_TYPE
 
         if len(types) > 1:
             log.warn("Inconsistent type hints: %s" % str(types.keys()))
@@ -299,27 +322,7 @@ class SyncPlugin(LoaderPlugin):
 
         d_datetime = datetime.fromtimestamp(getctime(d))
 
-        # This directory of files can be:
-        # 1) an album by a single artist (tag.artist, or tag.albun_srtist and
-        #    tag.album all equal)
-        # 2) a comp (tag.album equal, tag.artist differ)
-        # 3) not associated with a collection (tag.artist and tag.album differ)
-        artists = set([f.tag.artist for f in audio_files if f.tag])
-        album_artists = set([f.tag.album_artist for f in audio_files if f.tag])
-        albums = set([f.tag.album for f in audio_files if f.tag])
-        for s in artists, album_artists, albums:
-            if None in s:
-                s.remove(None)
-
-        is_various = (len(artists) > 1 and len(album_artists) == 0 and
-                      len(albums) == 1)
-
-        album_type = self._albumTypeHint(audio_files)
-        if is_various and album_type != VARIOUS_TYPE:
-            # is_various overrides
-            log.warn(f"Using type various for directory '{d}' despite files "
-                     f"saying {album_type}")
-        album_type = VARIOUS_TYPE if is_various else (album_type or LP_TYPE)
+        album_type = self._albumTypeHint(audio_files) or LP_TYPE
 
         album = None
         session = self._db_session
