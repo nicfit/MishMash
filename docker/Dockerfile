@@ -27,7 +27,7 @@ ENV MISHMASH_DBURL=${MISHMASH_DBURL} \
 
 RUN useradd -m -d ${HOME} --uid 6229 mishmash
 
-RUN mkdir -p ${APP_DIR}/bin ${APP_DIR}/etc ${APP_DIR}/var &&
+RUN mkdir -p ${APP_DIR}/bin ${APP_DIR}/etc ${APP_DIR}/var && \
     chown mishmash:mishmash ${APP_DIR}
 WORKDIR $APP_DIR
 

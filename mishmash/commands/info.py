@@ -19,7 +19,6 @@ class Info(Command):
     NAME = "info"
     HELP = "Show information about the database and configuration."
 
-
     def _run(self):
         session = self.db_session
 

@@ -3,7 +3,7 @@ Release History
 
 .. :changelog:
 
-v0.3b5 (2017-11-19) : I Need a Miracle
+v0.3b5 (2017-11-26) : I Need a Miracle
 ---------------------------------------
 
 New
@@ -11,16 +11,22 @@ New
 - Mishmash_cmd session-scoped fixture.
 - Library 'excludes' option. Fixes #202.
 - orm length limit constants
+- More ORM limit tests, truncation, validation.
+- Use mishmash.util.safeDbUrl for displayed/logged password obfuscation.
+- Add Track.metadata_format and Track.METADATA_FORMATS.
 
 Changes
 ~~~~~~~
+- Moved VARIOUS_TYPE detection info _albumTypeHint.
+  less noise about lp->various conversion
 - Close DB connections after commands.
 - Better logging for debugging VARIOUS_TYPE coersion.
-- Cc updates.
+- Moved limit constants to each ORM class.
 - Docker updates.
 
 Fix
 ~~~
+- PServeCommand requires .ini extension.
 - Show used config files.
 - Some (not all) truncation for colomn limits and \x00 handling.
 - Make docker-publish.

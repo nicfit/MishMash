@@ -382,6 +382,7 @@ class Track(Base, OrmObject):
     def _truncateTitle(self, key, value):
         return self._truncate(value, Track.TITLE_LIMIT)
 
+
 class Tag(Base, OrmObject):
     __tablename__ = "tags"
     __table_args__ = (sql.UniqueConstraint("name",

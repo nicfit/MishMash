@@ -47,3 +47,8 @@ Getting Started
 ::
 
     $ mishmash info
+
+Surprise, you now have an empty sqlite database in your home directory.
+Let's leave it here for now, it can be located elsewhere or use a different
+database using command line arguments (-c / --config) and/or environment
+variables (MISHMASH_CONFIG and MISHMASH_DBURL).

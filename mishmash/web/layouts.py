@@ -3,6 +3,7 @@ from pyramid_layout.layout import layout_config
 
 _ = gettext.gettext
 
+
 @layout_config(
     name='main-layout',
     template='mishmash.web:templates/layouts/main-layout.pt'
