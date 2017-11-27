@@ -400,7 +400,7 @@ class SyncPlugin(LoaderPlugin):
 
         if self._num_loaded or self._num_deleted:
             pout("")
-            pout("== Library '{}' sync'd [ {:f}s time ({:f} files/s) ] =="
+            pout("== Library '{}' sync'd [ {:.2f}s time ({:.1f} files/sec) ] =="
                 .format(self._lib.name, t, self._num_loaded / t))
             pout("%d files sync'd" % self._num_loaded)
             pout("%d tracks added" % self._num_added)
