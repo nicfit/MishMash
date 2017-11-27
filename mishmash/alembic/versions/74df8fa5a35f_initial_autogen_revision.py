@@ -35,7 +35,7 @@ def upgrade():
                     sa.Column('mime_type',
                               sa.String(length=Image.MIMETYPE_LIMIT),
                               nullable=False),
-                    sa.Column('md5', sa.String(length=Image.HASH_LIMIT),
+                    sa.Column('md5', sa.String(length=Image.MD5_LIMIT),
                               nullable=False),
                     sa.Column('size', sa.Integer(), nullable=False),
                     sa.Column('description', sa.String(length=Image.DESC_LIMIT),

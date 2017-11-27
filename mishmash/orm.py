@@ -2,6 +2,7 @@
 Object to relational database mappings for all tables.
 """
 import os
+import re
 from hashlib import md5
 from datetime import datetime
 from gettext import gettext as _
@@ -133,9 +134,10 @@ class Artist(Base, OrmObject):
                                            "lib_id",
                                           ), {})
 
-    NAME_LIMIT = 128
+    NAME_LIMIT = 256
     SORT_NAME_LIMIT = NAME_LIMIT + 2
-    CITY_LIMIT = 32
+
+    CITY_LIMIT = 64
     STATE_LIMIT = 32
     COUNTRY_LIMIT = 3
 
@@ -217,6 +219,11 @@ class Artist(Base, OrmObject):
             return None
         return normalizeCountry(value, target="iso3c", title_case=False)
 
+    @orm.validates("origin_city", "origin_state")
+    def _truncateOrigins(self, key, value):
+        limit = self.CITY_LIMIT if key == "origin_city" else self.STATE_LIMIT
+        return self._truncate(value, limit)
+
     @staticmethod
     def checkUnique(artists):
         vals = []
@@ -253,14 +260,13 @@ class Album(Base, OrmObject):
                                            "lib_id",
                                           ), {})
 
-    TITLE_LIMIT = 128
+    TITLE_LIMIT = 256
     DATE_LIMIT = DATE_LIMIT
     _types_enum = sql.Enum(*ALBUM_TYPE_IDS, name="album_types")
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("albums_id_seq"), primary_key=True)
-    title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False,
-                       index=True)
+    title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False, index=True)
     type = sql.Column(_types_enum, nullable=False, default=ALBUM_TYPE_IDS[0])
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
@@ -291,6 +297,10 @@ class Album(Base, OrmObject):
     def duration(self):
         return sum([t.time_secs for t in self.tracks])
 
+    @orm.validates("title")
+    def _truncateTitle(self, key, value):
+        return self._truncate(value, self.TITLE_LIMIT)
+
 
 class Track(Base, OrmObject):
     __tablename__ = "tracks"
@@ -302,8 +312,8 @@ class Track(Base, OrmObject):
                             for v in (ID3_V1_0, ID3_V1_1, ID3_V2_2, ID3_V2_3,
                                       ID3_V2_4)]
     _metadata_enum = sql.Enum(*METADATA_FORMATS, name="metadata_format")
-    PATH_LIMIT = 512
-    TITLE_LIMIT = 128
+    PATH_LIMIT = 2048
+    TITLE_LIMIT = 256
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("tracks_id_seq"), primary_key=True)
@@ -368,6 +378,9 @@ class Track(Base, OrmObject):
 
         return self
 
+    @orm.validates("title")
+    def _truncateTitle(self, key, value):
+        return self._truncate(value, Track.TITLE_LIMIT)
 
 class Tag(Base, OrmObject):
     __tablename__ = "tags"
@@ -400,14 +413,14 @@ class Image(Base, OrmObject):
     IMAGE_TYPES = [FRONT_COVER_TYPE, BACK_COVER_TYPE, MISC_COVER_TYPE,
                    LOGO_TYPE, ARTIST_TYPE, LIVE_TYPE]
     MIMETYPE_LIMIT = 32
-    HASH_LIMIT = 32
+    MD5_LIMIT = 32
     DESC_LIMIT = 1024
     _types_enum = sql.Enum(*IMAGE_TYPES, name="image_types")
 
     id = sql.Column(sql.Integer, Sequence("images_id_seq"), primary_key=True)
     type = sql.Column(_types_enum, nullable=False)
     mime_type = sql.Column(sql.String(MIMETYPE_LIMIT), nullable=False)
-    md5 = sql.Column(sql.String(HASH_LIMIT), nullable=False)
+    md5 = sql.Column(sql.String(MD5_LIMIT), nullable=False)
     size = sql.Column(sql.Integer, nullable=False)
     description = sql.Column(sql.String(DESC_LIMIT), nullable=False)
     """The description will be the base file name when the source if a file."""
@@ -455,6 +468,16 @@ class Image(Base, OrmObject):
                      md5=md5hash.hexdigest(),
                      size=len(data),
                      data=data)
+
+    @orm.validates("md5")
+    def _validMd5(self, key, value):
+        if not re.compile(r"([a-fA-F\d]{32})$").match(value):
+            raise ValueError(f"Invalid md5sum: {value}")
+        return value
+
+    @orm.validates("description")
+    def _validLimits(self, key, value):
+        return self._truncate(value, self.DESC_LIMIT)
 
 
 class Library(Base, OrmObject):
