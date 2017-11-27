@@ -14,28 +14,48 @@ TODO:
 """
 
 
+class DisplayList:
+    def __init__(self):
+        self._rows = []
+
+    def add(self, key, val):
+        self._rows.append(tuple((key, val)))
+
+    def print(self, _format, clear=False, **kwargs):
+        k_width = max([len(k) for k, v in self._rows if k])
+        for k, v in self._rows:
+            if k:
+                print(_format.format(k=k.ljust(k_width), v=v, **kwargs))
+
+        if clear:
+            self.clear()
+
+    def clear(self):
+        self._rows.clear()
+
+
 @command.register
 class Info(Command):
     NAME = "info"
     HELP = "Show information about the database and configuration."
 
-    def _run(self):
-        session = self.db_session
+    def _initArgParser(self, parser):
+        parser.add_argument("-L", "--library", dest="libs", action="append",
+                            metavar="LIB_NAME",
+                            help="Select a specific library.")
+        parser.add_argument("--artists", dest="show_artists",
+                            action="store_true",
+                            help="List all artists, per library.")
 
-        _output = []
+    def lib_query(self, OrgType, lib):
+        if isinstance(lib, int):
+            lid = lib
+        else:
+            lid = lib.id
+        return self.db_session.query(OrgType).filter_by(lib_id=lid)
 
-        def _addOutput(k, v):
-            _output.append(tuple((k, v)))
-
-        def _printOutput(_format, _olist, **kwargs):
-            k_width = max([len(k) for k, v in _olist if k])
-            for k, v in _olist:
-                if k:
-                    print(_format.format(k=k.ljust(k_width), v=v, **kwargs))
-            _olist.clear()
-
-        logo = figlet_format("``MishMash``", font="graffiti")
-        print(Fg.green(logo, Style.BRIGHT))
+    def _displayMetaInfo(self):
+        display_list = DisplayList()
 
         def mkkey(k):
             return Style.bright(Fg.blue(str(k)))
@@ -43,35 +63,62 @@ class Info(Command):
         def mkval(v):
             return str(v)
 
-        _addOutput(mkkey("Version"), mkval(version))
-        _addOutput(mkkey("Database URL"), mkval(safeDbUrl(self.config.db_url)))
-
+        display_list.add(mkkey("Version"), mkval(version))
+        display_list.add(mkkey("Database URL"),
+                         mkval(safeDbUrl(self.config.db_url)))
         try:
-            meta = session.query(Meta).one()
+            meta = self.db_session.query(Meta).one()
         except (ProgrammingError, OperationalError) as ex:
             print("\nError querying metadata. Database may not be "
                   "initialized: %s" % str(ex), file=sys.stderr)
             return 1
 
-        _addOutput(mkkey("Database version"), mkval(meta.version))
-        _addOutput(mkkey("Last sync"), mkval(meta.last_sync or "Never"))
-        _addOutput(mkkey("Configuration files "),
-                   mkval(", ".join(self.args.config.input_filenames)))
-        _printOutput("{k} {delim} {v}", _output, delim=Style.bright(":"))
+        display_list.add(mkkey("Database version"), mkval(meta.version))
+        display_list.add(mkkey("Last sync"), mkval(meta.last_sync or "Never"))
+        display_list.add(mkkey("Configuration files "),
+                         mkval(", ".join(self.args.config.input_filenames)))
+        display_list.print("{k} {delim} {v}", delim=Style.bright(":"))
 
+    def _displayLibraryInfo(self, lib):
         def mkkey(k):
             return Style.bright(str(k))
 
-        print("")
-        for lib in session.query(Library)\
-                          .filter(Library.id > NULL_LIB_ID).all():
-            print(Fg.green("\n=== {} library ===").format(lib.name))
-            _addOutput(None, None)
-            for name, orm_type in [("tracks", Track), ("artists", Artist),
-                                  ("albums", Album), ("tags", Tag),
-                         ]:
-                count = session.query(orm_type).filter_by(lib_id=lib.id)\
-                               .count()
+        display_list = DisplayList()
+        for name, orm_type in [("tracks", Track), ("artists", Artist),
+                               ("albums", Album), ("tags", Tag),
+                              ]:
+            count = self.lib_query(orm_type, lib).count()
+            display_list.add(mkkey(count), name)
 
-                _addOutput(mkkey(count), name)
-            _printOutput("{k} music {v}", _output)
+        display_list.print("{k} music {v}", clear=True)
+
+    def _displayArtists(self, lib):
+        for a in self.lib_query(Artist, lib).order_by(Artist.sort_name).all():
+            print(a.name)
+
+    def _run(self):
+        logo = figlet_format("``MishMash``", font="graffiti")
+        print(Fg.green(logo, Style.BRIGHT))
+
+        self._displayMetaInfo()
+
+
+        all_libs = {l.name: l
+                        for l in self.db_session.query(Library)
+                                     .filter(Library.id > NULL_LIB_ID).all()
+                   }
+        lib_args = set(self.args.libs or all_libs.keys())
+        for lib in lib_args:
+            if lib not in all_libs.keys():
+                print(Fg.red(f"Unknown library: {lib}"))
+                continue
+
+            lib = all_libs[lib]
+
+            if self.args.show_artists:
+                print(Fg.green(f"\n=== {lib.name} library artists ==="))
+                self._displayArtists(lib)
+            else:
+                print(Fg.green(f"\n=== {lib.name} library ==="))
+                self._displayLibraryInfo(lib)
+
