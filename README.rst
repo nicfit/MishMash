@@ -47,8 +47,57 @@ Getting Started
 ::
 
     $ mishmash info
+    /\/\_____  .__       .__        _____                .__   /\/\
+    \(\(     \ |__| _____|  |__    /     \ _____    _____|  |__\(\(
+      /  \ /  \|  |/  ___/  |  \  /  \ /  \\__  \  /  ___/  |  \
+     /    Y    \  |\___ \|   Y  \/    Y    \/ __ \_\___ \|   Y  \
+     \____|__  /__/____  >___|  /\____|__  (____  /____  >___|  /
+             \/        \/     \/         \/     \/     \/     \/
+
+    Version              : 0.3
+    Database URL         : sqlite:////~/mishmash.db
+    Database version     : 0.3
+    Last sync            : Never
+    Configuration files  : <default>
+
+
+    === Music library ===
+    0 music tracks
+    0 music artists
+    0 music albums
+    0 music tags
+
 
 Surprise, you now have an empty sqlite database in your home directory.
 Let's leave it here for now, it can be located elsewhere or use a different
-database using command line arguments (-c / --config) and/or environment
-variables (MISHMASH_CONFIG and MISHMASH_DBURL).
+database using command line arguments and/or environment variables. Pretty
+useless, so now add some music.::
+
+    $ mishmash sync /home/travis/Music/Melvins
+    Syncing library 'Music': paths=['/home/travis/Music/Melvins/']
+    Syncing directory: /home/travis/Music/Melvins/
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
+    Syncing directory: /home/travis/Music/Melvins/1984 - Mangled Demos
+    Adding artist: Melvins
+    Syncing directory: /home/travis/Music/Melvins/1986 - 10 Songs
+    Adding album: 10 Songs
+    Adding track: /mnt/Media/Media/audio/music/Melvins/1986 - 10 Songs/Melvins - 01 - Easy As It Was.mp3
+    Updating album: 10 Songs
+    ...
+    == Library 'Music' sync'd [ 8.73s time (45.9 files/s) ] ==
+    401 files sync'd
+    401 tracks added
+    0 tracks modified
+    0 orphaned tracks deleted
+    0 orphaned artists deleted
+    0 orphaned albums deleted
+
+
