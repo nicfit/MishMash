@@ -1,11 +1,11 @@
 Sphinx==1.6.5
 babel==2.5.1
-check-manifest==0.35
+check-manifest==0.36
 flake8==3.5.0
 git+https://github.com/nicfit/gitchangelog.git@nicfit.py
 ipdb==0.10.3
 nicfit.py[cookiecutter]==0.7
-pip-tools==1.10.1
+pip-tools==1.11.0
 pss==1.41
 pyaml==17.10.0
 sphinx_rtd_theme==0.2.4
