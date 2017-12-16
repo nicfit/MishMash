@@ -1,6 +1,7 @@
 FROM greyltc/archlinux
 MAINTAINER Travis Shirk <travis@pobox.com>
 
+ARG VERSION
 EXPOSE 6229
 
 RUN curl -o /etc/pacman.d/mirrorlist \
@@ -11,7 +12,7 @@ RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm python python-pip git \
                           postgresql-libs python-psycopg2
 
-RUN pip install git+https://github.com/nicfit/MishMash.git
+RUN pip install git+https://github.com/nicfit/MishMash.git@v${VERSION}
 RUN pip install MishMash[web]
 RUN pip install MishMash[postgres]
 
@@ -28,7 +29,7 @@ ENV MISHMASH_DBURL=${MISHMASH_DBURL} \
 RUN useradd -m -d ${HOME} --uid 6229 mishmash
 
 RUN mkdir -p ${APP_DIR}/bin ${APP_DIR}/etc ${APP_DIR}/var && \
-    chown mishmash:mishmash ${APP_DIR} ${APP_DIR}/var
+    chown -R mishmash:mishmash ${APP_DIR}
 WORKDIR $APP_DIR
 
 USER mishmash
