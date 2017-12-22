@@ -10,7 +10,7 @@ countrycode==0.2
 deprecation==1.0.1        # via nicfit.py
 eyed3==0.8.4
 hupper==1.0               # via pyramid
-inotify==0.2.8
+inotify==0.2.9
 mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.0           # via mako
 nicfit.py==0.7
