@@ -1,4 +1,4 @@
-SQLAlchemy==1.2.0
+SQLAlchemy==1.2.1
 alembic==0.9.6
 countrycode==0.2
 eyeD3>=0.8
