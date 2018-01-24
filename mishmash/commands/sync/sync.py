@@ -1,4 +1,5 @@
 import os
+import platform
 import time
 import collections
 from pathlib import Path
@@ -27,7 +28,6 @@ from ... import database as db
 from ...core import Command, EP_MAX_SIZE_HINT
 from ...config import MusicLibrary
 
-from ._inotify import Monitor, SYNC_INTERVAL
 from .utils import syncImage, deleteOrphans
 
 log = getLogger(__name__)
@@ -95,6 +95,7 @@ class SyncPlugin(LoaderPlugin):
         self._lib = lib
 
         if self.args.monitor:
+            from ._inotify import Monitor, SYNC_INTERVAL
             if self.monitor_proc is None:
                 self.monitor_proc = Monitor()
             # Monitor roots, file dir are watched as the files are traversed
@@ -425,6 +426,11 @@ class Sync(Command):
     def _run(self, args=None):
         args = args or self.args
         args.plugin = self.plugin
+
+        if args.monitor and platform.system() == "Darwin":
+            perr("Monitor mode is not supported on OS/X\n")
+            self.parser.print_usage()
+            return 1
 
         libs = {lib.name: lib for lib in args.config.music_libs}
         if not libs and not args.paths:
