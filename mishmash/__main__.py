@@ -68,7 +68,8 @@ class MishMash(Application):
         config_opts = ConfigOpts(required=False,
                                  default_config=DEFAULT_CONFIG(),
                                  default_config_opt="--default-config",
-                                 ConfigClass=Config, env_var=CONFIG_ENV_VAR,
+                                 ConfigClass=Config,
+                                 config_env_var=CONFIG_ENV_VAR,
                                  init_logging_fileConfig=True)
         super().__init__(main, name=progname, version=version,
                          config_opts=config_opts, pdb_opt=True,
