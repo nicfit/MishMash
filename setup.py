@@ -149,7 +149,7 @@ else:
               test_suite="./tests",
               include_package_data=True,
               package_data={
-                  "mishmash": ["_default-config.ini", "alembic.ini"] +
+                  "mishmash": ["alembic.ini"] +
                               package_files("mishmash/alembic"),
                   "mishmash.web": package_files("mishmash/web/static",
                                                 "../..") +

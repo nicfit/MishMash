@@ -31,6 +31,11 @@ sqlalchemy.url = {SQLITE_DB_URL}
 ;sync = true
 ;paths = dir1
 ;        dir2
+;        dir_glob
+# Directories to exclude, each as a regex
+;excludes = dir_regex1
+;           dir_regex2
+
 
 [app:main]
 use = call:mishmash.web:main
@@ -38,6 +43,13 @@ pyramid.reload_templates = true
 pyramid.default_locale_name = en
 pyramid.includes =
     pyramid_tm
+# Devel opts
+;pyramid.debug_authorization = false
+;pyramid.debug_notfound = false
+;pyramid.debug_routematch = false
+;pyramid.includes =
+;    pyramid_debugtoolbar
+;    pyramid_tm
 
 [server:main]
 use = egg:waitress#main

@@ -76,15 +76,6 @@ useless, so now add some music.::
     $ mishmash sync /home/travis/Music/Melvins
     Syncing library 'Music': paths=['/home/travis/Music/Melvins/']
     Syncing directory: /home/travis/Music/Melvins/
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
-    eyed3.mp3.headers:WARNING: Lame tag CRC check failed
     Syncing directory: /home/travis/Music/Melvins/1984 - Mangled Demos
     Adding artist: Melvins
     Syncing directory: /home/travis/Music/Melvins/1986 - 10 Songs
