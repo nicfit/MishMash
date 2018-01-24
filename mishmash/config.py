@@ -1,6 +1,7 @@
 from pathlib import Path
 from configparser import ExtendedInterpolation
 import nicfit
+from .orm import MAIN_LIB_NAME
 
 WEB_PORT = 6229
 MAIN_SECT = "mishmash"
@@ -10,12 +11,41 @@ SQLITE_DB_URL = "sqlite:///{0}/mishmash.db".format(Path.home())
 POSTGRES_DB_URL = "postgresql://mishmash@localhost/mishmash"
 LOG_FORMAT = "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s"
 
+LOGGING_CONFIG = (
+    nicfit.logger.FileConfig(level="WARNING")
+                 .addPackageLogger("alembic")
+                 .addPackageLogger("mishmash")
+                 .addPackageLogger("eyed3", pkg_level="ERROR")
+                 #.addHandler("file", "FileHandler", args=(LOGFILE,))
+                 .addHandler("file", "StreamHandler", args=("sys.stderr",))
+)
 
-def DEFAULT_CONFIG():
-    from .orm import MAIN_LIB_NAME
-    # TODO: dev config option?
-    default = Path(__file__).parent / "_default-config.ini"
-    return default.read_text().format(MAIN_LIB_NAME=MAIN_LIB_NAME, **globals())
+DEFAULT_CONFIG = f"""
+[mishmash]
+sqlalchemy.url = {SQLITE_DB_URL}
+;sqlalchemy.url = {POSTGRES_DB_URL}
+
+# All sync'd media is assigned to the '{MAIN_LIB_NAME}' library unless
+# instructed
+;[library:{MAIN_LIB_NAME}]
+;sync = true
+;paths = dir1
+;        dir2
+
+[app:main]
+use = call:mishmash.web:main
+pyramid.reload_templates = true
+pyramid.default_locale_name = en
+pyramid.includes =
+    pyramid_tm
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = {WEB_PORT}
+
+{LOGGING_CONFIG}
+"""
 
 
 class MusicLibrary:

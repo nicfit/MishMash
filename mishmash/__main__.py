@@ -66,13 +66,13 @@ class MishMash(Application):
     def __init__(self, progname="mishmash"):
         from . import version
         config_opts = ConfigOpts(required=False,
-                                 default_config=DEFAULT_CONFIG(),
+                                 default_config=DEFAULT_CONFIG,
                                  default_config_opt="--default-config",
                                  ConfigClass=Config,
                                  config_env_var=CONFIG_ENV_VAR,
                                  init_logging_fileConfig=True)
         super().__init__(main, name=progname, version=version,
-                         config_opts=config_opts, pdb_opt=True,
+                         config_opts=config_opts, pdb_opt=False,
                          gettext_domain="MishMash")
 
         ansi.init()
