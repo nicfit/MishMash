@@ -1,6 +1,6 @@
 main:
     - eyeD3>=0.8
-    - nicfit.py>=0.7
+    - nicfit.py>=0.8b
     - SQLAlchemy
     - inotify
     - alembic
