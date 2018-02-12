@@ -6,7 +6,7 @@ from pathlib import Path
 from os.path import getctime
 from datetime import datetime
 
-from nicfit import command, getLogger
+from nicfit import getLogger
 from sqlalchemy.orm.exc import NoResultFound
 
 import eyed3
@@ -412,7 +412,7 @@ class SyncPlugin(LoaderPlugin):
             pout("")
 
 
-@command.register
+@Command.register
 class Sync(Command):
     NAME = "sync"
     HELP = "Synchronize music directories with database."

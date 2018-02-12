@@ -10,6 +10,7 @@ from eyed3.utils.prompt import PromptExit
 
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
 from . import log
+from . core import Command
 from .commands import *                                                   # noqa
 
 
@@ -79,7 +80,9 @@ class MishMash(Application):
 
         desc = "Database command line options (or config) are required by "\
                "most sub commands."
-        self.enableCommands(title="Commands", description=desc)
+        subs = self.arg_parser.add_subparsers(title="Commands", dest="command",
+                                              description=desc, required=False)
+        Command.loadCommandMap(subparsers=subs)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")

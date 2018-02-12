@@ -2,11 +2,10 @@ from ..web import MISHMASH_WEB
 
 if MISHMASH_WEB:
     import tempfile
-    from nicfit import command
     from ..core import Command
     from pyramid.scripts.pserve import PServeCommand
 
-    @command.register
+    @Command.register
     class Web(Command):
         NAME = "web"
         HELP = "MishMash web interface."

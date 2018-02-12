@@ -1,5 +1,4 @@
 import sys
-from nicfit import command
 from nicfit.console.ansi import Fg, Style
 from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
@@ -34,7 +33,7 @@ class DisplayList:
         self._rows.clear()
 
 
-@command.register
+@Command.register
 class Info(Command):
     NAME = "info"
     HELP = "Show information about the database and configuration."

@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 import os
 
-from nicfit import command
 from eyed3.core import VARIOUS_TYPE
 from eyed3.utils.prompt import prompt
 from nicfit.console.ansi import Style, Fg
@@ -14,7 +12,7 @@ from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
 """Metadata management commands."""
 
 
-@command.register
+@Command.register
 class SplitArtists(Command):
     NAME = "split-artists"
     HELP = "Split a single artist name into N distinct artists."
@@ -127,7 +125,7 @@ class SplitArtists(Command):
         session.flush()
 
 
-@command.register
+@Command.register
 class MergeArtists(Command):
     NAME = "merge-artists"
     HELP = "Merge two or more artists into a single artist."
