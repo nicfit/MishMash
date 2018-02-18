@@ -21,7 +21,7 @@ pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid
 pathlib==1.0.1            # via eyed3
 plaster-pastedeploy==0.4.2  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
-psycopg2==2.7.3.2
+psycopg2-binary==2.7.4
 pyfiglet==0.7.5
 pygments==2.2.0           # via pyramid-debugtoolbar
 pyparsing==2.2.0          # via packaging
