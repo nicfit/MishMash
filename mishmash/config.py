@@ -16,7 +16,6 @@ LOGGING_CONFIG = (
                  .addPackageLogger("alembic")
                  .addPackageLogger("mishmash")
                  .addPackageLogger("eyed3", pkg_level="ERROR")
-                 #.addHandler("file", "FileHandler", args=(LOGFILE,))
                  .addHandler("file", "StreamHandler", args=("sys.stderr",))
 )
 

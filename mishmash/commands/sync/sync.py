@@ -94,7 +94,7 @@ class SyncPlugin(LoaderPlugin):
         self._lib = lib
 
         if self.args.monitor:
-            from ._inotify import Monitor, SYNC_INTERVAL
+            from ._inotify import Monitor
             if self.monitor_proc is None:
                 self.monitor_proc = Monitor()
             # Monitor roots, file dir are watched as the files are traversed
@@ -481,6 +481,7 @@ class Sync(Command):
             return 1
 
         if args.monitor:
+            from ._inotify import SYNC_INTERVAL
             monitor = self.plugin.monitor_proc
 
             # Commit now, since we won't be returning

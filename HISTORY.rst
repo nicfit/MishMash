@@ -3,6 +3,26 @@ Release History
 
 .. :changelog:
 
+v0.3b6 (2018-02-11)
+------------------------
+
+New
+~~~
+- Mishmash info -L/--library and --artists.
+
+Changes
+~~~~~~~
+- Reduced sync stats precision.
+- Nicfit.py 0.8 Command changes.
+
+Fix
+~~~
+- Fix container fail to start issue (#242) <me@benschumacher.com>
+- Added check for osx to avoid monitor mode (#260) <redshodan@gmail.com>
+- Nicfit.py 0.8 config_env_var changes.
+- Removed no-arg (nicfit.py) main test, test is done upstream.
+
+
 v0.3b5 (2017-11-26) : I Need a Miracle
 ---------------------------------------
 

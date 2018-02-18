@@ -101,7 +101,6 @@ class Info(Command):
 
         self._displayMetaInfo()
 
-
         all_libs = {l.name: l
                         for l in self.db_session.query(Library)
                                      .filter(Library.id > NULL_LIB_ID).all()
@@ -120,4 +119,3 @@ class Info(Command):
             else:
                 print(Fg.green(f"\n=== {lib.name} library ==="))
                 self._displayLibraryInfo(lib)
-
