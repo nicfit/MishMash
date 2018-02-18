@@ -83,6 +83,7 @@ class MishMash(Application):
         subs = self.arg_parser.add_subparsers(title="Commands", dest="command",
                                               description=desc, required=False)
         Command.loadCommandMap(subparsers=subs)
+        self.arg_subparsers = subs
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
