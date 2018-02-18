@@ -14,7 +14,7 @@ hupper==1.0               # via pyramid
 inotify==0.2.9
 mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.0           # via mako
-nicfit.py==0.8b3
+nicfit.py==0.8
 nose==1.3.7               # via inotify
 packaging==16.8           # via deprecation
 pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid

@@ -1,7 +1,7 @@
 main:
     - eyeD3>=0.8
     # When pinning nicfit.py be sure to also pin nicfit[cookiecutter] below
-    - nicfit.py>=0.8b3
+    - nicfit.py
     - SQLAlchemy
     - inotify
     - alembic
@@ -31,7 +31,7 @@ test:
     - factory-boy
 
 dev:
-    - nicfit.py[cookiecutter]>=0.8b3
+    - nicfit.py[cookiecutter]
     - Sphinx
     - sphinx_rtd_theme
     - babel
