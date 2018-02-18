@@ -10,7 +10,7 @@ main:
     - sqlalchemy-utils
 
 extra_postgres:
-    - psycopg2
+    - psycopg2-binary
 
 extra_web:
     - pyramid
