@@ -3,4 +3,4 @@ faker==0.8.10
 pytest==3.4.0
 pytest-cov==2.5.1
 pytest-postgres==0.2.0
-pytest-runner==3.0
+pytest-runner==4.0
