@@ -2,7 +2,7 @@ import sys
 from nicfit.console.ansi import Fg, Style
 from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
-from .. import version
+from .. import version, database
 from ..core import Command
 from ..util import safeDbUrl
 from ..orm import Track, Artist, Album, Meta, Tag, Library, NULL_LIB_ID
@@ -37,11 +37,10 @@ class DisplayList:
 class Info(Command):
     NAME = "info"
     HELP = "Show information about the database and configuration."
+    _library_arg_nargs = "*"
 
     def _initArgParser(self, parser):
-        parser.add_argument("-L", "--library", dest="libs", action="append",
-                            metavar="LIB_NAME",
-                            help="Select a specific library.")
+        super()._initArgParser(parser)
         parser.add_argument("--artists", dest="show_artists",
                             action="store_true",
                             help="List all artists, per library.")
@@ -101,18 +100,7 @@ class Info(Command):
 
         self._displayMetaInfo()
 
-        all_libs = {l.name: l
-                        for l in self.db_session.query(Library)
-                                     .filter(Library.id > NULL_LIB_ID).all()
-                   }
-        lib_args = set(self.args.libs or all_libs.keys())
-        for lib in lib_args:
-            if lib not in all_libs.keys():
-                print(Fg.red(f"Unknown library: {lib}"))
-                continue
-
-            lib = all_libs[lib]
-
+        for lib in Library.iterall(self.db_session, names=self.args.libs):
             if self.args.show_artists:
                 print(Fg.green(f"\n=== {lib.name} library artists ==="))
                 self._displayArtists(lib)

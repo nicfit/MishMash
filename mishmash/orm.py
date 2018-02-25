@@ -165,6 +165,7 @@ class Artist(Base, OrmObject):
     """one-to-many (artist->tag) and many-to-one (tag->artist)"""
     images = orm.relation("Image", secondary=artist_images, cascade="all")
     """one-to-many artist images."""
+    library = orm.relation("Library")
 
     def getAlbumsByType(self, album_type):
         if album_type == VARIOUS_TYPE:
@@ -287,6 +288,7 @@ class Album(Base, OrmObject):
     tags = orm.relation("Tag", secondary=album_tags)
     images = orm.relation("Image", secondary=album_images, cascade="all")
     """one-to-many album images."""
+    library = orm.relation("Library")
 
     def getBestDate(self):
         from eyed3.utils import datePicker
@@ -345,8 +347,9 @@ class Track(Base, OrmObject):
     artist = orm.relation("Artist")
     album = orm.relation("Album")
     tags = orm.relation("Tag", secondary=track_tags)
+    library = orm.relation("Library")
 
-    # TEST-ONLY
+    # XXX: test-only
     _mp3_file = None
 
     def __init__(self, **kwargs):
@@ -394,8 +397,13 @@ class Tag(Base, OrmObject):
     # Columns
     id = sql.Column(sql.Integer, Sequence("tags_id_seq"), primary_key=True)
     name = sql.Column(sql.Unicode(NAME_LIMIT), nullable=False, unique=False)
+
+    # Foreign keys
     lib_id = sql.Column(sql.Integer, sql.ForeignKey("libraries.id"),
                         nullable=False, index=True)
+
+    # Relations
+    library = orm.relation("Library")
 
     @orm.validates("name")
     def _truncateName(self, key, value):
@@ -499,6 +507,16 @@ class Library(Base, OrmObject):
     def albums(self):
         for alb in self._music:
             yield alb
+
+    @classmethod
+    def iterall(Class, session, names=None):
+        """Iterate over all Library rows found in `session`.
+        :param names: Optional sequence of names to filter on.
+        """
+        names = set(names if names else [])
+        for lib in session.query(Class).filter(Class.id > NULL_LIB_ID).all():
+            if not names or (lib.name in names):
+                yield lib
 
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]

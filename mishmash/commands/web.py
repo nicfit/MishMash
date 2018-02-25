@@ -16,5 +16,5 @@ if MISHMASH_WEB:
                                              suffix=".ini") as config_file:
                 self.config.write(config_file)
                 config_file.flush()
-                pserve = PServeCommand(["mishmish", config_file.name])
+                pserve = PServeCommand(["mishmash", config_file.name])
                 return pserve.run()

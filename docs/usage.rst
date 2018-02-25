@@ -94,7 +94,7 @@ files set.
 
 .. code-block:: bash
 
-    $ MISHMASH_CONFIG=local.ini mishmish -c site.ini -D postgresql://dbserver.example.com:5432/music
+    $ MISHMASH_CONFIG=local.ini mishmash -c site.ini -D postgresql://dbserver.example.com:5432/music
 
 Databases
 ---------

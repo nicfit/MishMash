@@ -4,7 +4,7 @@ from eyed3.core import VARIOUS_TYPE
 from eyed3.utils.prompt import prompt
 from nicfit.console.ansi import Style, Fg
 
-from ..orm import Artist
+from ..orm import Artist, Library
 from ..core import Command
 from ..console import promptArtist, selectArtist
 from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
@@ -16,31 +16,35 @@ from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
 class SplitArtists(Command):
     NAME = "split-artists"
     HELP = "Split a single artist name into N distinct artists."
+    _library_arg_nargs = 1
 
     def _initArgParser(self, parser):
+        super()._initArgParser(parser)
         parser.add_argument("artist", help="The name of the artist to split.")
 
     def _displayArtistMusic(self, artist, albums, singles):
         if albums:
-            print(u"%d albums by %s:" % (len(albums),
+            print("%d albums by %s:" % (len(albums),
                                          Style.bright(Fg.blue(artist.name))))
             for alb in albums:
-                print(u"%s %s" % (str(alb.getBestDate()).center(17),
+                print("%s %s" % (str(alb.getBestDate()).center(17),
                                   alb.title))
 
         if singles:
-            print(u"%d single tracks by %s" %
+            print("%d single tracks by %s" %
                   (len(singles), Style.bright(Fg.blue(artist.name))))
             for s in singles:
-                print(u"\t%s" % (s.title))
+                print("\t%s" % (s.title))
 
     def _run(self):
         session = self.db_session
 
-        artists = session.query(Artist)\
-                         .filter(Artist.name == self.args.artist).all()
+        lib = session.query(Library).filter(Library.name == self.args.lib).one()
+        artists = session.query(Artist).filter(Artist.lib_id == lib.id)\
+                                       .filter(Artist.name == self.args.artist)\
+                                       .all()
         if not artists:
-            print(u"Artist not found: %s" % self.args.artist)
+            print("Artist not found: %s" % self.args.artist)
             return 1
         elif len(artists) > 1:
             artist = selectArtist(Fg.blue("Select which '%s' to split...") %
@@ -67,11 +71,12 @@ class SplitArtists(Command):
                    validate=_validN)
         new_artists = []
         for i in range(1, n + 1):
-            print(Style.bright(u"\n%s #%d") % (Fg.blue(artist.name), i))
+            print(Style.bright("\n%s #%d") % (Fg.blue(artist.name), i))
 
             # Reuse original artist for first
             a = artist if i == 1 else Artist(name=artist.name,
-                                             date_added=artist.date_added)
+                                             date_added=artist.date_added,
+                                             lib_id=artist.lib_id)
             a.origin_city = prompt("   City", required=False)
             a.origin_state = prompt("   State", required=False)
             a.origin_country = prompt("   Country", required=False,
@@ -129,18 +134,23 @@ class SplitArtists(Command):
 class MergeArtists(Command):
     NAME = "merge-artists"
     HELP = "Merge two or more artists into a single artist."
+    _library_arg_nargs = 1
 
     def _initArgParser(self, parser):
+        super()._initArgParser(parser)
         parser.add_argument("artists", nargs="+",
                             help="The artist names to merge.")
 
     def _run(self):
         session = self.db_session
 
+        lib = session.query(Library).filter(Library.name == self.args.lib).one()
+
         merge_list = []
         for artist_arg in self.args.artists:
             artists = session.query(Artist)\
-                             .filter(Artist.name == artist_arg).all()
+                             .filter(Artist.name == artist_arg)\
+                             .filter(Artist.lib_id == lib.id).all()
             if len(artists) == 1:
                 merge_list.append(artists[0])
             elif len(artists) > 1:
@@ -162,6 +172,7 @@ class MergeArtists(Command):
                     default_state=mc([a.origin_state for a in merge_list]),
                     default_country=mc([a.origin_country for a in merge_list]),
                     artist=artist)
+            new_artist.lib_id = lib.id
         else:
             print("Nothing to do, %s" %
                     ("artist not found" if not len(merge_list)
@@ -176,8 +187,7 @@ class MergeArtists(Command):
 
             with session.no_autoflush:
                 for alb in list(artist.albums):
-                    # FIXME: use constant
-                    if alb.type != "various":
+                    if alb.type != VARIOUS_TYPE:
                         alb.artist_id = new_artist.id
                         artist.albums.remove(alb)
                         with session.no_autoflush:
