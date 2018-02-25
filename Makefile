@@ -78,15 +78,15 @@ _PYTEST_OPTS=
 ifdef TEST_PDB
     _PDB_OPTS=--pdb -s
 endif
-TEST_DB_OPTS=--pg-image postgres:9.6-alpine --pg-name MishMash-pgtest
+TEST_POSTGRES_OPTS=--pg-image postgres:10.0-alpine --pg-name MishMash-pgtest
 test:
-	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) $(TEST_DB_OPTS) ${TEST_DIR}
+	pytest $(_PYTEST_OPTS) $(_PDB_OPTS) $(TEST_POSTGRES_OPTS) ${TEST_DIR}
 
 test-all:
 	tox
 
 coverage:
-	pytest $(_PYTEST_OPTS) $(TEST_DB_OPTS) --cov=./mishmash \
+	pytest $(_PYTEST_OPTS) $(TEST_DPOSTGRESB_OPTS) --cov=./mishmash \
            --cov-report=html --cov-report term \
            --cov-config=setup.cfg ${TEST_DIR}
 
