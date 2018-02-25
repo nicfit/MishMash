@@ -15,6 +15,7 @@ before_install:
     - sudo apt-get install -y lame
 
 install:
+    - pip install tox
     - pip install -U -r requirements.txt
     - pip install -U -r requirements/test.txt
     - pip install coveralls

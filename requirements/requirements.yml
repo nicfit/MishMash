@@ -29,6 +29,7 @@ test:
     - pytest-postgres
     - faker
     - factory-boy
+    - tox
 
 dev:
     - nicfit.py[cookiecutter]
@@ -40,7 +41,6 @@ dev:
     - git+https://github.com/nicfit/gitchangelog.git@nicfit.py
     - ipdb
     - pip-tools
-    - tox
     - twine
     - wheel
     - pyaml
