@@ -33,7 +33,6 @@ class Command(BaseCommand):
                                 help="Specify a library.")
 
     def run(self, args, config):
-        import ipdb; ipdb.set_trace()   # FIXME
         from . import database
 
         self.config = config
