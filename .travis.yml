@@ -21,8 +21,7 @@ install:
 
 # command to run tests
 script:
-    - tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | cut -d- -f1) -e report
-
+    - tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | cut -d- -f1),report
 
 after_success:
   - coveralls

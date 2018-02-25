@@ -75,13 +75,13 @@ lint:
 	flake8 --builtins=_ $(SRC_DIRS)
 
 test:
-	tox -e py36
+	tox -e py-default
 
 test-all:
 	tox
 
 coverage:
-	tox -e report
+	tox -e py-default,report
 
 coverage-view: coverage
 	${BROWSER} build/tests/coverage/index.html;\
