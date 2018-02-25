@@ -6,7 +6,7 @@ Configuration
 -------------
 
 MishMash ships with a default configuration that should work out of the
-box with no extra additional settings by using a SQLite database resided in
+box with no extra additional settings by using a SQLite database saved in
 ``${HOME}/mishmash.db``.  Running ``mishmash info`` with demonstrate this,
 afterwards ``mishmash.db`` will exist in your home directory and be
 initialized with the database schema.
@@ -56,9 +56,9 @@ database is displayed.
 
 In you wish to make additional configuration changes, or would like to avoid
 needing to type the database URL all the time, a configuration is needed.  The
-file may contain the entire configuration (see ``info --show-config``) or only
+file may contain the entire configuration or only
 the values you wish to change (i.e. changes are applied to the default
-configuration).  With the settings saved to a file you use the ``-c/--config``
+configuration).  With the settings saved to a file use the ``-c/--config``
 option to have MishMash use it. In this examples the database URL and
 a logging level are modified.
 
@@ -95,11 +95,6 @@ files set.
 .. code-block:: bash
 
     $ MISHMASH_CONFIG=local.ini mishmish -c site.ini -D postgresql://dbserver.example.com:5432/music
-
-The command ``mishmash info --show-default`` will output the default
-configuration with no changes applied. Unlike ``--show-config`` this output
-contains comments which serves as the definitive documentation for all 
-sections and key/value settings.
 
 Databases
 ---------
@@ -169,6 +164,14 @@ TODO
 mishmash web
 -------------
 The ``web`` command runs the web interface.
+TODO
+
+mishmash merge-artists
+----------------------
+TODO
+
+mishmash split-artists
+----------------------
 TODO
 
 
