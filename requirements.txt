@@ -8,7 +8,7 @@ alembic==0.9.8
 attrs==17.4.0             # via nicfit.py
 chameleon==3.2            # via pyramid-chameleon
 countrycode==0.2
-deprecation==1.1          # via nicfit.py
+deprecation==1.2          # via nicfit.py
 eyed3==0.8.4
 hupper==1.0               # via pyramid
 inotify==0.2.9
@@ -26,7 +26,7 @@ pyfiglet==0.7.5
 pygments==2.2.0           # via pyramid-debugtoolbar
 pyparsing==2.2.0          # via packaging
 pyramid-chameleon==0.3
-pyramid-debugtoolbar==4.3
+pyramid-debugtoolbar==4.4
 pyramid-layout==1.0
 pyramid-mako==1.0.2       # via pyramid-debugtoolbar
 pyramid-tm==2.2
