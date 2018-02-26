@@ -8,8 +8,6 @@ class Playlist(collections.abc.MutableSequence):
         self.name = name
         self._data = list(pl or [])
         self.shuffle = False
-        self.repeat = False
-        #self.reset()
         self._shuffle_history = []
 
     '''
@@ -31,15 +29,6 @@ class Playlist(collections.abc.MutableSequence):
         else:
             raise ValueError("index out of range")
     '''
-
-    @property
-    def repeat(self):
-        return self._repeat
-
-    @repeat.setter
-    def repeat(self, enabled):
-        self._repeat = bool(enabled)
-
     @property
     def shuffle(self):
         return self._shuffle
@@ -88,8 +77,6 @@ class Playlist(collections.abc.MutableSequence):
                 (self.shuffle and len(self._shuffle_hist) <= len(self)))
 
     def getPrevious(self):
-        #import ipdb; ipdb.set_trace();
-        ...
         if not len(self):
             return None
 
@@ -198,11 +185,12 @@ class Playlist(collections.abc.MutableSequence):
 
 class Iterator:
 
-    def __init__(self, playlist, first=None):
+    def __init__(self, playlist, first=None, repeat=False):
         self._pl = playlist
         self._UPPER = Iterator.UpperBound(playlist)
         self._LOWER = Iterator.LowerBound(playlist)
         self.reset(first=first)
+        self.repeat = bool(repeat)
 
     class _Bounds:
         def __init__(self, pl):
@@ -218,33 +206,38 @@ class Iterator:
 
     def reset(self, first=None, seed=None):
         random.seed(seed)  # None uses os.urandom() or worst-case system time
-        self._ptr = max(first - 1, -1) if (first is not None) else None
+        self._ptr = min(max(first - 1, -1), len(self._pl))\
+                        if (first is not None) else None
 
     def next(self):
         if not len(self._pl):
             return None
-        elif self._ptr in (None, self._LOWER):
+
+        if self._ptr in (None, self._LOWER):
             self._ptr = -1
-        elif self._ptr == self._UPPER:
-            # TODO: repeat
-            return None
 
         self._ptr += 1
         if self._ptr == self._UPPER:
-            # TODO: repeat
-            return None
+            if self.repeat:
+                self.reset(first=0)
+                return self.next()
+            else:
+                return None
+
         item = self._pl[self._ptr]
         return item
 
     def prev(self):
         if not len(self._pl):
             return None
-        elif self._ptr is None:
-            # TODO: repeat
-            return None
+        elif (self._ptr is None) or (self._ptr - 1 == self._LOWER):
+            if self.repeat:
+                self.reset(first=len(self._pl) + 1)
+                return self.prev()
+            else:
+                self._ptr = -1
+                return None
 
-        self._ptr = max(self._ptr - 1, -1)
-        if self._ptr in (self._LOWER, self._UPPER):
-            return None
+        self._ptr -= 1
         item = self._pl[self._ptr]
         return item
