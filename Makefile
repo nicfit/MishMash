@@ -65,6 +65,7 @@ clean-pyc:
 
 clean-test:
 	rm -fr .tox/
+	rm -fr .pytest_cache
 	rm -f .coverage
 
 clean-patch:
