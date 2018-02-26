@@ -1,2 +1,2 @@
-# -*- coding: utf-8 -*-
-from .playlist import Playlist                                      # noqa: F401
+from .playlist import Playlist, Iterator
+__all__ = ["Playlist", "Iterator"]

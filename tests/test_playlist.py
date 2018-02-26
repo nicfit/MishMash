@@ -1,4 +1,4 @@
-from mishmash.playlist import Playlist
+from mishmash.playlist import Playlist, Iterator
 
 
 def test_Playlist_MutableSequence():
@@ -30,37 +30,69 @@ def test_Playlist_MutableSequence():
     assert not pl._data
     assert pl.name == "Swiz"
 
-    assert pl.current == -1
 
-
-def test_Playlist_getNext():
+def test_Iterator_next():
     pl = Playlist("The Black Angels", range(50))
     assert len(pl) == 50
 
-    vals = [pl.getNext() for _ in range(55)]
+    piter = Iterator(pl)
+    vals = [piter.next() for _ in range(55)]
     assert vals == [i for i in range(50)] + ([None] * 5)
 
-    pl.reset()
+    piter = Iterator(pl)
     pl.reverse()
-    vals = [pl.getNext() for _ in range(55)]
+    vals = [piter.next() for _ in range(55)]
     assert vals == list(reversed([i for i in range(50)])) + [None] * 5
 
     # No item iteration
-    pl = Playlist("Social Distortion")
-    assert [pl.getNext() for _ in range(20)] == [None] * 20
+    piter = Iterator(Playlist("Social Distortion"))
+    assert [piter.next() for _ in range(20)] == [None] * 20
 
 
-def test_Playlist_getPrevious():
+def test_Iterator_prev():
     pl = Playlist("Film School", range(5))
-    assert pl.getPrevious() == 4
-    assert pl.getPrevious() == 3
-    assert pl.getPrevious() == 2
-    assert pl.getPrevious() == 1
-    assert pl.getPrevious() == 0
-    import ipdb; ipdb.set_trace();
-    ...
-    assert pl.getPrevious() is None
-    #print(pl.getPrevious())
-    #print(pl.getPrevious())
-    #print(pl.getPrevious())
-    #print(pl.getPrevious())
+    piter = Iterator(pl)
+    assert piter.prev() == None
+
+    piter = Iterator(pl, first=len(pl))
+    assert piter.prev() == 3
+    assert piter.prev() == 2
+    assert piter.prev() == 1
+    assert piter.prev() == 0
+    assert piter.prev() is None
+    assert piter.prev() is None
+    assert piter.prev() is None
+    assert piter.next() == 0
+    assert piter.next() == 1
+    assert piter.next() == 2
+    assert piter.next() == 3
+    assert piter.next() == 4
+    assert piter.next() is None
+
+
+def test_Iterator_first():
+    piter = Iterator(Playlist("Skinless"))
+    assert piter.prev() == None
+    assert piter.next() == None
+
+    pl = Playlist("Obituary", range(5))
+
+    piter = Iterator(pl)
+    assert piter.prev() == None
+    assert piter.next() == 0
+
+    piter = Iterator(pl, first=0)
+    assert piter.prev() == None
+    assert piter.next() == 0
+
+    piter = Iterator(pl, first=1)
+    assert piter.next() == 1
+    assert piter.prev() == 0
+    assert piter.next() == 1
+    assert piter.next() == 2
+    assert piter.next() == 3
+    assert piter.prev() == 2
+    assert piter.next() == 3
+    assert piter.next() == 4
+    assert piter.next() == None
+    assert piter.prev() == 4
