@@ -12,23 +12,9 @@ class Playlist(collections.abc.MutableSequence):
 
     '''
     def reset(self, current=0, seed=None):
-        # Queued indexes where the beginning of the list is the next source
-        self._queue = []
         self._shuffle_hist = []
     '''
 
-    '''
-    @property
-    def current(self):
-        return self._curr_index
-
-    @current.setter
-    def current(self, i):
-        if 0 <= i < len(self):
-            self._curr_index = i
-        else:
-            raise ValueError("index out of range")
-    '''
     @property
     def shuffle(self):
         return self._shuffle
@@ -43,9 +29,7 @@ class Playlist(collections.abc.MutableSequence):
         if not len(self):
             return None
 
-        if self._queue:
-            self.current = self._queue.pop(0)
-        elif self.shuffle:
+        if self.shuffle:
             alls = set(range(len(self)))
             history = set(self._shuffle_history)
             choices = list(alls.difference(history))
@@ -155,42 +139,20 @@ class Playlist(collections.abc.MutableSequence):
 
         self._data.insert(i, item)
 
-    # --- Play queue interface --- #
-    def hasQueue(self):
-        return bool(self._queue)
-
-    @property
-    def queue(self):
-        """Returns a copy of the play queue (indices)"""
-        return list(self._queue)
-
-    @queue.setter
-    def queue(self, q):
-        """A list of integer indexes"""
-        self._queue.clear()
-        self._queue.extend(q)
-
-    def enqueue(self, idx, pos=None):
-        if idx in self._queue:
-            self._queue.remove(idx)
-
-        if pos is None:
-            self._queue.append(idx)
-        else:
-            self._queue.insert(pos, idx)
-
-    def dequeue(self, idx):
-        self._queue.remove(idx)
-
 
 class Iterator:
 
-    def __init__(self, playlist, first=None, repeat=False):
+    def __init__(self, playlist, first=None, repeat=False,
+                 stop_iteration=False):
+        self._stop_interation = stop_iteration
         self._pl = playlist
         self._UPPER = Iterator.UpperBound(playlist)
         self._LOWER = Iterator.LowerBound(playlist)
-        self.reset(first=first)
         self.repeat = bool(repeat)
+        # Queued indexes where the beginning of the list is the next source
+        self._queue = []
+
+        self.reset(first=first)
 
     class _Bounds:
         def __init__(self, pl):
@@ -206,38 +168,80 @@ class Iterator:
 
     def reset(self, first=None, seed=None):
         random.seed(seed)  # None uses os.urandom() or worst-case system time
+
+        self._queue.clear()
+
         self._ptr = min(max(first - 1, -1), len(self._pl))\
                         if (first is not None) else None
 
+    def _none(self):
+        if self._stop_interation:
+            raise StopIteration()
+        return None
+
     def next(self):
         if not len(self._pl):
-            return None
+            return self._none()
+        elif self._queue:
+            # Not changing _ptr
+            return self._pl[self._queue.pop(0)]
+        else:
+            if self._ptr in (None, self._LOWER):
+                self._ptr = -1
 
-        if self._ptr in (None, self._LOWER):
-            self._ptr = -1
-
-        self._ptr += 1
-        if self._ptr == self._UPPER:
-            if self.repeat:
-                self.reset(first=0)
-                return self.next()
-            else:
-                return None
+            self._ptr += 1
+            if self._ptr == self._UPPER:
+                if self.repeat:
+                    self.reset(first=0)
+                    return self.next()
+                else:
+                    return self._none()
 
         item = self._pl[self._ptr]
         return item
 
     def prev(self):
         if not len(self._pl):
-            return None
+            return self._none()
         elif (self._ptr is None) or (self._ptr - 1 == self._LOWER):
             if self.repeat:
                 self.reset(first=len(self._pl) + 1)
                 return self.prev()
             else:
                 self._ptr = -1
-                return None
+                return self._none()
 
         self._ptr -= 1
         item = self._pl[self._ptr]
         return item
+
+    # --- Play queue interface --- #
+    def hasQueue(self):
+        return bool(self._queue)
+
+    @property
+    def queue(self):
+        """Returns a copy of the play queue (indices)"""
+        return list(self._queue)
+
+    @queue.setter
+    def queue(self, q):
+        """A list of integer indexes"""
+        self._queue.clear()
+        for idx in q:
+            self.enqueue(idx)
+
+    def enqueue(self, idx, pos=None):
+        if idx not in range(len(self._pl)):
+            raise IndexError()
+
+        if idx in self._queue:
+            self._queue.remove(idx)
+
+        if pos is None:
+            self._queue.append(idx)
+        else:
+            self._queue.insert(pos, idx)
+
+    def dequeue(self, idx):
+        self._queue.remove(idx)
