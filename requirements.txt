@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file ./requirements.txt requirements.txt
 #
-alembic==0.9.8
+alembic==0.9.9
 attrs==17.4.0             # via nicfit.py
 chameleon==3.2            # via pyramid-chameleon
 countrycode==0.2
@@ -31,12 +31,12 @@ pyramid-layout==1.0
 pyramid-mako==1.0.2       # via pyramid-debugtoolbar
 pyramid-tm==2.2
 pyramid==1.9.1
-python-dateutil==2.6.1    # via alembic
+python-dateutil==2.7.0    # via alembic
 python-editor==1.0.3      # via alembic
 python-magic==0.4.15      # via eyed3
 repoze.lru==0.7           # via pyramid, pyramid-debugtoolbar
 six==1.11.0               # via eyed3, packaging, python-dateutil, sqlalchemy-utils
-sqlalchemy-utils==0.33.0
+sqlalchemy-utils==0.33.1
 sqlalchemy==1.2.5
 transaction==2.2.0
 translationstring==1.3    # via pyramid
