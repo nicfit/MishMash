@@ -10,5 +10,5 @@ pss==1.41
 pyaml==17.12.1
 sphinx_rtd_theme==0.2.4
 tox==2.9.1
-twine==1.9.1
+twine==1.11.0
 wheel==0.30.0
