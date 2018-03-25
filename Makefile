@@ -66,6 +66,7 @@ clean-pyc:
 clean-test:
 	rm -fr .tox/
 	rm -f .coverage
+	rm -fr .pytest_cache/
 
 clean-patch:
 	find . -name '*.rej' -exec rm -f '{}' \;
