@@ -170,7 +170,7 @@ class SyncPlugin(LoaderPlugin):
                 # stash the album though, we'll look for artwork
                 # updates later
                 album = track.album
-                return
+                return album
 
         # Either adding the track (track == None)
         # or modifying (track != None)
