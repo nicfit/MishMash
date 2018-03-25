@@ -13,7 +13,7 @@ from sqlalchemy_utils.functions import (database_exists,
                                         drop_database)
 
 from .orm import TYPES
-from .orm import Artist, Track, Album, Tag, Library, NULL_LIB_ID
+from .orm import Artist, Track, Album, Tag
 from .util import safeDbUrl
 
 DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
@@ -68,6 +68,7 @@ def dropAll(url):
 ## ###########################################################################3
 ## Works-in-progress, subject to change
 ## ###########################################################################3
+
 
 def getTag(t, session, lid, add=False):
     tag = None
