@@ -10,7 +10,7 @@ chameleon==3.2            # via pyramid-chameleon
 countrycode==0.2
 deprecation==2.0          # via nicfit.py
 eyed3==0.8.4
-hupper==1.0               # via pyramid
+hupper==1.1               # via pyramid
 inotify==0.2.9
 mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.0           # via mako
