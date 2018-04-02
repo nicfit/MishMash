@@ -167,10 +167,7 @@ class SyncPlugin(LoaderPlugin):
         else:
             if datetime.fromtimestamp(getctime(path)) == track.ctime:
                 # Track is in DB and the file is not modified.
-                # stash the album though, we'll look for artwork
-                # updates later
-                album = track.album
-                return album
+                return track.album
 
         # Either adding the track (track == None)
         # or modifying (track != None)
