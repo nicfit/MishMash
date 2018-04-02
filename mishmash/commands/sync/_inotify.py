@@ -9,7 +9,6 @@ from inotify.constants import (IN_ACCESS, IN_ALL_EVENTS, IN_ATTRIB,
                                IN_CLOSE_WRITE, IN_CLOSE_NOWRITE, IN_CREATE,
                                IN_DELETE, IN_ISDIR, IN_OPEN, IN_MODIFY,
                                IN_MOVED_TO, IN_MOVED_FROM)
-from eyed3 import LOCAL_FS_ENCODING
 
 SYNC_INTERVAL = 10
 # FIXME: replace prints with logging
@@ -48,11 +47,10 @@ class Monitor(multiprocessing.Process):
                     self._watched_dirs[lib].add(path)
 
                     if not watched:
-                        self._inotify.add_watch(
-                            str(path).encode(LOCAL_FS_ENCODING),
-                            self._inotify_mask)
+                        self._inotify.add_watch(str(path), self._inotify_mask)
                         print("Watching {} (lib: {}) (total dirs: {})"
-                              .format(path, lib, len(watched)))
+                              .format(path, lib,
+                                      len(self._watched_dirs[lib])))
 
                 # Process Inotify
                 for event in self._inotify.event_gen():
@@ -63,8 +61,8 @@ class Monitor(multiprocessing.Process):
                      type_names,
                      watch_path,
                      filename) = event
-                    watch_path = Path(str(watch_path, LOCAL_FS_ENCODING))
-                    filename = Path(str(filename, LOCAL_FS_ENCODING))
+                    watch_path = Path(watch_path)
+                    filename = Path(filename)
 
                     print("WD=({:d}) MASK=({:d}) "
                           "MASK->NAMES={} WATCH-PATH={} FILENAME={}"
@@ -76,8 +74,7 @@ class Monitor(multiprocessing.Process):
                         if IN_ISDIR & header.mask and header.mask & IN_CREATE:
                             watch_path = watch_path / filename
                         elif IN_ISDIR & header.mask and header.mask & IN_DELETE:
-                            self._inotify.remove_watch(
-                                    str(watch_path).encode(LOCAL_FS_ENCODING))
+                            self._inotify.remove_watch(str(watch_path))
 
                         sync_dirs.add(watch_path)
 
@@ -105,7 +102,7 @@ class Monitor(multiprocessing.Process):
             pass
         finally:
             for path in set(chain(*self._watched_dirs.values())):
-                self._inotify.remove_watch(str(path).encode(LOCAL_FS_ENCODING))
+                self._inotify.remove_watch(str(path))
 
     @property
     def dir_queue(self):
