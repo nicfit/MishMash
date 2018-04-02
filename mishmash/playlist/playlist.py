@@ -25,6 +25,7 @@ class Playlist(collections.abc.MutableSequence):
         self._shuffle_hist = []
 
     # --- Iterator interfaces --- #
+    '''
     def getNext(self):
         if not len(self):
             return None
@@ -89,6 +90,7 @@ class Playlist(collections.abc.MutableSequence):
             return False
         return (self.shuffle and len(self._shuffle_hist) > 0) or \
                 self.repeat or self.current > 0
+    '''
 
     # --- MutableSequence interface --- #
     def __delitem__(self, i):
