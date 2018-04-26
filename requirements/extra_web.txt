@@ -1,4 +1,4 @@
-pyramid==1.9.1
+pyramid==1.9.2
 pyramid-debugtoolbar==4.4
 pyramid-layout==1.0
 pyramid_chameleon==0.3
