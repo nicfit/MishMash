@@ -1,4 +1,4 @@
-factory-boy==2.10.0
+factory-boy==2.11.1
 faker==0.8.13
 pytest==3.5.1
 pytest-cov==2.5.1
