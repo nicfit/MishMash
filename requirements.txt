@@ -9,7 +9,7 @@ attrs==18.1.0             # via nicfit.py
 chameleon==3.3            # via pyramid-chameleon
 countrycode==0.2
 deprecation==2.0.2          # via nicfit.py
-eyed3==0.8.5
+eyed3==0.8.6
 hupper==1.2               # via pyramid
 inotify==0.2.9
 mako==1.0.7               # via alembic, pyramid-mako
