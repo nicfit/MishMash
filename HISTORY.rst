@@ -3,6 +3,25 @@ Release History
 
 .. :changelog:
 
+v0.3b7 (2018-06-18)
+------------------------
+
+New
+~~~
+- More multi-lib supoort (merge, split, info)
+
+Fix
+~~~
+- Return resolved album when a sync does not occur.
+- Recent inotify uses Unicode natively, remove conversions to bytes.
+- Pick up new image files when rescanning and no audio files changed.
+
+Other
+~~~~~
+- Run make test targets thru tox. Travis-CI will do this in a future
+  commit.
+
+
 v0.3b6 (2018-02-18)
 --------------------
 
