@@ -21,7 +21,7 @@ nose==1.3.7               # via inotify
 packaging==17.1           # via deprecation
 pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid
 pathlib==1.0.1            # via eyed3
-plaster-pastedeploy==0.5  # via pyramid
+plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
 psycopg2-binary==2.7.5
 pyaml==17.12.1            # via nicfit.py
