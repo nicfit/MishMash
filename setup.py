@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import io
 import os
 import re
@@ -16,7 +15,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
 ]
 
 
@@ -44,10 +42,7 @@ def getPackageInfo():
                     continue
                 info_dict[what] = m.groups()[0]
 
-    if sys.version_info[:2] >= (3, 4):
-        vparts = info_dict["version"].split("-", maxsplit=1)
-    else:
-        vparts = info_dict["version"].split("-", 1)
+    vparts = info_dict["version"].split("-", maxsplit=1)
     info_dict["release"] = vparts[1] if len(vparts) > 1 else "final"
 
     # Requirements
