@@ -1,6 +1,6 @@
 factory-boy==2.11.1
 faker==0.8.18
-pytest==3.7.1
+pytest==3.7.3
 pytest-cov==2.5.1
 pytest-postgres==0.5.0
 pytest-runner==4.2
