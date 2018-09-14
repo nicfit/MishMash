@@ -1,8 +1,8 @@
-SQLAlchemy==1.2.9
-alembic==0.9.10
+SQLAlchemy==1.2.10
+alembic==1.0.0
 countrycode==0.2
 eyeD3==0.8.7
 inotify==0.2.9
-nicfit.py==0.8.1
+nicfit.py==0.8.2
 pyfiglet==0.7.5
 sqlalchemy-utils==0.33.1
