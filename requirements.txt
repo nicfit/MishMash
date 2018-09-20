@@ -38,7 +38,7 @@ python-magic==0.4.15      # via eyed3
 pyyaml==3.13              # via pyaml
 repoze.lru==0.7           # via pyramid, pyramid-debugtoolbar
 six==1.11.0               # via eyed3, packaging, python-dateutil, sqlalchemy-utils
-sqlalchemy-utils==0.33.1
+sqlalchemy-utils==0.33.5
 sqlalchemy==1.2.12
 traceback2==1.4.0         # via unittest2
 transaction==2.2.1
