@@ -25,7 +25,7 @@ psycopg2-binary==2.7.5
 pyaml==17.12.1            # via nicfit.py
 pyfiglet==0.7.5
 pygments==2.2.0           # via pyramid-debugtoolbar
-pyparsing==2.2.1          # via packaging
+pyparsing==2.2.2          # via packaging
 pyramid-chameleon==0.3
 pyramid-debugtoolbar==4.5
 pyramid-layout==1.0
