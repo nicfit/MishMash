@@ -23,7 +23,7 @@ plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
 psycopg2-binary==2.7.5
 pyaml==17.12.1            # via nicfit.py
-pyfiglet==0.7.5
+pyfiglet==0.7.6
 pygments==2.2.0           # via pyramid-debugtoolbar
 pyparsing==2.2.1          # via packaging
 pyramid-chameleon==0.3
