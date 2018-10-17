@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file ./requirements.txt requirements.txt
 #
-alembic==1.0.0
+alembic==1.0.1
 attrs==18.2.0             # via nicfit.py
 chameleon==3.4            # via pyramid-chameleon
 countrycode==0.2
