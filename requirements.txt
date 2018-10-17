@@ -6,7 +6,7 @@
 #
 alembic==1.0.0
 attrs==18.2.0             # via nicfit.py
-chameleon==3.4            # via pyramid-chameleon
+chameleon==3.5            # via pyramid-chameleon
 countrycode==0.2
 deprecation==2.0.5        # via nicfit.py
 eyed3==0.8.7
