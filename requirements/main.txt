@@ -1,5 +1,5 @@
 SQLAlchemy==1.2.12
-alembic==1.0.0
+alembic==1.0.1
 countrycode==0.2
 eyeD3==0.8.7
 inotify==0.2.9
