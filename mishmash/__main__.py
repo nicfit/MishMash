@@ -26,7 +26,7 @@ def main(args):
     try:
         multiprocessing.set_start_method("fork")
     except RuntimeError as ex:
-        log.warn("multiprocessing.set_start_method: " + str(ex))
+        log.warning("multiprocessing.set_start_method: " + str(ex))
 
     if not args.command:
         # No command was given.
