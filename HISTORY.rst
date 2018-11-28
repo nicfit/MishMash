@@ -3,6 +3,13 @@ Release History
 
 .. :changelog:
 
+v0.3b8 (2018-11-28)
+------------------------
+
+New
+~~~
+- Added `MishMash(ConfigClass=clazz)` keyword argument.
+
 v0.3b7 (2018-06-18)
 ------------------------
 

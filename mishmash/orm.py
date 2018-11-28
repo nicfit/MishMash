@@ -101,8 +101,8 @@ class OrmObject(object):
         for key in self.__dict__:
             if not key.startswith('_'):
                 attrs.append((key, getattr(self, key)))
-        return self.__class__.__name__ + '(' + ', '.join(x[0] + '=' +
-                                            repr(x[1]) for x in attrs) + ')'
+        return self.__class__.__name__ + '(' + \
+               ', '.join(x[0] + '=' + repr(x[1]) for x in attrs) + ')'
 
 
 class Meta(Base, OrmObject):

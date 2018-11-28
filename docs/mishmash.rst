@@ -12,48 +12,48 @@ Subpackages
 Submodules
 ----------
 
-mishmash\.config module
------------------------
+mishmash.config module
+----------------------
 
 .. automodule:: mishmash.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-mishmash\.console module
-------------------------
+mishmash.console module
+-----------------------
 
 .. automodule:: mishmash.console
     :members:
     :undoc-members:
     :show-inheritance:
 
-mishmash\.core module
----------------------
+mishmash.core module
+--------------------
 
 .. automodule:: mishmash.core
     :members:
     :undoc-members:
     :show-inheritance:
 
-mishmash\.database module
--------------------------
+mishmash.database module
+------------------------
 
 .. automodule:: mishmash.database
     :members:
     :undoc-members:
     :show-inheritance:
 
-mishmash\.orm module
---------------------
+mishmash.orm module
+-------------------
 
 .. automodule:: mishmash.orm
     :members:
     :undoc-members:
     :show-inheritance:
 
-mishmash\.util module
----------------------
+mishmash.util module
+--------------------
 
 .. automodule:: mishmash.util
     :members:

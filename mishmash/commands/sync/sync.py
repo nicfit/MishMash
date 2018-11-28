@@ -327,7 +327,7 @@ class SyncPlugin(LoaderPlugin):
             try:
                 album = self._syncAudioFile(audio_file, album_type, d_datetime,
                                             session)
-            except Exception as ex:
+            except Exception:
                 # TODO: log and skip????
                 raise
 

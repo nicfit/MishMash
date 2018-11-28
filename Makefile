@@ -101,7 +101,7 @@ clean-docs:
 	$(MAKE) -C docs clean
 	-rm README.html
 
-pre-release: lint test changelog requirements
+pre-release: lint requirements test changelog
 	@# Keep docs off pre-release target list, else it is pruned during 'release' but
 	@# after a clean.
 	@$(MAKE) docs

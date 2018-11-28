@@ -48,11 +48,10 @@ def main(args):
     try:
         # Run command
         retval = args.command_func(args, args.config) or 0
-    except (KeyboardInterrupt, PromptExit) as ex:
+    except (KeyboardInterrupt, PromptExit):
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
-    except (sql_exceptions.ArgumentError,
-            sql_exceptions.OperationalError) as ex:
+    except (sql_exceptions.ArgumentError, sql_exceptions.OperationalError):
         _pErr("Database error")
         retval = 1
     except Exception as ex:

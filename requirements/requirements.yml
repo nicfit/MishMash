@@ -37,7 +37,7 @@ dev:
     - babel
     - check-manifest
     - flake8
-    - git+https://github.com/nicfit/gitchangelog.git@nicfit.py
+    #- git+https://github.com/nicfit/gitchangelog.git@nicfit.py
     - ipdb
     - pip-tools
     - tox
