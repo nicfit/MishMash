@@ -3,6 +3,6 @@ pyramid-debugtoolbar==4.5
 pyramid-layout==1.0
 pyramid_chameleon==0.3
 pyramid_tm==2.2.1
-transaction==2.2.1
+transaction==2.4.0
 waitress==1.1.0
 zope.sqlalchemy==1.0
