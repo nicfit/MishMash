@@ -22,7 +22,7 @@ pathlib==1.0.1            # via eyed3
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
 psycopg2-binary==2.7.6.1
-pyfiglet==0.7.5
+pyfiglet==0.7.6
 pygments==2.3.0           # via pyramid-debugtoolbar
 pyparsing==2.3.0          # via packaging
 pyramid-chameleon==0.3
