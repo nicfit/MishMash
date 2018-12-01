@@ -1,5 +1,5 @@
 import os
-import re
+from urllib.parse import urlparse
 from eyed3.utils import datePicker
 from countrycode.countrycode import countrycode
 
@@ -70,8 +70,6 @@ def mostCommonItem(lst):
 
 
 def safeDbUrl(db_url):
-    if db_url.startswith("postgres"):
-        m = re.compile(r"(\w+)://(\w+):(?P<password>\w+)@.*$").match(db_url)
-        if m:
-            db_url = db_url.replace(m.group("password"), "*" * 10)
-    return db_url
+    """Obfuscates password from a database URL."""
+    url = urlparse(db_url)
+    return db_url.replace(url.password, "****") if url.password else db_url
