@@ -17,7 +17,7 @@ markupsafe==1.1.0         # via mako
 nicfit.py==0.8.2
 nose==1.3.7               # via inotify
 packaging==18.0           # via deprecation
-pastedeploy==1.5.2        # via plaster-pastedeploy, pyramid
+pastedeploy==2.0.0        # via plaster-pastedeploy, pyramid
 pathlib==1.0.1            # via eyed3
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
