@@ -28,7 +28,7 @@ def main(args):
     except RuntimeError as ex:
         log.warning("multiprocessing.set_start_method: " + str(ex))
 
-    if not args.command:
+    if not hasattr(args, "command_func") or not args.command_func:
         # No command was given.
         args.app.arg_parser.print_help()
         return 1
