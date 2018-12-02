@@ -54,14 +54,14 @@ Let's leave it here for now, it can be located elsewhere or use a different
 database using command line arguments and/or environment variables. Pretty
 useless, so now add some music.::
 
-    $ mishmash sync /home/travis/Music/Melvins
-    Syncing library 'Music': paths=['/home/travis/Music/Melvins/']
-    Syncing directory: /home/travis/Music/Melvins/
-    Syncing directory: /home/travis/Music/Melvins/1984 - Mangled Demos
+    $ mishmash sync ~/Music/Melvins
+    Syncing library 'Music': paths=['~/Music/Melvins/']
+    Syncing directory: ~/Music/Melvins/
+    Syncing directory: ~/Music/Melvins/1984 - Mangled Demos
     Adding artist: Melvins
-    Syncing directory: /home/travis/Music/Melvins/1986 - 10 Songs
+    Syncing directory: ~/Music/Melvins/1986 - 10 Songs
     Adding album: 10 Songs
-    Adding track: /mnt/Media/Media/audio/music/Melvins/1986 - 10 Songs/Melvins - 01 - Easy As It Was.mp3
+    Adding track: ~/Music/Melvins/1986 - 10 Songs/Melvins - 01 - Easy As It Was.mp3
     Updating album: 10 Songs
     ...
     == Library 'Music' sync'd [ 8.73s time (45.9 files/s) ] ==

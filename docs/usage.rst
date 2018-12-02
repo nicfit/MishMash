@@ -172,7 +172,41 @@ TODO
 
 mishmash split-artists
 ----------------------
-TODO
+Since MishMash tries not to make assumption about directory structure there may
+be times when multiple artists with the same name are merged. The
+`split-artists` command can use to fix this.::
+
+     $ mishmash split-artists -L Music "The Giraffes"
+
+The city of origin is used to distinguish between each of the artists and then
+albums are assigned to each.::
+
+    4 albums by The Giraffes:
+       2005       The Giraffes
+       2005       Haunted Heaven EP
+       2008       Prime Motivator
+       2000       The Days Are Filled With Years
+
+    Enter the number of distinct artists: 2
+
+    The Giraffes #1
+       City: Brooklyn
+       State: NY
+       Country: US
+
+    The Giraffes #2
+       City: Seattle
+       State: WA
+       Country: USA
+
+    Assign albums to the correct artist.
+    Enter 1 for The Giraffes from Brooklyn, NY, USA
+    Enter 2 for The Giraffes from Seattle, WA, USA
+
+    The Giraffes (Giraffes, The (Brooklyn)/2005 - The Giraffes): 1
+    Haunted Heaven EP (Giraffes, The (Brooklyn)/2005 - Haunted Heaven EP): 1
+    Prime Motivator (Giraffes, The (Brooklyn)/2008 - Prime Motivator): 1
+    The Days Are Filled With Years (Giraffes, The (Seattle)/2000 - The Days Are Filled With Years): 2
 
 
 .. _SQLAlchemy database URLs: http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html#database-urls
