@@ -1,5 +1,4 @@
-<metal:block use-macro="main_template">
-<div metal:fill-slot="content">
+<metal:block use-macro="main_template"><div metal:fill-slot="content">
 <!--! begin content -->
 
 <div class="container">
@@ -8,6 +7,7 @@
       <span tal:repeat="L album_decades"><a href="#${L}"><strong>${L}</strong></a>&nbsp;</span>
   </div>
 </div>
+
 <div class="row text-center">
     <div class="col albums-box">
         <span tal:repeat="T album_types.items()" class="albums-type-checkbox">
@@ -29,53 +29,12 @@
 </span>
 </div>
 
+<script src="${request.static_url('mishmash.web:static/js/mishmash.js')}"></script>
 <script>
-
 $('.type-checkbox').on('change', function() {
-    var new_search = "";
-    var all_checked = true;
-
-    $(".type-checkbox").each(function(i) {
-        all_checked &= this.checked;
-        new_search += (new_search ? "&" : "?") + ("type=" + (this.checked ? this.name : ("!" + this.name)));
-    });
-
-    if (!all_checked) {
-        window.location.search = new_search;
-    }
-    else {
-        window.location.search = "";
-    }
+    window.location.search = searchParamsFromAlbumTypeChecks();
 });
-    /*
-$(function(){
-var Url;
-$("input[type='checkbox']").click(function(){
-    Url = 'http://myhomepage.com?';
-    $.each($("input[type='checkbox']"),function(){
-
-    if(this.checked)
-    {
-        var html = $.trim($(this).parent().html().replace('<input type="checkbox"> ',''));
-        Url = Url + html + "=1&";
-    }
-
-    });
-    console.log(Url);
-    $.ajax({
-      url: Url,
-      success: function(data) {
-        $('#result').html(data);
-         alert('Load was performed.');
-      }
-    });
-
-});
-
-});
-*/
 </script>
 
 <!--! end content -->
-</div>
-</metal:block>
+</div></metal:block>

@@ -1,5 +1,4 @@
-<metal:block use-macro="main_template">
-  <div metal:fill-slot="content">
+<metal:block use-macro="main_template"><div metal:fill-slot="content">
 <!--! begin content -->
 
 <div id="artist-header">
@@ -10,7 +9,7 @@
 <ul class="nav nav-tabs">
   <li tal:repeat="t tabs" class="${'active' if t[2]
                                             else ('' if t[3] else 'disabled')}">
-  
+
     <a tal:define="tab_url '%s?album_tab=%s' % (request.path_url, t[0]) if t[3]
                            else 'javascript: void(0)'"
        href="${tab_url}">${t[1]}</a>
@@ -42,5 +41,4 @@
 </table>
 
 <!--! end content -->
-  </div>
-</metal:block>
+</div></metal:block>

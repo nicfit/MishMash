@@ -1,5 +1,4 @@
-<metal:block use-macro="main_template">
-  <div metal:fill-slot="content">
+<metal:block use-macro="main_template"><div metal:fill-slot="content">
 <!--! begin content -->
 
 <div class="row">
@@ -67,5 +66,4 @@
 </div>
 
 <!--! end content -->
-  </div>
-</metal:block>
+</div></metal:block>

@@ -1,5 +1,4 @@
-<metal:block use-macro="main_template">
-  <div metal:fill-slot="content">
+<metal:block use-macro="main_template"><div metal:fill-slot="content">
 <!--! begin content -->
 
 <table class='table-unstyled table-condensed'
@@ -17,5 +16,4 @@
 </table>
 
 <!--! end content -->
-  </div>
-</metal:block>
+</div></metal:block>

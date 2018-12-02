@@ -57,6 +57,7 @@ def allArtistsView(request):
 
     buckets = set()
     artist_dict = {}
+    artist_types = {}
 
     def _whichBucket(name):
         first_l = name[0].upper()
@@ -65,12 +66,21 @@ def allArtistsView(request):
         buckets.add(first_l)
         return first_l
 
+    active_types = _getActiveAlbumTypes(request.params)
     session = request.DBSession
     for artist in session.query(Artist)\
                          .order_by(Artist.sort_name).all():
 
-        types = set([a.type for a in artist.albums])
-        print("TYPES: ", types)
+        types = set([alb.type for alb in artist.albums])
+        for t in types:
+            if t not in artist_types:
+                artist_types[t] = {
+                    "active": t in active_types,
+                }
+
+        if not active_types.intersection(types):
+            continue
+
         bucket = _whichBucket(artist.sort_name)
         if bucket not in artist_dict:
             artist_dict[bucket] = []
@@ -96,8 +106,7 @@ def allArtistsView(request):
         buckets.remove(OTHER)
         buckets.append(OTHER)
 
-    return ResponseDict(artist_keys=buckets,
-                        artist_dict=artist_dict)
+    return ResponseDict(artist_keys=buckets, artist_dict=artist_dict, artist_types=artist_types)
 
 
 @view_config(route_name="artist", renderer="templates/artist.pt",
@@ -223,12 +232,7 @@ def allAlbumsView(request):
     album_dict = {}
     album_types = {}
 
-    inc_types = set([p for p in request.params.getall("type") if p[0] != '!'])
-    exc_types = set([p[1:] for p in request.params.getall("type") if p[0] == '!'])
-    active_types = set(ALBUM_TYPE_IDS).difference(exc_types)
-    if inc_types:
-        active_types = active_types.intersection(inc_types)
-
+    active_types = _getActiveAlbumTypes(request.params)
     session = request.DBSession
     for album in session.query(Album)\
                         .order_by(Album.original_release_date).all():
@@ -253,3 +257,11 @@ def allAlbumsView(request):
 
     return ResponseDict(album_decades=buckets, album_dict=album_dict, album_types=album_types)
 
+
+def _getActiveAlbumTypes(params):
+    inc_types = set([p for p in params.getall("type") if p[0] != '!'])
+    exc_types = set([p[1:] for p in params.getall("type") if p[0] == '!'])
+    active_types = set(ALBUM_TYPE_IDS).difference(exc_types)
+    if inc_types:
+        active_types = active_types.intersection(inc_types)
+    return active_types
