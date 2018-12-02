@@ -24,6 +24,7 @@ else:
                                cache_max_age=3600)
 
         config.add_route('all_artists', '/artists')
+        config.add_route('all_albums', '/albums')
         config.add_route('artist', '/artist/{id:\d+}')  # noqa: W605
         config.add_route('images.covers', '/images/covers/{id:\d+|default}')  # noqa: W605
         config.add_route('home', '/')

@@ -1,12 +1,21 @@
-<metal:block use-macro="main_template">
-  <div metal:fill-slot="content">
+    <metal:block use-macro="main_template">
+<div metal:fill-slot="content">
 <!--! begin content -->
 
-<div class="page-header">
-  <h2>Welcome to ${project_name}!</h2>
-</div>
+    <h3>Browse:</h3>
+    <div class="list-group">
+        <li class="list-group-item">
+            <a href="${request.route_url('new_music')}">New Music</a>
+        </li>
+        <li class="list-group-item">
+            <a href="${request.route_url('all_artists')}">Artists A-Z</a>
+        </li>
+        <li class="list-group-item">
+            <a href="${request.route_url('all_albums')}">Albums By Date</a>
+        </li>
+    </div>
 
 <!--! end content -->
-  </div>
+</div>
 </metal:block>
 

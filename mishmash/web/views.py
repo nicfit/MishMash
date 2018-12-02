@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import random
 from gettext import gettext as _
@@ -10,9 +9,8 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy import desc
 
 from eyed3.utils import formatTime
-from eyed3.core import ALBUM_TYPE_IDS
 from eyed3.core import (LP_TYPE, EP_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE,
-                        DEMO_TYPE, SINGLE_TYPE)
+                        DEMO_TYPE, SINGLE_TYPE, ALBUM_TYPE_IDS)
 
 from ..__about__ import __project_name__ as PROJECT_NAME
 from ..__about__ import __version__ as VERSION
@@ -71,6 +69,8 @@ def allArtistsView(request):
     for artist in session.query(Artist)\
                          .order_by(Artist.sort_name).all():
 
+        types = set([a.type for a in artist.albums])
+        print("TYPES: ", types)
         bucket = _whichBucket(artist.sort_name)
         if bucket not in artist_dict:
             artist_dict[bucket] = []
@@ -215,3 +215,41 @@ def searchView(request):
     query = request.POST["q"]
     results = database.search(request.DBSession, query)
     return ResponseDict(**results)
+
+
+@view_config(route_name="all_albums", renderer="templates/albums.pt",
+             layout="main-layout")
+def allAlbumsView(request):
+    album_dict = {}
+    album_types = {}
+
+    inc_types = set([p for p in request.params.getall("type") if p[0] != '!'])
+    exc_types = set([p[1:] for p in request.params.getall("type") if p[0] == '!'])
+    active_types = set(ALBUM_TYPE_IDS).difference(exc_types)
+    if inc_types:
+        active_types = active_types.intersection(inc_types)
+
+    session = request.DBSession
+    for album in session.query(Album)\
+                        .order_by(Album.original_release_date).all():
+
+        if album.type not in album_types:
+            album_types[album.type] = {
+                "active": album.type in active_types,
+            }
+
+        if not album_types[album.type]["active"]:
+            continue
+
+        d = album.getBestDate()
+        bucket = d.year // 10 * 10 if d else 0
+        if bucket not in album_dict:
+            album_dict[bucket] = []
+
+        album_dict[bucket].append(album)
+
+    buckets = list(album_dict.keys())
+    buckets.sort()
+
+    return ResponseDict(album_decades=buckets, album_dict=album_dict, album_types=album_types)
+

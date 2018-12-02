@@ -15,5 +15,14 @@ img.shadow {
 
 /* album view (album.pt) */
 .track-artists {
-    font-size: 0.70;
+    font-size: 70%;
+}
+
+.albums-box {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.albums-type-checkbox {
+    padding-right: 10px;
 }

@@ -17,7 +17,7 @@ markupsafe==1.1.0         # via mako
 nicfit.py==0.8.2
 nose==1.3.7               # via inotify
 packaging==18.0           # via deprecation
-pastedeploy==2.0.0        # via plaster-pastedeploy, pyramid
+pastedeploy==2.0.0        # via plaster-pastedeploy
 pathlib==1.0.1            # via eyed3
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
@@ -35,7 +35,7 @@ python-dateutil==2.7.5    # via alembic
 python-editor==1.0.3      # via alembic
 python-magic==0.4.15      # via eyed3
 pyyaml==3.13              # via nicfit.py
-repoze.lru==0.7           # via pyramid, pyramid-debugtoolbar
+repoze.lru==0.7           # via pyramid-debugtoolbar
 six==1.11.0               # via eyed3, packaging, python-dateutil, sqlalchemy-utils
 sqlalchemy-utils==0.33.1
 sqlalchemy==1.2.14

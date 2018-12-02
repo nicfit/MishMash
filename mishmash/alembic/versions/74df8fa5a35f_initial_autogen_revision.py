@@ -9,7 +9,7 @@ import datetime
 from alembic import op
 import sqlalchemy as sa
 import mishmash
-from mishmash.orm import Library, Artist, Album, Track, Image, Tag, Meta
+from mishmash.orm import Library, Artist, Album, Track, Image, Tag, Meta, ALBUM_TYPE_IDS
 from mishmash.orm import AlbumDate
 
 
@@ -122,10 +122,7 @@ def upgrade():
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('title', sa.Unicode(length=Album.TITLE_LIMIT),
                               nullable=False),
-                    sa.Column('type', sa.Enum('lp', 'ep', 'compilation',
-                                              'live', 'various', 'demo',
-                                              'single',
-                                              name='album_types'),
+                    sa.Column('type', sa.Enum(*ALBUM_TYPE_IDS, name='album_types'),
                               nullable=False),
                     sa.Column('date_added', sa.DateTime(), nullable=False),
                     sa.Column('release_date',
