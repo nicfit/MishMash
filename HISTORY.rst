@@ -3,6 +3,20 @@ Release History
 
 .. :changelog:
 
+v0.3b9 (2018-12-02)
+------------------------
+
+New
+~~~
+- Split-artist docs.
+- `mishmash web` albums view.
+- `mishmash web` artist filters.
+
+Fix
+~~~
+- Database URL obfuscation is more reliable.
+
+
 v0.3b8 (2018-11-28)
 ------------------------
 
