@@ -286,7 +286,7 @@ class SyncPlugin(LoaderPlugin):
             artists = set()
             album_artists = set()
             albums = set()
-            for tag in [tag for f in audio_files if f.tag]:
+            for tag in [f.tag for f in audio_files if f.tag]:
                 if tag.artist:
                     artists.add(tag.artist)
                 if tag.album_artist:
