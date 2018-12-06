@@ -63,8 +63,12 @@ def main(args):
 
 
 class MishMash(Application):
-    def __init__(self, progname="mishmash", ConfigClass=None):
+    def __init__(self, progname="mishmash", ConfigClass=None, config_obj=None):
         from . import version
+
+        if ConfigClass and config_obj:
+            raise ValueError("ConfigClass and config_obj are not compatible together.")
+
         config_opts = ConfigOpts(required=False,
                                  default_config=DEFAULT_CONFIG,
                                  default_config_opt="--default-config",
@@ -83,6 +87,13 @@ class MishMash(Application):
                                               description=desc, required=False)
         Command.loadCommandMap(subparsers=subs)
         self.arg_subparsers = subs
+        self._user_config = config_obj
+
+    def _main(self, args):
+        if self._user_config:
+            args.config = self._user_config
+
+        return super()._main(args)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
