@@ -525,7 +525,8 @@ class Library(Base, OrmObject):
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
-TABLES = [T.__table__ for T in TYPES] + TAGS
+IMAGE_TABLES = [artist_images, album_images]
+TABLES = [T.__table__ for T in TYPES] + TAGS + IMAGE_TABLES
 """All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order."""
 ENUMS = [Image._types_enum, Album._types_enum]

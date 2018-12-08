@@ -4,7 +4,7 @@ from eyed3.core import VARIOUS_TYPE
 from eyed3.utils.prompt import prompt
 from nicfit.console.ansi import Style, Fg
 
-from ..orm import Artist, Library
+from ..orm import Artist, Library, Image, IMAGE_TABLES
 from ..core import Command
 from ..console import promptArtist, selectArtist
 from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
@@ -214,3 +214,33 @@ class MergeArtists(Command):
 
         # FIXME: prompt for whether the tags should be updated with the new
         # name if it is new.
+
+
+@Command.register
+class Images(Command):
+    NAME = "image"
+    HELP = "Image mgmt."
+    _library_arg_nargs = 1
+
+    def _initArgParser(self, parser):
+        super()._initArgParser(parser)
+        parser.add_argument("ids", nargs="+", help="The image IDs operate on.")
+        parser.add_argument("--remove", action="store_true",
+                            help="Remove images from the database.")
+
+    def _run(self):
+        for id_ in self.args.ids:
+            image = self.db_session.query(Image).filter(Image.id == int(id_)).first()
+            if not image:
+                print(f"Image not found: {id_}")
+                continue
+
+            if self.args.remove:
+                # For orm types for these, but clean jump tables
+                for table in IMAGE_TABLES:
+                    self.db_session.execute(f"DELETE FROM {table.name} where img_id={id_}")
+                self.db_session.delete(image)
+            else:
+                print(image)
+
+        self.db_session.commit()
