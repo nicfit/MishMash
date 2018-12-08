@@ -37,12 +37,17 @@
 
 </ul>
 
-<span tal:repeat="L album_decades">
+<span tal:repeat="L reversed(album_decades)">
   <h3><a id='${L}'><strong>${L}</strong></a></h3>
   <ul class='list-unstyled'>
     <li tal:repeat="album album_dict[L]">
+      <span tal:content="album.getBestDate().year if album.getBestDate() else ''">NNNN</span>
       <a href="${request.route_url('album', id=album.id)}"
-         tal:content="album.title">--Album Title Goes Here--</a>
+         tal:content="album.title">--Album Title--</a>
+      <span class="text-muted">
+          by <a href="${request.route_url('artist', id=album.artist_id)}"
+                tal:content="album.artist.name">--Artist Name--</a>
+      </span>
     </li>
   </ul>
 </span>

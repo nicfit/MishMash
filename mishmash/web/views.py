@@ -202,16 +202,13 @@ def artistView(request):
 
 @view_config(route_name="images.covers")
 def covers(request):
-    iid = request.matchdict["id"]
+    return _imageView(request, default_resp=Response(content_type="image/png",
+                                                     body=DEFAULT_COVER_DATA))
 
-    if iid == "default":
-        return Response(content_type="image/png", body=DEFAULT_COVER_DATA)
-    else:
-        session = request.DBSession
-        image = session.query(Image).filter(Image.id == int(iid)).first()
-        if not image:
-            raise HTTPNotFound()
-        return Response(content_type=image.mime_type, body=image.data)
+
+@view_config(route_name="images.artist")
+def artist_images(request):
+    return _imageView(request)
 
 
 with open(os.path.join(os.path.dirname(__file__),
@@ -290,6 +287,19 @@ def allAlbumsView(request):
     buckets.sort()
 
     return ResponseDict(album_decades=buckets, album_dict=album_dict, album_types=album_types)
+
+
+def _imageView(request, default_resp=None):
+    iid = request.matchdict["id"]
+
+    if iid == "default" and default_resp:
+        return default_resp
+
+    session = request.DBSession
+    image = session.query(Image).filter(Image.id == int(iid)).first()
+    if not image:
+        raise HTTPNotFound()
+    return Response(content_type=image.mime_type, body=image.data)
 
 
 def _getActiveAlbumTypes(params):

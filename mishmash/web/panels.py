@@ -45,3 +45,22 @@ def album_cover(context, request, album, size=None, link=False):
                 (request.route_url('album', id=album.id), panel)
 
     return panel
+
+
+@panel_config(name='artist_image')
+def artist_image(context, request, artist, scale_percent=None, link=False):
+    imgs = [img for img in artist.images]
+    if not imgs:
+        return ""
+
+    width = str(scale_percent or "100%")
+    height = str(scale_percent or "100%")
+    img_url = request.route_url("images.artist", id=random.choice(imgs).id)
+    panel = f"<img class='shadow' width='{width}' height='{height}' "\
+            f"src='{img_url}' title='{artist.name}'/>"
+    if link:
+        panel = f"<a href='{request.route_url('artist', id=artist.id)}'>{panel}</a>"
+
+    return panel
+
+
