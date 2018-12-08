@@ -1,22 +1,3 @@
-# -*- coding: utf-8 -*-
-################################################################################
-#  Copyright (C) 2013  Travis Shirk <travis@pobox.com>
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-################################################################################
 import random
 from pyramid_layout.panel import panel_config
 from ..__about__ import __version__, __years__, __project_name__
@@ -26,30 +7,23 @@ from .. import orm
 @panel_config(name='navbar',
               renderer='mishmash.web:templates/panels/navbar.pt')
 def navbar(context, request):
-    def nav_item(name, url):
-        active = request.current_route_url() == url
-        item = dict(name=name,
-                    url=url,
-                    active=active,
-                   )
-        return item
-
-    nav = [nav_item('Artists', request.route_url('all_artists')),
-           nav_item('New Music', request.route_url("new_music")),
-          ]
-    return {'title': 'Mishmash',
-            'nav': nav,
-           }
+    # XXX: has not been needed for a while, leaving as a panel in the case it is again.
+    return {}
 
 
 @panel_config(name='footer')
 def footer(context, request):
-    return ("<footer>"
-            "<p align='right'>%(NAME)s %(VERSION)s &copy; %(YEARS)s"
-            "</footer>" %
-            dict(NAME=__project_name__,
-                 VERSION=__version__,
-                 YEARS=__years__))
+    return f"""
+<footer class="text-muted">
+  <div class="container">
+    <p class="float-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p><br/></p>
+    <p align='right'>{__project_name__} {__version__} &copy; {__years__}</p>
+  </div>
+</footer>
+"""
 
 
 @panel_config(name='album_cover')

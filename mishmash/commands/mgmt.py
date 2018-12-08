@@ -66,7 +66,11 @@ class SplitArtists(Command):
         self._displayArtistMusic(artist, albums, singles)
 
         def _validN(_n):
-            return _n > 1 and _n <= len(albums)
+            try:
+                return _n > 1 and _n <= len(albums)
+            except Exception:
+                return False
+
         n = prompt("\nEnter the number of distinct artists", type_=int,
                    validate=_validN)
         new_artists = []
@@ -116,7 +120,7 @@ class SplitArtists(Command):
             path = os.path.join(*path.split(os.sep)[-2:])
 
             a = _promptForArtist("%s (%s)" % (alb.title, path))
-            if alb.type != "various":
+            if alb.type != VARIOUS_TYPE:
                 alb.artist_id = a.id
             for track in alb.tracks:
                 if track.artist_id == artist.id:

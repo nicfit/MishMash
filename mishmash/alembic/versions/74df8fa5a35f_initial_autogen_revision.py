@@ -198,7 +198,7 @@ def upgrade():
                     sa.Column('ctime', sa.DateTime(), nullable=False),
                     sa.Column('mtime', sa.DateTime(), nullable=False),
                     sa.Column('date_added', sa.DateTime(), nullable=False),
-                    sa.Column('time_secs', sa.Integer(), nullable=False),
+                    sa.Column('time_secs', sa.Float(), nullable=False),
                     sa.Column('title', sa.Unicode(length=Track.TITLE_LIMIT),
                               nullable=False),
                     sa.Column('track_num', sa.SmallInteger(), nullable=True),

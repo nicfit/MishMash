@@ -235,6 +235,10 @@ class Artist(Base, OrmObject):
             vals.append(v)
         return True
 
+    @property
+    def is_various_artist(self):
+        return self.id == VARIOUS_ARTISTS_ID
+
 
 class AlbumDate(TypeDecorator):
     """Custom column type for eyed3.core.Date objects. That is, dates than
@@ -325,7 +329,7 @@ class Track(Base, OrmObject):
     mtime = sql.Column(sql.DateTime(), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    time_secs = sql.Column(sql.Integer, nullable=False)
+    time_secs = sql.Column(sql.Float, nullable=False)
     title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False, index=True)
     track_num = sql.Column(sql.SmallInteger)
     track_total = sql.Column(sql.SmallInteger)

@@ -13,7 +13,7 @@ Features
 * A command-line tool for building and managing a music database.
 * Web browser interface (using `Pyramid`_) for browsing your music library.
 * Uses `eyeD3`_ for reading MP3s and ID3 metadata.
-* Support and tested with Python 3.4 and Postgresql. SQLite is periodically
+* Support and tested with Python 3.6 and Postgresql. SQLite is periodically
   tested with, but future features may not be supported (e.g. full text
   search).
 * Free software: GNU GPL v3.0 license
@@ -72,6 +72,13 @@ useless, so now add some music.::
     0 orphaned artists deleted
     0 orphaned albums deleted
 
+Use your database as you wish. Browse it with `mishmash web`, or use one of its
+management commands.
+
+Check out the `Unsonic`_ project for streaming capabilities.
+
+
+.. _Unsonic: https://github.com/redshodan/unsonic
 
 .. |Build Status| image:: https://travis-ci.org/nicfit/MishMash.svg?branch=master
    :target: https://travis-ci.org/nicfit/MishMash
@@ -91,3 +98,4 @@ useless, so now add some music.::
 .. |Coverage| image:: https://coveralls.io/repos/nicfit/MishMash/badge.svg
    :target: https://coveralls.io/r/nicfit/MishMash
    :alt: Coverage Status
+

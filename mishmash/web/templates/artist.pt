@@ -6,22 +6,22 @@
   <span tal:condition="artist.origin()">formed in ${artist.origin()}</span>
 </div>
 
-<ul class="nav nav-tabs">
-  <li tal:repeat="t tabs" class="${'active' if t[2]
-                                            else ('' if t[3] else 'disabled')}">
-
-    <a tal:define="tab_url '%s?album_tab=%s' % (request.path_url, t[0]) if t[3]
+<ul class="nav nav-tabs" tal:condition="not artist.is_various_artist">
+  <li tal:repeat="t tabs.values()" class="nav-item">
+    <a tal:define="tab_url '%s?album_tab=%s' % (request.path_url, t['name']) if t['has_items']
                            else 'javascript: void(0)'"
-       href="${tab_url}">${t[1]}</a>
+       tal:condition="t['has_items']"
+       class="nav-link ${'active' if t['active'] else ('' if t['has_items'] else 'disabled')}"
+       href="${tab_url}">${t['display_name']}</a>
   </li>
 </ul>
 
 <table class="table table-condensed table-striped">
   <tr>
-    <th tal:condition="active_albums"></th> <!-- Album art column -->
-    <th tal:condition="active_albums or active_singles">Title</th>
-    <th tal:condition="active_albums">Date</th>
-    <th tal:condition="active_singles">Appears on</th>
+    <th tal:condition="active_albums" scope="col"></th> <!-- Album art column -->
+    <th tal:condition="active_albums or active_singles" scope="col">Title</th>
+    <th tal:condition="active_albums" scope="col">Date</th>
+    <th tal:condition="active_singles" scope="col">Appears on</th>
   </tr>
   <tr tal:condition="active_albums" tal:repeat="album active_albums">
     <td>${panel('album_cover', album, size=64, link=True)}</td>
