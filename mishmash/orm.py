@@ -235,6 +235,10 @@ class Artist(Base, OrmObject):
             vals.append(v)
         return True
 
+    @property
+    def is_various_artist(self):
+        return self.id == VARIOUS_ARTISTS_ID
+
 
 class AlbumDate(TypeDecorator):
     """Custom column type for eyed3.core.Date objects. That is, dates than
@@ -325,7 +329,7 @@ class Track(Base, OrmObject):
     mtime = sql.Column(sql.DateTime(), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    time_secs = sql.Column(sql.Integer, nullable=False)
+    time_secs = sql.Column(sql.Float, nullable=False)
     title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False, index=True)
     track_num = sql.Column(sql.SmallInteger)
     track_total = sql.Column(sql.SmallInteger)
@@ -521,7 +525,8 @@ class Library(Base, OrmObject):
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
-TABLES = [T.__table__ for T in TYPES] + TAGS
+IMAGE_TABLES = [artist_images, album_images]
+TABLES = [T.__table__ for T in TYPES] + TAGS + IMAGE_TABLES
 """All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order."""
 ENUMS = [Image._types_enum, Album._types_enum]

@@ -21,7 +21,7 @@ from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
 from ...orm import (Track, Artist, Album, Meta, Image, Library,
-                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
+                    VARIOUS_ARTISTS_ID, VARIOUS_ARTISTS_NAME, MAIN_LIB_NAME, NULL_LIB_ID)
 from ... import console
 from ... import database as db
 from ...core import Command, EP_MAX_SIZE_HINT
@@ -102,8 +102,12 @@ class SyncPlugin(LoaderPlugin):
                 self._watchDir(p)
 
     def _getArtist(self, session, name, resolved_artist):
-        artist_rows = session.query(Artist).filter_by(name=name,
-                                                      lib_id=self._lib.id).all()
+        if name == VARIOUS_ARTISTS_NAME:
+            artist_rows = [session.query(Artist).filter_by(name=VARIOUS_ARTISTS_NAME,
+                                                           lib_id=NULL_LIB_ID).one()]
+        else:
+            artist_rows = session.query(Artist).filter_by(name=name,
+                                                          lib_id=self._lib.id).all()
         if artist_rows:
             if len(artist_rows) > 1 and resolved_artist:
                 # Use previously resolved artist for this directory.
@@ -294,8 +298,9 @@ class SyncPlugin(LoaderPlugin):
                 if tag.album:
                     albums.add(tag.album)
 
-            is_various = (len(artists) > 1 and len(album_artists) == 0 and
-                          len(albums) == 1)
+            is_various = (len(artists) > 1
+                          and (len(album_artists) == 0 or album_artists == {VARIOUS_ARTISTS_NAME})
+                          and len(albums) == 1)
             if is_various:
                 return VARIOUS_TYPE
             else:

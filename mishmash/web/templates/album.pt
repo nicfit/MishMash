@@ -13,6 +13,7 @@
     </h3>
   </div>
 </div>
+
 <div class="row">
   <div class="col-md-4">
     ${panel('album_cover', album, size=300)}
