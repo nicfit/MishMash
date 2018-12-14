@@ -17,7 +17,7 @@ def splitNameByPrefix(s):
 def sortByDate(things, prefer_recording_date=False):
     # XXX: Why just just make Album types sortable by intregating this
     def _sortkey(a):
-        return datePicker(a, prefer_recording_date=prefer_recording_date)
+        return datePicker(a, prefer_recording_date=prefer_recording_date) or 0
     return sorted(things, key=_sortkey)
 
 
