@@ -20,15 +20,28 @@
         <strong>MishMash Music</strong>
       </a>
 
+      <div class="col-md-4 py-4">
+        <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button"
+                      id="dropdownMenuButton" data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false">Music Libraries</button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a tal:repeat="lib libs"
+                   tal:attributes="class 'dropdown-item {}'.format('FIXME')"
+                   href="#">${lib.name}</a>
+              </div>
+        </div>
+      </div>
 
-        <div class="col-md-4 py-4">
+      <div class="col-md-4 py-4">
             <form class="form-inline" role="search" method="POST"
                   action="${request.route_url('search')}">
                 <input type="text" class="form-control mr-sm-2" id="q" name="q"
                        placeholder="Search..."/>
                 <button type="submit" class="btn btn-default my-sm-0">Search</button>
             </form>
-        </div>
+      </div>
 
       <button class="navbar-toggler" type="button" data-toggle="collapse"
               data-target="#navbarHeader" aria-controls="navbarHeader"

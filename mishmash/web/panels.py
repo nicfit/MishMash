@@ -7,8 +7,10 @@ from .. import orm
 @panel_config(name='navbar',
               renderer='mishmash.web:templates/panels/navbar.pt')
 def navbar(context, request):
-    # XXX: has not been needed for a while, leaving as a panel in the case it is again.
-    return {}
+    session = request.DBSession
+    libs = session.query(orm.Library).all()
+    config_libs = list(request.mishmash_config.music_libs)
+    return {"libs": list([l for l in libs if not l.name.startswith("__")])}
 
 
 @panel_config(name='footer')

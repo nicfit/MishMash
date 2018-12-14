@@ -5,33 +5,40 @@ except ImportError:
     MISHMASH_WEB = False
 else:
     from pyramid.config import Configurator
+    from pyramid.session import SignedCookieSessionFactory
     from zope.sqlalchemy import ZopeTransactionExtension
 
     from .. import database
     from ..config import Config
 
-    def _configure(settings, DBSession):
+    def _configure(settings, app_config, DBSession):
+        # FIXME: secret . rotate? protect?
+        session_factory = SignedCookieSessionFactory("4tr13ec41led")
+
         config = Configurator(settings=settings)
+        config.set_session_factory(session_factory)
 
         config.include('pyramid_chameleon')
         config.include('pyramid_layout')
 
         def _DBSession(request):
             return DBSession()
+        def _appConfig(request):
+            return app_config
         config.add_request_method(_DBSession, name="DBSession", reify=True)
+        config.add_request_method(_appConfig, name="mishmash_config", reify=True)
 
-        config.add_static_view('static', 'mishmash.web:static',
-                               cache_max_age=3600)
+        config.add_static_view('static', 'mishmash.web:static', cache_max_age=3600)
 
+        config.add_route('home', '/')
+        config.add_route('search', '/search')
         config.add_route('all_artists', '/artists')
         config.add_route('all_albums', '/albums')
         config.add_route('artist', '/artist/{id:\d+}')  # noqa: W605
+        config.add_route('album', '/album/{id:\d+}')  # noqa: W605
         config.add_route('images.covers', '/images/covers/{id:\d+|default}')  # noqa: W605
         config.add_route('images.artist', '/images/artist/{id:\d+|default}')  # noqa: W605
-        config.add_route('home', '/')
-        config.add_route('search', '/search')
         config.add_route('new_music', '/new')
-        config.add_route('album', '/album/{id:\d+}')  # noqa: W605
 
         config.scan(".panels")
         config.scan(".layouts")
@@ -43,6 +50,7 @@ else:
         app_config = Config(global_config["__file__"])
         app_config.read()
         mm_settings = app_config["mishmash"]
+        main_settings["mishmash-config"] = app_config
 
         engine_args = dict(database.DEFAULT_ENGINE_ARGS)
         pfix, plen = "sqlalchemy.", len("sqlalchemy.")
@@ -56,9 +64,8 @@ else:
 
         (engine,
          SessionMaker,
-         connection) = database.init(app_config.db_url,
-                                     engine_args=engine_args, scoped=True,
+         connection) = database.init(app_config.db_url, engine_args=engine_args, scoped=True,
                                      trans_mgr=ZopeTransactionExtension())
 
-        pyra_config = _configure(main_settings, SessionMaker)
+        pyra_config = _configure(main_settings, app_config, SessionMaker)
         return pyra_config.make_wsgi_app()

@@ -11,10 +11,13 @@ _ = gettext.gettext
 class AppLayout:
 
     def __init__(self, context, request):
+        self.headings = []
         self.context = context
         self.request = request
         self.home_url = request.application_url
-        self.headings = []
+        self.config = request.mishmash_config
+        if "active_library" not in request.session:
+            request.session["active_library"] = None
 
     @property
     def page_title(self):
