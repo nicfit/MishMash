@@ -2,12 +2,12 @@ version: "3"
 
 services:
 
-    # Postgresql database comntainer
+    # Postgresql database container
     postgres:
-        container_name: PostgreSql-mishmash
-        image: postgres:9.6-alpine
+        container_name: PostgreSql-mishmash-devel
+        image: postgres:10-alpine
         environment:
-            POSTGRES_DB: music-dev
+            POSTGRES_DB: mishmash-devel
             POSTGRES_USER: mishmash
             POSTGRES_PASSWORD: TheFaithSubjectToChange
 
