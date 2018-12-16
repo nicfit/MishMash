@@ -1,16 +1,6 @@
 version: "3"
 
 services:
-
-    # Postgresql database container
-    postgres:
-        container_name: PostgreSql-mishmash-devel
-        image: postgres:10-alpine
-        environment:
-            POSTGRES_DB: mishmash-devel
-            POSTGRES_USER: mishmash
-            POSTGRES_PASSWORD: TheFaithSubjectToChange
-
     # MishMash images
     mishmash: &mishmash-image
         build:
@@ -40,9 +30,19 @@ services:
         ports:
             - "16229:6229"
 
+    # Postgresql database container
+    postgres:
+        container_name: PostgreSql-mishmash-devel
+        image: postgres:10-alpine
+        environment:
+            POSTGRES_DB: mishmash-devel
+            POSTGRES_USER: mishmash
+            POSTGRES_PASSWORD: TheFaithSubjectToChange
+
     mishmash-postgres:
         <<: *mishmash-container
         image: nicfit/mishmash:$VERSION
+        container_name: MishMash-postgreSQL
         environment:
             POSTGRES_PASSWORD: TheFaithSubjectToChange
             MISHMASH_DBURL: postgresql://mishmash:TheFaithSubjectToChange@postgres/MishMash

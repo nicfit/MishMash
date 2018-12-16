@@ -1,39 +1,29 @@
-FROM greyltc/archlinux
+FROM python:3.7-alpine
 MAINTAINER Travis Shirk <travis@pobox.com>
-
-ARG VERSION
 EXPOSE 6229
-
-RUN curl -o /etc/pacman.d/mirrorlist \
-            "https://www.archlinux.org/mirrorlist/?country=US&protocol=https&use_mirror_status=on" && \
-    sed -i 's/^#//' /etc/pacman.d/mirrorlist
-
-RUN pacman -Syu --noconfirm
-RUN pacman -S --noconfirm python python-pip git \
-                          postgresql-libs python-psycopg2
-
-RUN pip install git+https://github.com/nicfit/MishMash.git@v${VERSION}
-RUN pip install MishMash[web]
-RUN pip install MishMash[postgres]
-
 ENV HOME=/home/mishmash \
     APP_DIR=/MishMash \
     LANG=en_US.UTF-8
-ENV PATH="${APP_DIR}:${PATH}"
 
-# Default is SQLite but can be overridden.
-ARG MISHMASH_DBURL=sqlite:////${APP_DIR}/var/MishMash.db
-ENV MISHMASH_DBURL=${MISHMASH_DBURL} \
-    MISHMASH_CONFIG=${APP_DIR}/etc/config.ini
+ARG VERSION
 
-RUN useradd -m -d ${HOME} --uid 6229 mishmash
+RUN apk update &&\
+    apk upgrade &&\
+    python -m venv ${APP_DIR} &&\
+    addgroup -S mishmash &&\
+    adduser -S -u 6229 -G mishmash -h ${HOME} mishmash
 
-RUN mkdir -p ${APP_DIR}/bin ${APP_DIR}/etc ${APP_DIR}/var && \
+RUN source ${APP_DIR}/bin/activate &&\
+    pip --no-cache-dir install -U pip &&\
+    apk add --no-cache libmagic &&\
+    apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev &&\
+    pip --no-cache-dir install MishMash[web]==${VERSION} \
+                               MishMash[postgres]==${VERSION} &&\
+    apk --purge del .build-deps
+
+RUN mkdir -p ${APP_DIR}/etc ${APP_DIR}/var &&\
     chown -R mishmash:mishmash ${APP_DIR}
-WORKDIR $APP_DIR
 
 USER mishmash
-CMD ["/MishMash/bin/mishmash-init"]
-
-COPY mishmash-init ${APP_DIR}/bin/
-COPY config.ini config-dev.ini ${APP_DIR}/etc/
+ENV PATH="${APP_DIR}/bin:${PATH}"
+ENTRYPOINT ["mishmash"]
