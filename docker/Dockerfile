@@ -1,29 +1,29 @@
 FROM python:3.7-alpine
 MAINTAINER Travis Shirk <travis@pobox.com>
 EXPOSE 6229
-ENV HOME=/home/mishmash \
-    APP_DIR=/MishMash \
-    LANG=en_US.UTF-8
+ENTRYPOINT ["mishmash"]
 
 ARG VERSION
+ENV HOME=/home/mishmash \
+    LANG=en_US.UTF-8
 
 RUN apk update &&\
     apk upgrade &&\
-    python -m venv ${APP_DIR} &&\
-    addgroup -S mishmash &&\
-    adduser -S -u 6229 -G mishmash -h ${HOME} mishmash
-
-RUN source ${APP_DIR}/bin/activate &&\
-    pip --no-cache-dir install -U pip &&\
+    python -m ensurepip &&\
+    pip --no-cache-dir install -U pip setuptools &&\
     apk add --no-cache libmagic postgresql-libs &&\
     apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev &&\
-    pip --no-cache-dir install MishMash[web]==${VERSION} &&\
-    pip --no-cache-dir install MishMash[postgres]==${VERSION} &&\
+    pip --no-cache-dir install psycopg2-binary &&\
     apk --purge del .build-deps
 
-RUN mkdir -p ${APP_DIR}/etc ${APP_DIR}/var &&\
-    chown -R mishmash:mishmash ${APP_DIR}
+RUN addgroup -S mishmash &&\
+    adduser -S -u 6229 -G mishmash -h ${HOME} mishmash &&\
+    mkdir -p ${HOME}/etc ${HOME}/var ${HOME}/bin
+
+RUN pip --no-cache-dir install MishMash==${VERSION} &&\
+    pip --no-cache-dir install MishMash[web]==${VERSION} &&\
+    pip --no-cache-dir install MishMash[postgres]==${VERSION}
 
 USER mishmash
-ENV PATH="${APP_DIR}/bin:${PATH}"
-ENTRYPOINT ["mishmash"]
+ENV PATH="${HOME}/bin:${PATH}"
+RUN find ${HOME}
