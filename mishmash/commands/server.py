@@ -48,7 +48,7 @@ class Server(Command):
                 if self.args.config.getboolean("server", "web", fallback=True) else None
 
         info.start().join(check=True)
-        
+
         if sync:
             subprocs.append(sync)
             sync.start()

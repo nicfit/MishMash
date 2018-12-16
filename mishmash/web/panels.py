@@ -62,5 +62,3 @@ def artist_image(context, request, artist, scale_percent=None, link=False):
         panel = f"<a href='{request.route_url('artist', id=artist.id)}'>{panel}</a>"
 
     return panel
-
-

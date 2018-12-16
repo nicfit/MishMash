@@ -3,6 +3,83 @@ Release History
 
 .. :changelog:
 
+v0.3b10 (2018-12-15)
+------------------------
+
+New
+~~~~~
+- `mishmash server`
+- Bootstrap4 update.
+
+Fix
+~~~
+- Fix album sorts for missing dates.
+- Various artist support.
+
+
+v0.3b9 (2018-12-15)
+------------------------
+
+Fix
+~~~
+- Fix album sorts for missing dates.
+- Various artist support.
+
+Other
+~~~~~
+- Merge branch 'master' into server.
+
+  * master:
+    `mishmash server`
+    Update pyfiglet to 0.8.post0 (#479)
+    Update pytest from 4.0.1 to 4.0.2 (#484)
+- `mishmash server`
+- Update pyfiglet to 0.8.post0 (#479) <github-bot@pyup.io>
+
+  * Update pyfiglet from 0.7.6 to 0.8.post0
+
+  * Update pyfiglet from 0.7.6 to 0.8.post0
+- Update pytest from 4.0.1 to 4.0.2 (#484) <github-bot@pyup.io>
+- Server.
+- Alpine based docker and fixes.
+- Merge branch 'master' into server.
+
+  * master:
+    Update tox from 3.5.3 to 3.6.0 (#483)
+    Update sqlalchemy to 1.2.15 (#481)
+    Update six from 1.11.0 to 1.12.0 (#480)
+    Update faker from 1.0.0 to 1.0.1 (#482)
+    Postgres docker updates
+    fix: Fix album sorts for missing dates
+- Update tox from 3.5.3 to 3.6.0 (#483) <github-bot@pyup.io>
+- Update sqlalchemy to 1.2.15 (#481) <github-bot@pyup.io>
+
+  * Update sqlalchemy from 1.2.14 to 1.2.15
+
+  * Update sqlalchemy from 1.2.14 to 1.2.15
+- Update six from 1.11.0 to 1.12.0 (#480) <github-bot@pyup.io>
+- Update faker from 1.0.0 to 1.0.1 (#482) <github-bot@pyup.io>
+- Postgres docker updates.
+- Merge branch 'master' into server.
+
+  * master:
+    tweak
+    image stuff
+    Some image mgmt
+    Removed local bootstrap
+    Bootstrap update
+- Tweak.
+- Image stuff.
+- Some image mgmt.
+- Removed local bootstrap.
+- Bootstrap update.
+- Messin'
+- Update pastedeploy from 2.0.0 to 2.0.1 (#475) <github-bot@pyup.io>
+- Update zope.deprecation from 4.3.0 to 4.4.0 (#473) <github-
+  bot@pyup.io>
+
+
+
 v0.3b9 (2018-12-02)
 ------------------------
 

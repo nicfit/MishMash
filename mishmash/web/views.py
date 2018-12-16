@@ -257,7 +257,7 @@ def allAlbumsView(request):
     album_types = {}
 
     if ("filter-form" in request.params and request.params.get("filter-form") == "true"
-        and not request.params.getall("type")):
+            and not request.params.getall("type")):
             # Form submit with no filters checks, this is not the default /albums
             active_types = set()
     else:
