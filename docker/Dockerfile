@@ -15,10 +15,10 @@ RUN apk update &&\
 
 RUN source ${APP_DIR}/bin/activate &&\
     pip --no-cache-dir install -U pip &&\
-    apk add --no-cache libmagic &&\
+    apk add --no-cache libmagic postgresql-libs &&\
     apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev &&\
-    pip --no-cache-dir install MishMash[web]==${VERSION} \
-                               MishMash[postgres]==${VERSION} &&\
+    pip --no-cache-dir install MishMash[web]==${VERSION} &&\
+    pip --no-cache-dir install MishMash[postgres]==${VERSION} &&\
     apk --purge del .build-deps
 
 RUN mkdir -p ${APP_DIR}/etc ${APP_DIR}/var &&\

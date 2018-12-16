@@ -10,7 +10,7 @@ from eyed3.utils.prompt import PromptExit
 
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
 from . import log
-from . core import Command
+from . core import Command, CommandError
 from .commands import *                                                   # noqa
 
 
@@ -45,15 +45,21 @@ def main(args):
                     .format(os.environ["MISHMASH_DBURL"]))
         args.config.set(MAIN_SECT, SA_KEY, os.environ["MISHMASH_DBURL"])
 
+    # Run command
     try:
-        # Run command
         retval = args.command_func(args, args.config) or 0
     except (KeyboardInterrupt, PromptExit):
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
-    except (sql_exceptions.ArgumentError, sql_exceptions.OperationalError):
+    except (sql_exceptions.ArgumentError,):
         _pErr("Database error")
         retval = 1
+    except (sql_exceptions.OperationalError,) as db_err:
+        print(str(db_err), file=sys.stderr)
+        retval = 1
+    except CommandError as cmd_err:
+        print(str(cmd_err), file=sys.stderr)
+        retval = cmd_err.exit_status
     except Exception as ex:
         log.exception(ex)
         _pErr("General error")
