@@ -13,6 +13,8 @@ from . import log
 from . core import Command, CommandError
 from .commands import *                                                   # noqa
 
+_FORK_METHOD_SET = False
+
 
 def _pErr(msg):
     print(ansi.Fg.red(str(msg) + ":"))
@@ -22,11 +24,14 @@ def _pErr(msg):
 
 def main(args):
     import multiprocessing
+    global _FORK_METHOD_SET
 
-    try:
-        multiprocessing.set_start_method("fork")
-    except RuntimeError as ex:
-        log.warning("multiprocessing.set_start_method: " + str(ex))
+    if not _FORK_METHOD_SET:
+        try:
+            multiprocessing.set_start_method("fork")
+            _FORK_METHOD_SET = True
+        except RuntimeError as ex:
+            log.warning("multiprocessing.set_start_method: " + str(ex))
 
     if not hasattr(args, "command_func") or not args.command_func:
         # No command was given.

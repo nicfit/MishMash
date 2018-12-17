@@ -183,7 +183,7 @@ web-release:
 	@# Not implemented
 	@true
 
-upload-release: github-release pypi-release web-release docker-publish
+upload-release: github-release pypi-release web-release
 
 pypi-release:
 	for f in `find dist -type f -name ${PROJECT_NAME}-${VERSION}.tar.gz \

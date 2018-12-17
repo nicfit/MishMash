@@ -90,6 +90,6 @@ class Server(Command):
                 proc.kill()
 
     def _createUnsonic(self):
-         if self.args.config.getboolean("server", "unsonic", fallback=False):
+        if self.args.config.getboolean("server", "unsonic", fallback=False):
             cfg_file = self.args.config.get("unsonic", "config")
             return UnsonicProc(cfg_file)

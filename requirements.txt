@@ -23,7 +23,7 @@ plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
 psycopg2-binary==2.7.6.1
 pyfiglet==0.8.post0
-pygments==2.3.0           # via pyramid-debugtoolbar
+pygments==2.3.1           # via pyramid-debugtoolbar
 pyparsing==2.3.0          # via packaging
 pyramid-chameleon==0.3
 pyramid-debugtoolbar==4.5
