@@ -1,4 +1,5 @@
 import time
+import subprocess
 from multiprocessing import Process
 from ..core import Command, CommandError
 
@@ -26,46 +27,69 @@ class MishMashProc(Process):
                 raise CommandError(self)
 
 
+class UnsonicProc:
+    def __init__(self, config):
+        self._config = config
+        self._unsonic = None
+        self.exitcode = None
+
+    def start(self):
+        self._unsonic = subprocess.Popen([
+            "unsonic", "--config", self._config, "serve"
+        ])
+        return self
+
+    def join(self, timeout=None, check=False) -> None:
+        if self.exitcode is not None:
+            return
+
+        try:
+            self._unsonic.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            self.exitcode = None
+            return
+
+        self.exitcode = self._unsonic.returncode
+        if check and self.exitcode is not None and self.exitcode:
+            raise CommandError(self)
+
+    def kill(self):
+        self._unsonic.kill()
+
+
 @Command.register
 class Server(Command):
     NAME = "server"
     HELP = "Sync, monitor, browse, etc."
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def _initArgParser(self, parser):
-        super()._initArgParser(parser)
-
     def _run(self):
         """main"""
-        subprocs = []
+        all_procs = []
 
-        info = MishMashProc("info", config=self.args.config)
+        # `mishmash info`: tests the config and get banner and info.
+        MishMashProc("info", config=self.args.config).start().join(check=True)
+
         sync = MishMashProc("sync", "--no-prompt", "--monitor", config=self.args.config) \
                 if self.args.config.getboolean("server", "sync", fallback=True) else None
         web = MishMashProc("web", config=self.args.config) \
                 if self.args.config.getboolean("server", "web", fallback=True) else None
+        unsonic = self._createUnsonic()
 
-        info.start().join(check=True)
-
-        if sync:
-            subprocs.append(sync)
-            sync.start()
-
-        if web:
-            subprocs.append(web)
-            web.start()
+        for p in (sync, web, unsonic):
+            if p:
+                all_procs.append(p)
+                p.start()
 
         try:
             while True:
-                for proc in subprocs:
-
-                    proc.join(1)
-                    if proc.exitcode is not None:
-                        raise CommandError(proc)
-
+                for proc in all_procs:
+                    proc.join(1, check=True)
                 time.sleep(5)
         finally:
-            for proc in subprocs:
+            for proc in all_procs:
                 proc.kill()
+
+    def _createUnsonic(self):
+         if self.args.config.getboolean("server", "unsonic", fallback=False):
+            cfg_file = self.args.config.get("unsonic", "config")
+            return UnsonicProc(cfg_file)
