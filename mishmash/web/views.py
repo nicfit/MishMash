@@ -224,7 +224,6 @@ def newMusicView(request):
     from math import ceil
     session = request.DBSession
     albums = session.query(Album).order_by(desc("date_added")).limit(25).all()
-    # FIXME: handle new singles here, make sure this works for various
     return ResponseDict(albums=albums, ceil=ceil)
 
 

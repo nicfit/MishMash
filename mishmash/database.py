@@ -35,12 +35,12 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
     alembic_cfg = alembic.config.Config(str(alembic_d / "alembic.ini"))
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
 
-    log.debug("Checking for database '%s'" % safeDbUrl(db_url))
+    log.debug(f"Checking for database '{safeDbUrl(db_url)}'")
     if not database_exists(db_url):
-        log.info("Creating database '%s'" % safeDbUrl(db_url))
+        log.info(f"Creating database '{safeDbUrl(db_url)}'")
         create_database(db_url, template="template0")
 
-    log.debug("Connecting to database '%s'" % safeDbUrl(db_url))
+    log.debug(f"Connecting to database '{safeDbUrl(db_url)}'")
     args = engine_args or DEFAULT_ENGINE_ARGS
     engine = create_engine(db_url, **args)
     connection = engine.connect()
@@ -84,17 +84,21 @@ def getTag(t, session, lid, add=False):
 
 
 def search(session, query):
-    # FIXME
-    flat_query = u"".join(query.split())
+    """Naive search of the database for `query`.
+
+    :return: A dict with keys 'artists', 'albums', and 'tracks'. Each containing a list
+             of the respective ORM type.
+    """
+    flat_query = "".join(query.split())
 
     artists = session.query(Artist).filter(
-            or_(Artist.name.ilike(u"%%%s%%" % query),
-                Artist.name.ilike(u"%%%s%%" % flat_query))
+            or_(Artist.name.ilike(f"%%{query}%%"),
+                Artist.name.ilike(f"%%{flat_query}%%"))
                ).all()
     albums = session.query(Album).filter(
-            Album.title.ilike(u"%%%s%%" % query)).all()
+            Album.title.ilike(f"%%{query}%%")).all()
     tracks = session.query(Track).filter(
-            Track.title.ilike(u"%%%s%%" % query)).all()
+            Track.title.ilike(f"%%{query}%%")).all()
 
     return dict(artists=artists,
                 albums=albums,

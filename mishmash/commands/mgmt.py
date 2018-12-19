@@ -213,7 +213,7 @@ class MergeArtists(Command):
             session.flush()
 
         # FIXME: prompt for whether the tags should be updated with the new
-        # name if it is new.
+        # FIXME: name if it is new.
 
 
 @Command.register

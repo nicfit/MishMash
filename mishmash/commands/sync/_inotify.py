@@ -9,9 +9,10 @@ from inotify.constants import (IN_ACCESS, IN_ALL_EVENTS, IN_ATTRIB,
                                IN_CLOSE_WRITE, IN_CLOSE_NOWRITE, IN_CREATE,
                                IN_DELETE, IN_ISDIR, IN_OPEN, IN_MODIFY,
                                IN_MOVED_TO, IN_MOVED_FROM)
+from nicfit import getLogger
 
+log = getLogger(__name__)
 SYNC_INTERVAL = 10
-# FIXME: replace prints with logging
 
 
 class Monitor(multiprocessing.Process):
@@ -48,9 +49,8 @@ class Monitor(multiprocessing.Process):
 
                     if not watched:
                         self._inotify.add_watch(str(path), self._inotify_mask)
-                        print("Watching {} (lib: {}) (total dirs: {})"
-                              .format(path, lib,
-                                      len(self._watched_dirs[lib])))
+                        log.info(f"Watching {path} (lib: {lib}) "
+                                 f"(total dirs: {len(self._watched_dirs[lib])}")
 
                 # Process Inotify
                 for event in self._inotify.event_gen():
@@ -64,10 +64,9 @@ class Monitor(multiprocessing.Process):
                     watch_path = Path(watch_path)
                     filename = Path(filename)
 
-                    print("WD=({:d}) MASK=({:d}) "
-                          "MASK->NAMES={} WATCH-PATH={} FILENAME={}"
-                          .format(header.wd, header.mask,
-                                  type_names, watch_path, filename))
+                    log.debug(
+                        f"WD=({header.wd}) MASK=({header.mask}) "
+                        f"MASK->NAMES={type_names} WATCH-PATH={watch_path} FILENAME={filename}")
 
                     if header.mask & (IN_ATTRIB | IN_CREATE | IN_DELETE |
                                       IN_MODIFY | IN_MOVED_TO | IN_MOVED_FROM):
@@ -81,7 +80,7 @@ class Monitor(multiprocessing.Process):
                 def _reqSync(l, d):
                     if d.exists():
                         sync_queue.put((lib, d))
-                        print("Requesting sync {} (lib: {})" .format(d, l))
+                        log.info(f"Requesting sync {d} (lib: {l})")
 
                 if time() > next_sync_t:
                     for d in sync_dirs:
