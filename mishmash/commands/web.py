@@ -1,3 +1,4 @@
+from ..config import WEB_PORT
 from ..web import MISHMASH_WEB
 
 if MISHMASH_WEB:
@@ -10,7 +11,13 @@ if MISHMASH_WEB:
         NAME = "web"
         HELP = "MishMash web interface."
 
+        def _initArgParser(self, parser):
+            parser.add_argument("-p", "--port", type=int, default=WEB_PORT)
+
         def _run(self):
+            if self.args.port:
+                self.config["server:main"]["port"] = str(self.args.port)
+
             # pserve wants a file to open, so use the composed config.
             with tempfile.NamedTemporaryFile(mode="w",
                                              suffix=".ini") as config_file:
