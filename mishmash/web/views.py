@@ -1,10 +1,11 @@
 import os
 import random
+from hashlib import sha1
 from gettext import gettext as _
 
 from pyramid.response import Response
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPNotModified
 
 from sqlalchemy import desc
 
@@ -292,13 +293,24 @@ def _imageView(request, default_resp=None):
     iid = request.matchdict["id"]
 
     if iid == "default" and default_resp:
-        return default_resp
+        resp = default_resp
+    else:
+        session = request.DBSession
+        image = session.query(Image).filter(Image.id == int(iid)).first()
+        if not image:
+            raise HTTPNotFound()
+        resp = Response(content_type=image.mime_type, body=image.data)
 
-    session = request.DBSession
-    image = session.query(Image).filter(Image.id == int(iid)).first()
-    if not image:
-        raise HTTPNotFound()
-    return Response(content_type=image.mime_type, body=image.data)
+    hash = sha1()
+    hash.update(resp.body)
+    etag = hash.hexdigest()
+    if "If-None-Match" in request.headers and request.headers["If-None-Match"] == etag:
+        return HTTPNotModified()
+
+    resp.headers["Cache-Control"] = "max-age=3600"
+    resp.headers["ETag"] = etag
+
+    return resp
 
 
 def _getActiveAlbumTypes(params):
