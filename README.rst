@@ -49,10 +49,10 @@ Getting Started
     0 music tags
 
 
-Surprise, you now have an empty sqlite database in your home directory.
+Surprise, you now have an empty sqlite database in the current directory.
 Let's leave it here for now, it can be located elsewhere or use a different
 database using command line arguments and/or environment variables. Pretty
-useless, so now add some music.::
+useless without any music.::
 
     $ mishmash sync ~/Music/Melvins
     Syncing library 'Music': paths=['~/Music/Melvins/']
