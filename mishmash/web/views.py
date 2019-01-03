@@ -305,7 +305,7 @@ def _imageView(request, default_resp=None):
     hash.update(resp.body)
     etag = hash.hexdigest()
     if "If-None-Match" in request.headers and request.headers["If-None-Match"] == etag:
-        return HTTPNotModified()
+        raise HTTPNotModified()
 
     resp.headers["Cache-Control"] = "max-age=3600"
     resp.headers["ETag"] = etag
