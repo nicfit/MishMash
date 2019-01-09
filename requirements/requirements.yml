@@ -43,5 +43,5 @@ dev:
     - tox
     - twine
     - wheel
-    - pyaml
+    - pyaml>=4.2b1
     - pss
