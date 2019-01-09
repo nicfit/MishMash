@@ -238,28 +238,14 @@ cookiecutter:
 
 DOCKER_COMPOSE := VERSION=${VERSION} docker-compose -f docker/docker-compose.yml
 docker:
-	@$(DOCKER_COMPOSE) build
+	@$(DOCKER_COMPOSE) build mishmash
 
 docker-nocache:
 	@$(DOCKER_COMPOSE) build --no-cache
 
-docker-sqlite: docker
-	@test -n "${MUSIC_DIR}" || (echo "MUSIC_DIR volume directy required" && false)
-	@$(DOCKER_COMPOSE) up --no-start --no-recreate
-	$(DOCKER_COMPOSE) up mishmash-sqlite
-
-docker-postgres: docker
-	@test -n "${MUSIC_DIR}" || (echo "MUSIC_DIR volume directy required" && false)
-	@$(DOCKER_COMPOSE) up -d postgres
-	@sleep 3
-	@$(DOCKER_COMPOSE) up mishmash-postgres
-
 docker-clean:
-	-for cont in PostgreSql-mishmash MishMash-sqlite MishMash-postgres; do \
-        docker stop $$cont;\
-        docker rm $$cont;\
-    done
-	-docker rmi -f mishmash:${VERSION}
+	$(DOCKER_COMPOSE) rm
+	-docker rmi -f mishmash:latest
 
 docker-publish: docker
 	@$(DOCKER_COMPOSE) push mishmash-publish

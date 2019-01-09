@@ -22,7 +22,7 @@ services:
             dockerfile: Dockerfile
             args:
                 VERSION: $VERSION
-        image: mishmash
+        image: mishmash:latest
 
 
     mishmash-publish:
