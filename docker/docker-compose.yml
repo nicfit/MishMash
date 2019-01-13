@@ -2,13 +2,16 @@ version: "3"
 
 services:
 
-    postgres:
-        image: postgres:10-alpine
-        container_name: PostgreSQL-mishmash-devel
+    postgresql:
+        build:
+            context: ./postgresql
+            dockerfile: Dockerfile
+        image: postgresql-mishmash-devel
+        container_name: PostgreSQL-MishMash-devel
         environment:
-            POSTGRES_DB: MishMash-devel
-            POSTGRES_USER: mishmash
             POSTGRES_PASSWORD: g4b4g3
+            DB_NAME: MishMash_devel
+            DB_USER: mishmash
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
