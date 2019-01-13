@@ -3,6 +3,26 @@ Release History
 
 .. :changelog:
 
+v0.3b12 (2019-01-12)
+------------------------
+
+New
+~~~
+- `mishmash web`: Image HTTP cache headers
+- `mishmash web`: Added --port arg.
+- Added gevent and gunicorn to `web` requirements (and docker image) to allow
+  for SSL etc.
+
+Changes
+~~~~~~~
+- Default sqlite database is now $CWD/mishmash.db.
+
+Fix
+~~~
+- Pyaml >= 4.2b1 for security alert.
+- Don't override web port from config file.
+
+
 v0.3b11 (2018-12-16)
 ------------------------
 - Run unsonic from `mishmash server`

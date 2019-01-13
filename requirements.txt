@@ -10,6 +10,9 @@ chameleon==3.5            # via pyramid-chameleon
 countrycode==0.2
 deprecation==2.0.6        # via nicfit.py
 eyed3==0.8.9
+gevent==1.4.0
+greenlet==0.4.15          # via gevent
+gunicorn==19.9.0
 hupper==1.4.2             # via pyramid
 inotify==0.2.10
 mako==1.0.7               # via alembic, pyramid-mako
@@ -18,7 +21,6 @@ nicfit.py==0.8.3
 nose==1.3.7               # via inotify
 packaging==18.0           # via deprecation
 pastedeploy==2.0.1        # via plaster-pastedeploy
-pathlib==1.0.1            # via eyed3
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
 psycopg2-binary==2.7.6.1
