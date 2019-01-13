@@ -39,7 +39,7 @@ python-magic==0.4.15      # via eyed3
 pyyaml==3.13              # via nicfit.py
 repoze.lru==0.7           # via pyramid-debugtoolbar
 six==1.12.0               # via eyed3, packaging, python-dateutil, sqlalchemy-utils
-sqlalchemy-utils==0.33.1
+sqlalchemy-utils==0.33.11
 sqlalchemy==1.2.16
 transaction==2.4.0
 translationstring==1.3    # via pyramid
