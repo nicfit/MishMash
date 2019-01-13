@@ -36,12 +36,12 @@ def album_cover(context, request, album, size=None, link=False):
     height = str(size or "100%")
 
     panel = (
-        u"<img class='shadow' width='%s' height='%s' src='%s' title='%s'/>" %
+        "<img class='shadow' width='%s' height='%s' src='%s' title='%s'/>" %
         (width, height, cover_url, "%s - %s" % (album.artist.name, album.title))
     )
 
     if link:
-        panel = u"<a href='%s'>%s</a>" % \
+        panel = "<a href='%s'>%s</a>" % \
                 (request.route_url('album', id=album.id), panel)
 
     return panel

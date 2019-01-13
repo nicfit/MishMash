@@ -40,8 +40,8 @@ class SyncPlugin(LoaderPlugin):
     """An eyeD3 file scanner/loader plugin."""
 
     NAMES = ['mishmash-sync']
-    SUMMARY = u"Synchronize files/directories with a Mishmash database."
-    DESCRIPTION = u""
+    SUMMARY = "Synchronize files/directories with a Mishmash database."
+    DESCRIPTION = ""
 
     def __init__(self, arg_parser):
         """Constructor"""

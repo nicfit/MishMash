@@ -55,8 +55,8 @@ def home_view(request):
              layout="main-layout")
 def allArtistsView(request):
     NUM_COLS = 2
-    NUMBER = u"#"
-    OTHER = u"Other"
+    NUMBER = "#"
+    OTHER = "Other"
     buckets = {}   # buckets['A'] = count, etc.
     artist_dict = {}
 

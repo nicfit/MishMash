@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from eyed3.utils import datePicker
 from countrycode.countrycode import countrycode
 
-NAME_PREFIXES = [u"the ", u"los ", u"la ", u"el "]
+NAME_PREFIXES = ["the ", "los ", "la ", "el "]
 
 
 def splitNameByPrefix(s):
@@ -32,7 +32,7 @@ def normalizeCountry(country_str, target="iso3c", title_case=False):
     raw = "country_name"
 
     if country_str is None:
-        return u''
+        return ""
 
     if len(country_str) == 2:
         cc = countrycode(country_str.upper(), origin=iso2, target=target)

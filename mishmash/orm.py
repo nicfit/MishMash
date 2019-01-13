@@ -203,7 +203,7 @@ class Artist(Base, OrmObject):
                      if o]
         origins = origins[:n]
         origins.reverse()
-        return u", ".join(origins)
+        return ", ".join(origins)
 
     @orm.validates("name")
     def _setName(self, key, value):
