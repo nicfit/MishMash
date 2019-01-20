@@ -19,7 +19,7 @@ mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.1.0         # via mako
 nicfit.py==0.8.3
 nose==1.3.7               # via inotify
-packaging==18.0           # via deprecation
+packaging==19.0           # via deprecation
 pastedeploy==2.0.1        # via plaster-pastedeploy
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
