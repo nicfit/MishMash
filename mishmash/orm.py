@@ -101,8 +101,8 @@ class OrmObject(object):
         for key in self.__dict__:
             if not key.startswith('_'):
                 attrs.append((key, getattr(self, key)))
-        return self.__class__.__name__ + '(' + ', '.join(x[0] + '=' +
-                                            repr(x[1]) for x in attrs) + ')'
+        return self.__class__.__name__ + '(' + \
+               ', '.join(x[0] + '=' + repr(x[1]) for x in attrs) + ')'
 
 
 class Meta(Base, OrmObject):
@@ -203,7 +203,7 @@ class Artist(Base, OrmObject):
                      if o]
         origins = origins[:n]
         origins.reverse()
-        return u", ".join(origins)
+        return ", ".join(origins)
 
     @orm.validates("name")
     def _setName(self, key, value):
@@ -234,6 +234,10 @@ class Artist(Base, OrmObject):
                 return False
             vals.append(v)
         return True
+
+    @property
+    def is_various_artist(self):
+        return self.id == VARIOUS_ARTISTS_ID
 
 
 class AlbumDate(TypeDecorator):
@@ -325,7 +329,7 @@ class Track(Base, OrmObject):
     mtime = sql.Column(sql.DateTime(), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
-    time_secs = sql.Column(sql.Integer, nullable=False)
+    time_secs = sql.Column(sql.Float, nullable=False)
     title = sql.Column(sql.Unicode(TITLE_LIMIT), nullable=False, index=True)
     track_num = sql.Column(sql.SmallInteger)
     track_total = sql.Column(sql.SmallInteger)
@@ -521,7 +525,8 @@ class Library(Base, OrmObject):
 
 TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
 TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
-TABLES = [T.__table__ for T in TYPES] + TAGS
+IMAGE_TABLES = [artist_images, album_images]
+TABLES = [T.__table__ for T in TYPES] + TAGS + IMAGE_TABLES
 """All the table instances.  Order matters (esp. for postgresql). The
 tables are created in normal order, and dropped in reverse order."""
 ENUMS = [Image._types_enum, Album._types_enum]

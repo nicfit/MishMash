@@ -210,8 +210,8 @@ latex_elements = {
 # [howto/manual]).
 latex_documents = [
     ('index', 'mishmash.tex',
-     u'MishMash Documentation',
-     u'Travis Shirk', 'manual'),
+     'MishMash Documentation',
+     'Travis Shirk', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -241,8 +241,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'mishmash',
-     u'MishMash Documentation',
-     [u'Travis Shirk'], 1)
+     'MishMash Documentation',
+     ['Travis Shirk'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -256,8 +256,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'mishmash',
-     u'MishMash Documentation',
-     u'Travis Shirk',
+     'MishMash Documentation',
+     'Travis Shirk',
      'mishmash',
      'One line description of project.',
      'Miscellaneous'),

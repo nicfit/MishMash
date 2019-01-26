@@ -2,10 +2,10 @@ import sys
 from nicfit.console.ansi import Fg, Style
 from pyfiglet import figlet_format
 from sqlalchemy.exc import ProgrammingError, OperationalError
-from .. import version, database
+from .. import version
 from ..core import Command
 from ..util import safeDbUrl
-from ..orm import Track, Artist, Album, Meta, Tag, Library, NULL_LIB_ID
+from ..orm import Track, Artist, Album, Meta, Tag, Library
 
 """
 TODO:

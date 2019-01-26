@@ -7,7 +7,7 @@ WEB_PORT = 6229
 MAIN_SECT = "mishmash"
 SA_KEY = "sqlalchemy.url"
 CONFIG_ENV_VAR = "MISHMASH_CONFIG"
-SQLITE_DB_URL = "sqlite:///{0}/mishmash.db".format(Path.home())
+SQLITE_DB_URL = "sqlite:///{0}/mishmash.db".format(Path().cwd())
 POSTGRES_DB_URL = "postgresql://mishmash@localhost/mishmash"
 LOG_FORMAT = "<%(name)s:%(threadName)s> [%(levelname)s]: %(message)s"
 

@@ -1,5 +1,4 @@
-<metal:block use-macro="main_template">
-  <div metal:fill-slot="content">
+<metal:block use-macro="main_template"><div metal:fill-slot="content">
 <!--! begin content -->
 
 <div class="row">
@@ -14,6 +13,7 @@
     </h3>
   </div>
 </div>
+
 <div class="row">
   <div class="col-md-4">
     ${panel('album_cover', album, size=300)}
@@ -67,5 +67,4 @@
 </div>
 
 <!--! end content -->
-  </div>
-</metal:block>
+</div></metal:block>

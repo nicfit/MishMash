@@ -39,6 +39,6 @@ default_context:
     use_pytest: "yes"
     use_rtd: "no"
     use_travis_ci: "yes"
-    version: "0.2.0-beta5"
+    version: "0.3b12"
     web: "https://github.com/nicfit/MishMash"
-    year: "2013-2017"
+    year: "2013-2019"

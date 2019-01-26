@@ -1,9 +1,9 @@
 import os
-import re
+from urllib.parse import urlparse
 from eyed3.utils import datePicker
 from countrycode.countrycode import countrycode
 
-NAME_PREFIXES = [u"the ", u"los ", u"la ", u"el "]
+NAME_PREFIXES = ["the ", "los ", "la ", "el "]
 
 
 def splitNameByPrefix(s):
@@ -17,7 +17,7 @@ def splitNameByPrefix(s):
 def sortByDate(things, prefer_recording_date=False):
     # XXX: Why just just make Album types sortable by intregating this
     def _sortkey(a):
-        return datePicker(a, prefer_recording_date=prefer_recording_date)
+        return datePicker(a, prefer_recording_date=prefer_recording_date) or 0
     return sorted(things, key=_sortkey)
 
 
@@ -32,7 +32,7 @@ def normalizeCountry(country_str, target="iso3c", title_case=False):
     raw = "country_name"
 
     if country_str is None:
-        return u''
+        return ""
 
     if len(country_str) == 2:
         cc = countrycode(country_str.upper(), origin=iso2, target=target)
@@ -70,8 +70,6 @@ def mostCommonItem(lst):
 
 
 def safeDbUrl(db_url):
-    if db_url.startswith("postgres"):
-        m = re.compile(r"(\w+)://(\w+):(?P<password>\w+)@.*$").match(db_url)
-        if m:
-            db_url = db_url.replace(m.group("password"), "*" * 10)
-    return db_url
+    """Obfuscates password from a database URL."""
+    url = urlparse(db_url)
+    return db_url.replace(url.password, "****") if url.password else db_url

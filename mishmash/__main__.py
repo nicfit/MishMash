@@ -10,8 +10,10 @@ from eyed3.utils.prompt import PromptExit
 
 from .config import DEFAULT_CONFIG, CONFIG_ENV_VAR, Config, MAIN_SECT, SA_KEY
 from . import log
-from . core import Command
+from . core import Command, CommandError
 from .commands import *                                                   # noqa
+
+_FORK_METHOD_SET = False
 
 
 def _pErr(msg):
@@ -22,13 +24,16 @@ def _pErr(msg):
 
 def main(args):
     import multiprocessing
+    global _FORK_METHOD_SET
 
-    try:
-        multiprocessing.set_start_method("fork")
-    except RuntimeError as ex:
-        log.warn("multiprocessing.set_start_method: " + str(ex))
+    if not _FORK_METHOD_SET:
+        try:
+            multiprocessing.set_start_method("fork")
+            _FORK_METHOD_SET = True
+        except RuntimeError as ex:
+            log.warning("multiprocessing.set_start_method: " + str(ex))
 
-    if not args.command:
+    if not hasattr(args, "command_func") or not args.command_func:
         # No command was given.
         args.app.arg_parser.print_help()
         return 1
@@ -45,16 +50,21 @@ def main(args):
                     .format(os.environ["MISHMASH_DBURL"]))
         args.config.set(MAIN_SECT, SA_KEY, os.environ["MISHMASH_DBURL"])
 
+    # Run command
     try:
-        # Run command
         retval = args.command_func(args, args.config) or 0
-    except (KeyboardInterrupt, PromptExit) as ex:
+    except (KeyboardInterrupt, PromptExit):
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
-    except (sql_exceptions.ArgumentError,
-            sql_exceptions.OperationalError) as ex:
+    except (sql_exceptions.ArgumentError,):
         _pErr("Database error")
         retval = 1
+    except (sql_exceptions.OperationalError,) as db_err:
+        print(str(db_err), file=sys.stderr)
+        retval = 1
+    except CommandError as cmd_err:
+        print(str(cmd_err), file=sys.stderr)
+        retval = cmd_err.exit_status
     except Exception as ex:
         log.exception(ex)
         _pErr("General error")
@@ -64,12 +74,16 @@ def main(args):
 
 
 class MishMash(Application):
-    def __init__(self, progname="mishmash"):
+    def __init__(self, progname="mishmash", ConfigClass=None, config_obj=None):
         from . import version
+
+        if ConfigClass and config_obj:
+            raise ValueError("ConfigClass and config_obj are not compatible together.")
+
         config_opts = ConfigOpts(required=False,
                                  default_config=DEFAULT_CONFIG,
                                  default_config_opt="--default-config",
-                                 ConfigClass=Config,
+                                 ConfigClass=ConfigClass or Config,
                                  config_env_var=CONFIG_ENV_VAR,
                                  init_logging_fileConfig=True)
         super().__init__(main, name=progname, version=version,
@@ -84,6 +98,13 @@ class MishMash(Application):
                                               description=desc, required=False)
         Command.loadCommandMap(subparsers=subs)
         self.arg_subparsers = subs
+        self._user_config = config_obj
+
+    def _main(self, args):
+        if self._user_config:
+            args.config = self._user_config
+
+        return super()._main(args)
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")

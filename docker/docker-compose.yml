@@ -2,54 +2,28 @@ version: "3"
 
 services:
 
-    # Postgresql database comntainer
-    postgres:
-        container_name: PostgreSql-mishmash
-        image: postgres:9.6-alpine
+    postgresql:
+        build:
+            context: ./postgresql
+            dockerfile: Dockerfile
+        image: postgresql-mishmash-devel
+        container_name: PostgreSQL-MishMash-devel
         environment:
-            POSTGRES_DB: music-dev
-            POSTGRES_USER: mishmash
-            POSTGRES_PASSWORD: TheFaithSubjectToChange
+            POSTGRES_PASSWORD: g4b4g3
+            DB_NAME: MishMash_devel
+            DB_USER: mishmash
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-    # MishMash images
+
     mishmash: &mishmash-image
         build:
             context: .
             dockerfile: Dockerfile
             args:
                 VERSION: $VERSION
-        image: mishmash
-
-    mishmash-publish:
-        <<: *mishmash-image
-        image: nicfit/mishmash:$VERSION
-
-    # MishMash containers
-    mishmash-local: &mishmash-container
-        image: mishmash
-        volumes:
-            - /etc/localtime:/etc/localtime:ro
-            - ${MUSIC_DIR}:/media/music:ro
-
-    mishmash-sqlite:
-        <<: *mishmash-container
-        image: nicfit/mishmash:$VERSION
-        container_name: MishMash-sqlite
-        environment:
-            MISHMASH_DBURL: sqlite:////MishMash/var/MishMash.db
-        ports:
-            - "16229:6229"
-
-    mishmash-postgres:
-        <<: *mishmash-container
-        image: nicfit/mishmash:$VERSION
-        environment:
-            POSTGRES_PASSWORD: TheFaithSubjectToChange
-            MISHMASH_DBURL: postgresql://mishmash:TheFaithSubjectToChange@postgres/MishMash
-        links:
-            - postgres:postgres
-        ports:
-            - "26229:6229"
-        depends_on:
-            - postgres
+        image: mishmash:latest
 

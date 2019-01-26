@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from nicfit.console.ansi import Fg
 from eyed3.utils.prompt import prompt, parseIntList
 from .orm import Artist

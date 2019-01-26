@@ -13,7 +13,7 @@ Features
 * A command-line tool for building and managing a music database.
 * Web browser interface (using `Pyramid`_) for browsing your music library.
 * Uses `eyeD3`_ for reading MP3s and ID3 metadata.
-* Support and tested with Python 3.4 and Postgresql. SQLite is periodically
+* Support and tested with Python 3.6 and Postgresql. SQLite is periodically
   tested with, but future features may not be supported (e.g. full text
   search).
 * Free software: GNU GPL v3.0 license
@@ -49,19 +49,19 @@ Getting Started
     0 music tags
 
 
-Surprise, you now have an empty sqlite database in your home directory.
+Surprise, you now have an empty sqlite database in the current directory.
 Let's leave it here for now, it can be located elsewhere or use a different
 database using command line arguments and/or environment variables. Pretty
-useless, so now add some music.::
+useless without any music.::
 
-    $ mishmash sync /home/travis/Music/Melvins
-    Syncing library 'Music': paths=['/home/travis/Music/Melvins/']
-    Syncing directory: /home/travis/Music/Melvins/
-    Syncing directory: /home/travis/Music/Melvins/1984 - Mangled Demos
+    $ mishmash sync ~/Music/Melvins
+    Syncing library 'Music': paths=['~/Music/Melvins/']
+    Syncing directory: ~/Music/Melvins/
+    Syncing directory: ~/Music/Melvins/1984 - Mangled Demos
     Adding artist: Melvins
-    Syncing directory: /home/travis/Music/Melvins/1986 - 10 Songs
+    Syncing directory: ~/Music/Melvins/1986 - 10 Songs
     Adding album: 10 Songs
-    Adding track: /mnt/Media/Media/audio/music/Melvins/1986 - 10 Songs/Melvins - 01 - Easy As It Was.mp3
+    Adding track: ~/Music/Melvins/1986 - 10 Songs/Melvins - 01 - Easy As It Was.mp3
     Updating album: 10 Songs
     ...
     == Library 'Music' sync'd [ 8.73s time (45.9 files/s) ] ==
@@ -72,6 +72,13 @@ useless, so now add some music.::
     0 orphaned artists deleted
     0 orphaned albums deleted
 
+Use your database as you wish. Browse it with `mishmash web`, or use one of its
+management commands.
+
+Check out the `Unsonic`_ project for streaming capabilities.
+
+
+.. _Unsonic: https://github.com/redshodan/unsonic
 
 .. |Build Status| image:: https://travis-ci.org/nicfit/MishMash.svg?branch=master
    :target: https://travis-ci.org/nicfit/MishMash
@@ -91,3 +98,4 @@ useless, so now add some music.::
 .. |Coverage| image:: https://coveralls.io/repos/nicfit/MishMash/badge.svg
    :target: https://coveralls.io/r/nicfit/MishMash
    :alt: Coverage Status
+

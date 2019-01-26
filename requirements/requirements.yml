@@ -1,6 +1,6 @@
 main:
     - eyeD3
-    # When pinning nicfit.py be sure to also pin nicfit[cookiecutter] below
+    # If pinning nicfit.py be sure to also pin nicfit[cookiecutter] below
     - nicfit.py
     - SQLAlchemy
     - inotify
@@ -21,6 +21,8 @@ extra_web:
     - zope.sqlalchemy
     - waitress
     - pyramid-debugtoolbar
+    - gevent
+    - gunicorn
 
 test:
     - pytest
@@ -38,10 +40,10 @@ dev:
     - babel
     - check-manifest
     - flake8
-    - git+https://github.com/nicfit/gitchangelog.git@nicfit.py
+    #- git+https://github.com/nicfit/gitchangelog.git@nicfit.py
     - ipdb
     - pip-tools
     - twine
     - wheel
-    - pyaml
+    - pyaml>=4.2b1
     - pss

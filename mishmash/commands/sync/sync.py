@@ -21,7 +21,7 @@ from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
 from ...orm import (Track, Artist, Album, Meta, Image, Library,
-                    VARIOUS_ARTISTS_ID, MAIN_LIB_NAME)
+                    VARIOUS_ARTISTS_ID, VARIOUS_ARTISTS_NAME, MAIN_LIB_NAME, NULL_LIB_ID)
 from ... import console
 from ... import database as db
 from ...core import Command, EP_MAX_SIZE_HINT
@@ -40,8 +40,8 @@ class SyncPlugin(LoaderPlugin):
     """An eyeD3 file scanner/loader plugin."""
 
     NAMES = ['mishmash-sync']
-    SUMMARY = u"Synchronize files/directories with a Mishmash database."
-    DESCRIPTION = u""
+    SUMMARY = "Synchronize files/directories with a Mishmash database."
+    DESCRIPTION = ""
 
     def __init__(self, arg_parser):
         """Constructor"""
@@ -102,8 +102,13 @@ class SyncPlugin(LoaderPlugin):
                 self._watchDir(p)
 
     def _getArtist(self, session, name, resolved_artist):
-        artist_rows = session.query(Artist).filter_by(name=name,
-                                                      lib_id=self._lib.id).all()
+        if name == VARIOUS_ARTISTS_NAME:
+            artist_rows = [session.query(Artist).filter_by(name=VARIOUS_ARTISTS_NAME,
+                                                           lib_id=NULL_LIB_ID).one()]
+        else:
+            artist_rows = session.query(Artist).filter_by(name=name,
+                                                          lib_id=self._lib.id).all()
+
         if artist_rows:
             if len(artist_rows) > 1 and resolved_artist:
                 # Use previously resolved artist for this directory.
@@ -127,6 +132,7 @@ class SyncPlugin(LoaderPlugin):
                         pout(Fg.blue("Updating artist") + ": " + name)
                     resolved_artist = artist
             else:
+                assert len(artist_rows) == 1
                 # Artist match
                 artist = artist_rows[0]
         else:
@@ -167,16 +173,12 @@ class SyncPlugin(LoaderPlugin):
         else:
             if datetime.fromtimestamp(getctime(path)) == track.ctime:
                 # Track is in DB and the file is not modified.
-                # stash the album though, we'll look for artwork
-                # updates later
-                album = track.album
-                return
+                return track.album
 
         # Either adding the track (track == None)
         # or modifying (track != None)
 
-        artist, resolved_artist = self._getArtist(session, tag.artist,
-                                                  resolved_artist)
+        artist, resolved_artist = self._getArtist(session, tag.artist, resolved_artist)
         if tag.album_type != SINGLE_TYPE:
             if tag.album_artist and tag.artist != tag.album_artist:
                 album_artist, resolved_album_artist = \
@@ -191,21 +193,15 @@ class SyncPlugin(LoaderPlugin):
 
             album_artist_id = album_artist.id if not is_various \
                                               else VARIOUS_ARTISTS_ID
-            album_rows = session.query(Album)\
-                                .filter_by(title=tag.album,
-                                           lib_id=self._lib.id,
-                                           artist_id=album_artist_id).all()
+            album = session.query(Album).filter_by(title=tag.album,
+                                                   lib_id=self._lib.id,
+                                                   artist_id=album_artist_id)\
+                                        .one_or_none()
             rel_date = tag.release_date
             rec_date = tag.recording_date
             or_date = tag.original_release_date
 
-            if album_rows:
-                if len(album_rows) > 1:
-                    # This artist has more than one album with the same
-                    # title.
-                    raise NotImplementedError("FIXME")
-                album = album_rows[0]
-
+            if album:
                 album.type = album_type
                 album.release_date = rel_date
                 album.original_release_date = or_date
@@ -289,7 +285,7 @@ class SyncPlugin(LoaderPlugin):
             artists = set()
             album_artists = set()
             albums = set()
-            for tag in [tag for f in audio_files if f.tag]:
+            for tag in [f.tag for f in audio_files if f.tag]:
                 if tag.artist:
                     artists.add(tag.artist)
                 if tag.album_artist:
@@ -297,8 +293,9 @@ class SyncPlugin(LoaderPlugin):
                 if tag.album:
                     albums.add(tag.album)
 
-            is_various = (len(artists) > 1 and len(album_artists) == 0 and
-                          len(albums) == 1)
+            is_various = (len(artists) > 1
+                          and (len(album_artists) == 0 or album_artists == {VARIOUS_ARTISTS_NAME})
+                          and len(albums) == 1)
             if is_various:
                 return VARIOUS_TYPE
             else:
@@ -330,7 +327,7 @@ class SyncPlugin(LoaderPlugin):
             try:
                 album = self._syncAudioFile(audio_file, album_type, d_datetime,
                                             session)
-            except Exception as ex:
+            except Exception:
                 # TODO: log and skip????
                 raise
 
@@ -508,50 +505,3 @@ class Sync(Command):
                         self.db_session.commit()
             finally:
                 monitor.join()
-
-
-"""
-Test:
-    * touch a music file: IN_OPEN, IN_ATTRIB, IN_CLOSE_WRITE
-    * touch a non-music file: IN_OPEN, IN_ATTRIB, IN_CLOSE_WRITE
-    * touch a music dir
-    - touch a non-music dir
-    * chmod/chown a music file
-    * chmod/chown a non-music file
-    * chmod/chown a music dir
-    * chmod/chown a non-music dir
-    * edit a file
-    * add a file
-    * rm a file
-    - add a music dir
-    - rm a music dir
-    - add a non-music dir
-    - rm a non-music dir
-    - rm cover art
-    - add cover art
-Problems:
-    - A change of a non-music dir (e.g. root music dir files, images) is not
-      synced since it is not in a lib dir
-    - rm a music dir::
-
-        Syncing b"./music/complete/(1988) Demo '88" (lib: Music)
-        Syncing library 'Music': paths={b"./music/complete/(1988) Demo '88"}
-        <mishmash:MainThread> [ERROR]: file not found: ./music/complete/(1988) Demo '88
-        Traceback (most recent call last):
-          File "/home/travis/devel/mishmash/mishmash/__main__.py", line 48, in main
-            retval = args.command_func(args, args.config) or 0
-          File "/home/travis/devel/mishmash/mishmash/core.py", line 17, in run
-            retval = super().run(args)
-          File "/home/travis/.virtualenvs/mishmash/lib/python3.6/site-packages/nicfit/command.py", line 38, in run
-            return self._run()
-          File "/home/travis/devel/mishmash/mishmash/commands/sync.py", line 540, in _run
-            result = _syncLib(MusicLibrary(lib, paths=paths))
-          File "/home/travis/devel/mishmash/mishmash/commands/sync.py", line 509, in _syncLib
-            return eyed3_main(args, None)
-          File "/home/travis/.virtualenvs/mishmash/lib/python3.6/site-packages/eyed3/main.py", line 50, in main
-            fs_encoding=args.fs_encoding)
-          File "/home/travis/.virtualenvs/mishmash/lib/python3.6/site-packages/eyed3/utils/__init__.py", line 72, in walk
-            raise IOError("file not found: %s" % path)
-        OSError: file not found: ./music/complete/(1988) Demo '88
-        OSError: file not found: ./music/complete/(1988) Demo '88
-""" # noqa

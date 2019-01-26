@@ -3,6 +3,95 @@ Release History
 
 .. :changelog:
 
+v0.3b12 (2019-01-12)
+------------------------
+
+New
+~~~
+- `mishmash web`: Image HTTP cache headers
+- `mishmash web`: Added --port arg.
+- Added gevent and gunicorn to `web` requirements (and docker image) to allow
+  for SSL etc.
+
+Changes
+~~~~~~~
+- Default sqlite database is now $CWD/mishmash.db.
+
+Fix
+~~~
+- Pyaml >= 4.2b1 for security alert.
+- Don't override web port from config file.
+
+
+v0.3b11 (2018-12-16)
+------------------------
+- Run unsonic from `mishmash server`
+- Venv-less docker.
+
+
+v0.3b10 (2018-12-15)
+------------------------
+
+New
+~~~~~
+- `mishmash server`
+- Bootstrap4 update.
+
+Fix
+~~~
+- Fix album sorts for missing dates.
+- Various artist support.
+
+
+v0.3b9 (2018-12-15)
+------------------------
+
+Fix
+~~~
+- Fix album sorts for missing dates.
+- Various artist support.
+
+
+v0.3b9 (2018-12-02)
+------------------------
+
+New
+~~~
+- Split-artist docs.
+- `mishmash web` albums view.
+- `mishmash web` artist filters.
+
+Fix
+~~~
+- Database URL obfuscation is more reliable.
+
+
+v0.3b8 (2018-11-28)
+------------------------
+
+New
+~~~
+- Added `MishMash(ConfigClass=clazz)` keyword argument.
+
+v0.3b7 (2018-06-18)
+------------------------
+
+New
+~~~
+- More multi-lib supoort (merge, split, info)
+
+Fix
+~~~
+- Return resolved album when a sync does not occur.
+- Recent inotify uses Unicode natively, remove conversions to bytes.
+- Pick up new image files when rescanning and no audio files changed.
+
+Other
+~~~~~
+- Run make test targets thru tox. Travis-CI will do this in a future
+  commit.
+
+
 v0.3b6 (2018-02-18)
 --------------------
 

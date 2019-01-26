@@ -13,6 +13,7 @@ recursive-include ./tests *.py
 
 exclude .cookiecutter.yml
 exclude .gitchangelog.rc
+exclude .readthedocs.yml
 global-exclude __pycache__
 global-exclude .editorconfig
 global-exclude *.py[co]
