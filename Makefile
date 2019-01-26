@@ -241,14 +241,16 @@ docker:
 	@$(DOCKER_COMPOSE) build mishmash
 
 docker-nocache:
-	@$(DOCKER_COMPOSE) build --no-cache
+	@$(DOCKER_COMPOSE) build --no-cache mishmash
 
 docker-clean:
 	$(DOCKER_COMPOSE) rm
 	-docker rmi -f mishmash:latest
 
 docker-publish: docker
-	@$(DOCKER_COMPOSE) push mishmash-publish
+	docker tag mishmash:latest nicfit/mishmash:${VERSION}
+	docker push nicfit/mishmash:${VERSION}
+	docker pull nicfit/mishmash:${VERSION}
 
 
 DEF_MSG_CAT = locale/en_US/LC_MESSAGES/MishMash.po

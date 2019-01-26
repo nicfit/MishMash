@@ -27,8 +27,3 @@ services:
                 VERSION: $VERSION
         image: mishmash:latest
 
-
-    mishmash-publish:
-        <<: *mishmash-image
-        image: nicfit/mishmash:$VERSION
-

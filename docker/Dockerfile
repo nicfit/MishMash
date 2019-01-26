@@ -23,9 +23,7 @@ RUN addgroup -S mishmash &&\
     adduser -S -u 6229 -G mishmash -h ${HOME} mishmash &&\
     mkdir -p ${HOME}/etc ${HOME}/var ${HOME}/bin
 
-RUN pip --no-cache-dir install MishMash==${VERSION} &&\
-    pip --no-cache-dir install MishMash[web]==${VERSION} &&\
-    pip --no-cache-dir install MishMash[postgres]==${VERSION}
+RUN pip --no-cache-dir install MishMash[web,postgres]==${VERSION}
 
 USER mishmash
 ENV PATH="${HOME}/bin:${PATH}"
