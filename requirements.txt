@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file ./requirements.txt requirements.txt
 #
-alembic==1.0.6
+alembic==1.0.7
 attrs==18.2.0             # via nicfit.py
 chameleon==3.5            # via pyramid-chameleon
 countrycode==0.2
@@ -19,11 +19,11 @@ mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.1.0         # via mako
 nicfit.py==0.8.3
 nose==1.3.7               # via inotify
-packaging==18.0           # via deprecation
+packaging==19.0           # via deprecation
 pastedeploy==2.0.1        # via plaster-pastedeploy
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
-psycopg2-binary==2.7.6.1
+psycopg2-binary==2.7.7
 pyfiglet==0.8.post0
 pygments==2.3.1           # via pyramid-debugtoolbar
 pyparsing==2.3.1          # via packaging
@@ -44,7 +44,7 @@ sqlalchemy==1.2.16
 transaction==2.4.0
 translationstring==1.3    # via pyramid
 venusian==1.2.0           # via pyramid
-waitress==1.2.0
+waitress==1.2.1
 webob==1.8.5              # via pyramid
 zope.deprecation==4.4.0   # via pyramid
 zope.interface==4.6.0     # via pyramid, transaction, zope.sqlalchemy
