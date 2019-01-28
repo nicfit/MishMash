@@ -11,7 +11,7 @@ RUN apk update &&\
     apk upgrade &&\
     python -m ensurepip &&\
     pip --no-cache-dir install -U pip setuptools &&\
-    apk add --no-cache libmagic postgresql-libs
+    apk add --no-cache ca-certificates libmagic postgresql-libs
 
 # Deps requiring extra build tools to be clean up after
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev &&\
