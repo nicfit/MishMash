@@ -33,7 +33,7 @@ pyramid-layout==1.0
 pyramid-mako==1.0.2       # via pyramid-debugtoolbar
 pyramid-tm==2.2.1
 pyramid==1.10.2
-python-dateutil==2.7.5    # via alembic
+python-dateutil==2.8.0    # via alembic
 python-editor==1.0.3      # via alembic
 python-magic==0.4.15      # via eyed3
 pyyaml==3.13              # via nicfit.py
