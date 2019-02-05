@@ -1,4 +1,4 @@
-Sphinx==1.8.3
+Sphinx==1.8.4
 babel==2.6.0
 check-manifest==0.37
 flake8==3.7.2
