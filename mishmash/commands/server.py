@@ -1,14 +1,19 @@
 import time
 import subprocess
+
 from multiprocessing import Process
 from ..core import Command, CommandError
 
 
 class MishMashProc(Process):
     def __init__(self, cmd, *args, config=None):
-        from ..__main__ import MishMash
         self._cmd = cmd
-        super().__init__(target=MishMash(config_obj=config).run, kwargs={"args_list": [cmd, *args]})
+        super().__init__(target=MishMashProc._entryPoint, args=[config, cmd, *args])
+
+    @staticmethod
+    def _entryPoint(config, cmd, *args):
+        from ..__main__ import MishMash
+        return MishMash(config_obj=config).run(args_list=[cmd, *args])
 
     def __str__(self):
         if self.exitcode is None:
