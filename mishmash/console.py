@@ -7,6 +7,7 @@ def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
     color = Fg.green
     artist = None
     name = None
+    menu_num = 0
 
     if heading:
         print(heading)
@@ -14,9 +15,10 @@ def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
     while artist is None:
         if choices:
             name = choices[0].name
-            for menu_num, a in enumerate(choices):
+            for menu_num, a in enumerate(choices, start=1):
+                import pdb; pdb.set_trace()   # FIXME
+                ...
                 print("   %d) %s" % (menu_num + 1, a.origin()))
-            menu_num += 1
 
             if not multiselect:
                 if allow_create:
