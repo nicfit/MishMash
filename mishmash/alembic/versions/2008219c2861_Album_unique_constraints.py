@@ -26,4 +26,3 @@ def downgrade():
     with op.batch_alter_table("tracks") as batch_op:
         batch_op.alter_column('metadata_format', existing_type=sa.VARCHAR(length=7),
                               nullable=True)
-

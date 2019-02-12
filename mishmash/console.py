@@ -16,8 +16,6 @@ def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
         if choices:
             name = choices[0].name
             for menu_num, a in enumerate(choices, start=1):
-                import pdb; pdb.set_trace()   # FIXME
-                ...
                 print("   %d) %s" % (menu_num + 1, a.origin()))
 
             if not multiselect:
