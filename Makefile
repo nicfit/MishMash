@@ -125,8 +125,7 @@ pre-release: lint requirements test changelog
 	@git status -s -b
 
 requirements:
-	nicfit requirements
-	pip-compile -U requirements.txt -o ./requirements.txt
+	./parcyl.py requirements -UD
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\

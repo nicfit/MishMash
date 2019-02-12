@@ -47,8 +47,8 @@ def getPackageInfo():
 
     # Requirements
     requirements, extras = requirements_yaml()
-    info_dict["install_requires"] = requirements["main"] \
-                                        if "main" in requirements else []
+    info_dict["install_requires"] = requirements["install"] \
+                                        if "install" in requirements else []
     info_dict["tests_require"] = requirements["test"] \
                                      if "test" in requirements else []
     info_dict["extras_require"] = extras

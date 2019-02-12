@@ -1,0 +1,17 @@
+Mako==1.0.7                              # Required by alembic
+SQLAlchemy>=1.0                          # Required by alembic,sqlalchemy-utils
+python-dateutil==2.8.0                   # Required by alembic
+python-editor>=0.3                       # Required by alembic
+alembic==1.0.7
+countrycode==0.2
+python-magic==0.4.15                     # Required by eyeD3
+six==1.12.0                              # Required by eyeD3,sqlalchemy-utils
+eyeD3>=0.9a0
+nose==1.3.7                              # Required by inotify
+inotify==0.2.10
+PyYaml==3.13                             # Required by nicfit.py
+attrs==18.2.0                            # Required by nicfit.py
+deprecation==2.0.6                       # Required by nicfit.py
+nicfit.py==0.8.3
+pyfiglet==0.8.post1
+sqlalchemy-utils==0.33.11
