@@ -63,8 +63,6 @@ EXTRA_ATTRS = {
     "years": "years",
 }
 
-find_packages = setuptools.find_packages
-
 
 def setup(**setup_attrs):
     """A shortcut help function to use when you don't need the  `Setup` object.
@@ -609,6 +607,18 @@ class PyTestCommand(TestCommand):
         sys.exit(errno)
 
 
+def find_package_files(directory, prefix=".."):
+    paths = []
+    for (path, _, filenames) in os.walk(directory):
+        if "__pycache__" in path:
+            continue
+        for filename in filenames:
+            if filename.endswith(".pyc"):
+                continue
+            paths.append(os.path.join(prefix, path, filename))
+    return paths
+
+
 def parseVersion(v):
     from pkg_resources import parse_version
     from pkg_resources.extern.packaging.version import Version
@@ -633,7 +643,7 @@ def parseVersion(v):
     return ver, ver_info
 
 
-def main():
+def _main():
     import argparse
 
     p = argparse.ArgumentParser(description="Python project packaging helper.")
@@ -681,6 +691,7 @@ def main():
         p.print_usage()
 
 
-__all__ = ["Setup", "setup", "find_packages"]
+find_packages = setuptools.find_packages
+__all__ = ["Setup", "setup", "find_packages", "find_package_files"]
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(_main() or 0)

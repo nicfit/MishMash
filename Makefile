@@ -73,7 +73,7 @@ clean-patch:
 	find . -name '*.orig' -exec rm -f '{}' \;
 
 lint:
-	flake8 --builtins=_ $(SRC_DIRS)
+	tox -e lint
 
 test:
 	tox -e py-default
@@ -109,7 +109,7 @@ pre-release: lint requirements test changelog
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
-	check-manifest
+	tox -e check-manifest
 	@if git tag -l | grep -E '^$(RELEASE_TAG)$$' > /dev/null; then \
         echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \
