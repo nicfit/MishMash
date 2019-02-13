@@ -5,6 +5,7 @@ include LICENSE
 include README.rst
 include Makefile
 include tox.ini
+include parcyl.py
 
 graft docs
 prune docs/_build

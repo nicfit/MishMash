@@ -650,16 +650,17 @@ def _main():
     p.add_argument("--version", action="version", version=VERSION)
 
     subcmds = p.add_subparsers(dest="cmd")
-    subcmds.add_parser("install", help="Write a `parcyl.py` file to the current directory.")
+    inst_p = subcmds.add_parser("install",
+                                help="Write a `parcyl.py` file to the current directory.")
+    inst_p.add_argument("--force", action="store_true", help="Overwrite an existing parcyl.py")
+
     reqs_p = subcmds.add_parser("requirements",
                                 help="Generate and freeze requirements (setup.cfg -> *.txt)")
-
     version_updater_grp = reqs_p.add_mutually_exclusive_group()
     version_updater_grp.add_argument("-F", "--freeze", action="store_true",
                         help="Pin packages to currently install versions")
     version_updater_grp.add_argument("-U", "--upgrade", action="store_true",
                         help="Pin packages to latest version matching version specs.")
-
     reqs_p.add_argument("-D", "--deep", action="store_true",
                         help="Include the dependencies of packages.")
     reqs_p.add_argument("req_group", action="store", nargs="*",
@@ -669,11 +670,10 @@ def _main():
 
     if args.cmd == "install":
         parcyl_py = Path(f"parcyl.py")
-        if parcyl_py.exists():
-            # TODO: -f, --force
-            print(f"{parcyl_py} already exists, remove and try again",
-                  file=sys.stderr)
+        if parcyl_py.exists() and not args.force:
+            print(f"{parcyl_py} already exists (use --force to overwrite)", file=sys.stderr)
             return 1
+
         print(f"Writing {parcyl_py}")
         parcyl_py.write_bytes(Path(__file__).read_bytes())
         parcyl_py.chmod(0o755)

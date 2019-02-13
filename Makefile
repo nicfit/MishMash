@@ -24,7 +24,6 @@ help:
 	@echo "build - byte-compile python files and generate other build objects"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
-	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "test-all - run tests on various Python versions with tox"
 	@echo "release - package and upload a release"
@@ -79,7 +78,7 @@ test:
 	tox -e py-default
 
 test-all:
-	tox
+	tox --parallel=all
 
 coverage:
 	tox -e py-default,report
@@ -125,7 +124,7 @@ pre-release: lint requirements test changelog
 	@git status -s -b
 
 requirements:
-	./parcyl.py requirements -UD
+	./parcyl.py requirements --upgrade
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\
