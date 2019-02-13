@@ -10,14 +10,12 @@ Tests for `mishmash` module.
 
 def test_metadata():
     assert mishmash.version
-    assert mishmash.__about__.__license__
-    assert mishmash.__about__.__project_name__
-    assert mishmash.__about__.__author__
-    assert mishmash.__about__.__author_email__
-    assert mishmash.__about__.__version__
-    assert mishmash.__about__.__version_info__
-    assert mishmash.__about__.__release__
-    assert mishmash.__about__.__version_txt__
+    assert mishmash.__about__.project_name
+    assert mishmash.__about__.version
+    assert mishmash.__about__.version_info
+    assert mishmash.__about__.author
+    assert mishmash.__about__.author_email
+    assert mishmash.__about__.years
 
 
 def test_database_fixture(database):

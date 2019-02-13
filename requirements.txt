@@ -1,42 +1,19 @@
-Mako==1.0.7                              # Required by alembic
-SQLAlchemy>=1.0                          # Required by alembic,sqlalchemy-utils,zope.sqlalchemy
-python-dateutil==2.8.0                   # Required by alembic
-python-editor>=0.3                       # Required by alembic
 alembic==1.0.7
 countrycode==0.2
-python-magic==0.4.15                     # Required by eyeD3
-six==1.12.0                              # Required by eyeD3,sqlalchemy-utils
 eyeD3>=0.9a0
-greenlet>=0.4.14                         # Required by gevent
 gevent==1.4.0
 gunicorn==19.9.0
-nose==1.3.7                              # Required by inotify
 inotify==0.2.10
-PyYaml==3.13                             # Required by nicfit.py
-attrs==18.2.0                            # Required by nicfit.py
-deprecation==2.0.6                       # Required by nicfit.py
 nicfit.py==0.8.3
 psycopg2-binary==2.7.7
 pyfiglet==0.8.post1
-hupper==1.4.2                            # Required by pyramid
-plaster==1.0                             # Required by pyramid
-plaster-pastedeploy==0.6                 # Required by pyramid
-setuptools==40.8.0                       # Required by pyramid,zope.sqlalchemy
-translationstring>=0.4                   # Required by pyramid
-venusian>=1.0                            # Required by pyramid
-webob>=1.8.3                             # Required by pyramid
-zope.deprecation>=3.5.0                  # Required by pyramid
-zope.interface>=3.8.0                    # Required by pyramid,transaction,zope.sqlalchemy
-pyramid>=1.5                             # Required by pyramid-chameleon,pyramid-debugtoolbar,pyramid-layout,pyramid-tm,pyramid-chameleon,pyramid-debugtoolbar,pyramid-layout,pyramid-tm
-Chameleon==3.5                           # Required by pyramid-chameleon
+pyramid==1.10.2
 pyramid-chameleon==0.3
-Pygments==2.3.1                          # Required by pyramid-debugtoolbar
-pyramid-mako>=0.3.1                      # Required by pyramid-debugtoolbar
-repoze.lru==0.7                          # Required by pyramid-debugtoolbar
 pyramid-debugtoolbar==4.5
 pyramid-layout==1.0
-transaction>=2.0                         # Required by pyramid-tm,zope.sqlalchemy
 pyramid-tm==2.2.1
-sqlalchemy-utils==0.33.11
+SQLAlchemy==1.2.17
+sqlalchemy-utils==0.33.1
+transaction==2.4.0
 waitress==1.2.1
 zope.sqlalchemy==1.1
