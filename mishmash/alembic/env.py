@@ -50,7 +50,8 @@ def run_migrations_online():
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
+            render_as_batch=True,   # XXX: Added to support batch_alter in revisions
         )
 
         with context.begin_transaction():

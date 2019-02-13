@@ -144,6 +144,7 @@ def upgrade():
                         name=op.f('fk_albums_lib_id_libraries')),
                     sa.PrimaryKeyConstraint('id', name=op.f('pk_albums')),
                     sa.UniqueConstraint('title', 'artist_id', 'lib_id',
+                                        'release_date', 'recording_date', 'original_release_date',
                                         name=op.f('uq_albums_title'))
     )
     op.create_index(op.f('ix_albums_artist_id'), 'albums', ['artist_id'],
