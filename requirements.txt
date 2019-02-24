@@ -16,7 +16,7 @@ gunicorn==19.9.0
 hupper==1.4.2             # via pyramid
 inotify==0.2.10
 mako==1.0.7               # via alembic, pyramid-mako
-markupsafe==1.1.0         # via mako
+markupsafe==1.1.1         # via mako
 nicfit.py==0.8.3
 nose==1.3.7               # via inotify
 packaging==19.0           # via deprecation
