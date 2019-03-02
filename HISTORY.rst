@@ -3,6 +3,14 @@ Release History
 
 .. :changelog:
 
+v0.3b13 (2019-03-01)
+------------------------
+- Support for duplicate artist names (made unique with origin/location) (#525)
+- Support for duplicate album titles per artist (made unique with dates) (#525)
+- eyeD3 0.9aN required.
+- [docker] install ca-certificates.
+- Removed old Unicode u"literals"
+
 v0.3b12 (2019-01-12)
 ------------------------
 
