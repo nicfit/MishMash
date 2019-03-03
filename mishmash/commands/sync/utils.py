@@ -50,7 +50,7 @@ def deleteOrphans(session):
                                         .first()
         any_album = session.query(Album).filter(Album.artist_id == artist.id) \
                                         .first()
-        if not any_track and (not any_album or any_album.tracks):
+        if not any_track and (not any_album or not any_album.tracks):
             log.warn("Deleting artist: %s" % str(artist))
             session.delete(artist)
             num_orphaned_artists += 1

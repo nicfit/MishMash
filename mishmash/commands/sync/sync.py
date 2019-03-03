@@ -235,7 +235,7 @@ class SyncPlugin(LoaderPlugin):
                               original_release_date=or_date,
                               recording_date=rec_date,
                               date_added=d_datetime)
-                pout(Fg.green("Adding album") + ": " + album.title)
+                pout(f"{Fg.green('Adding album')}: {album.title}")
                 session.add(album)
             else:
                 if album.type != album_type:
@@ -306,27 +306,31 @@ class SyncPlugin(LoaderPlugin):
             return types.most_common()[0][0]
 
         if len(types) == 0:
-            artists = set()
-            album_artists = set()
+            artist_set = set()
+            album_artist_set = set()
             albums = set()
             for tag in [f.tag for f in audio_files if f.tag]:
                 if tag.artist:
-                    artists.add(tag.artist)
+                    artist_set.add(tag.artist)
+
                 if tag.album_artist:
-                    album_artists.add(tag.album_artist)
+                    album_artist_set.add(tag.album_artist)
+
                 if tag.album:
                     albums.add(tag.album)
 
-            is_various = (len(artists) > 1
-                          and (len(album_artists) == 0 or album_artists == {VARIOUS_ARTISTS_NAME})
-                          and len(albums) == 1)
+            is_various = (
+                len(artist_set) > 1
+                and (len(album_artist_set) == 0 or album_artist_set == {VARIOUS_ARTISTS_NAME})
+                and len(albums) == len(audio_files)
+            )
+
             if is_various:
                 return VARIOUS_TYPE
-            elif len(albums) == 0 or len(albums) > 1:
-                return SINGLE_TYPE
+            elif len(albums) == len(audio_files):
+                return LP_TYPE if len(audio_files) > EP_MAX_SIZE_HINT else EP_TYPE
             else:
-                return EP_TYPE if len(audio_files) < EP_MAX_SIZE_HINT \
-                               else LP_TYPE
+                return SINGLE_TYPE
 
         if len(types) > 1:
             log.warning("Inconsistent type hints: %s" % str(types.keys()))
