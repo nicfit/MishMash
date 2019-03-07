@@ -13,7 +13,7 @@ eyed3==0.9a0
 gevent==1.4.0
 greenlet==0.4.15          # via gevent
 gunicorn==19.9.0
-hupper==1.5               # via pyramid
+hupper==1.6               # via pyramid
 inotify==0.2.10
 mako==1.0.7               # via alembic, pyramid-mako
 markupsafe==1.1.1         # via mako
