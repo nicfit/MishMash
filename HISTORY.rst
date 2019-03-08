@@ -3,6 +3,14 @@ Release History
 
 .. :changelog:
 
+v0.3b14 (2019-03-07)
+------------------------
+
+Fix
+~~~
+- Compilation handling. fixes #539.
+
+
 v0.3b13 (2019-03-01)
 ------------------------
 - Support for duplicate artist names (made unique with origin/location) (#525)
