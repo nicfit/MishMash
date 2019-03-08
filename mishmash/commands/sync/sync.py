@@ -163,8 +163,7 @@ class SyncPlugin(LoaderPlugin):
         is_various = (album_type == VARIOUS_TYPE)
 
         if not info or not tag:
-            log.warning("File missing %s, skipping: %s" %
-                            ("audio" if not info else "tag/metadata", path))
+            log.warning(f"File missing {'audio' if not info else 'tag/metadata'}, skipping: {path}")
             return None, None
         elif None in (tag.title, tag.artist):
             log.warning("File missing required artist and/or title "
@@ -308,7 +307,7 @@ class SyncPlugin(LoaderPlugin):
         if len(types) == 0:
             artist_set = set()
             album_artist_set = set()
-            albums = set()
+            albums = list()
             for tag in [f.tag for f in audio_files if f.tag]:
                 if tag.artist:
                     artist_set.add(tag.artist)
@@ -317,7 +316,7 @@ class SyncPlugin(LoaderPlugin):
                     album_artist_set.add(tag.album_artist)
 
                 if tag.album:
-                    albums.add(tag.album)
+                    albums.append(tag.album)
 
             is_various = (
                 len(artist_set) > 1
