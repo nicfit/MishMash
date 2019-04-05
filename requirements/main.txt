@@ -4,5 +4,5 @@ countrycode==0.2
 eyeD3>=0.9a0
 inotify==0.2.10
 nicfit.py==0.8.3
-pyfiglet==0.8.post0
+pyfiglet==0.8.post1
 sqlalchemy-utils==0.33.1
