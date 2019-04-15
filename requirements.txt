@@ -23,7 +23,7 @@ packaging==19.0           # via deprecation
 pastedeploy==2.0.1        # via plaster-pastedeploy
 plaster-pastedeploy==0.6  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
-psycopg2-binary==2.8.1
+psycopg2-binary==2.8.2
 pyfiglet==0.8.post1
 pygments==2.3.1           # via pyramid-debugtoolbar
 pyparsing==2.3.1          # via packaging
