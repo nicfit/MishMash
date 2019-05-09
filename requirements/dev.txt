@@ -10,4 +10,4 @@ pyaml>=4.2b1
 sphinx_rtd_theme==0.4.3
 tox==3.9.0
 twine==1.12.1
-wheel==0.33.1
+wheel==0.33.2
