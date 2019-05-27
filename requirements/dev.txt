@@ -1,5 +1,5 @@
 Sphinx==2.0.0
-babel==2.6.0
+babel==2.7.0
 check-manifest==0.37
 flake8==3.7.7
 ipdb==0.12
