@@ -36,7 +36,7 @@ pyramid==1.10.4
 python-dateutil==2.8.0    # via alembic
 python-editor==1.0.4      # via alembic
 python-magic==0.4.15      # via eyed3
-pyyaml==5.1              # via nicfit.py
+pyyaml==5.1.1              # via nicfit.py
 repoze.lru==0.7           # via pyramid-debugtoolbar
 six==1.12.0               # via packaging, python-dateutil, sqlalchemy-utils
 sqlalchemy-utils==0.33.1
