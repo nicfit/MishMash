@@ -5,7 +5,7 @@
 #    pip-compile --output-file ./requirements.txt requirements.txt
 #
 alembic==1.2.1
-attrs==19.1.0             # via nicfit.py
+attrs==19.2.0             # via nicfit.py
 chameleon==3.6.2            # via pyramid-chameleon
 countrycode==0.2
 deprecation==2.0.7        # via nicfit.py
