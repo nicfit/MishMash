@@ -48,4 +48,4 @@ waitress==1.3.1
 webob==1.8.5              # via pyramid
 zope.deprecation==4.4.0   # via pyramid
 zope.interface==4.6.0     # via pyramid, transaction, zope.sqlalchemy
-zope.sqlalchemy==1.1
+zope.sqlalchemy==1.2
