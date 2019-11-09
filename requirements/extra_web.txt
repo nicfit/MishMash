@@ -1,7 +1,7 @@
 gevent==1.4.0
 gunicorn==20.0.0
 pyramid==1.10.4
-pyramid-debugtoolbar==4.5
+pyramid-debugtoolbar==4.5.1
 pyramid-layout==1.0
 pyramid_chameleon==0.3
 pyramid_tm==2.2.1
