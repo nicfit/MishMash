@@ -1,7 +1,7 @@
 import dataclasses
 
 project_name = "MishMash"
-version      = "0.3b13"
+version      = "0.3b14"
 release_name = ""
 author       = "Travis Shirk"
 author_email = "travis@pobox.com"
@@ -15,4 +15,4 @@ class Version:
     release: str
     release_name: str
 
-version_info = Version(0, 3, 0, "b13", "")
+version_info = Version(0, 3, 0, "b14", "")

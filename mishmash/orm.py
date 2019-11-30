@@ -214,7 +214,7 @@ class Artist(Base, OrmObject):
         return value
 
     @orm.validates("origin_country")
-    def _setOriginCountry(self, key, value):
+    def _setOriginCountry(self, _, value):
         from .util import normalizeCountry
         if value is None:
             return None
@@ -263,6 +263,9 @@ class Album(Base, OrmObject):
     __table_args__ = (sql.UniqueConstraint("title",
                                            "artist_id",
                                            "lib_id",
+                                           "release_date",
+                                           "recording_date",
+                                           "original_release_date",
                                           ), {})
 
     TITLE_LIMIT = 256

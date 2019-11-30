@@ -22,7 +22,21 @@ def deleteOrphans(session):
             session.delete(track)
             num_orphaned_tracks += 1
             log.warn("Deleting track: %s" % str(track))
+    session.flush()
 
+    # Albums
+    found_ids.clear()
+    for album in session.query(Album).all():
+        if album.id in found_ids:
+            continue
+
+        any_track = session.query(Track).filter(Track.album_id == album.id).first()
+        if not any_track:
+            log.warn("Deleting album: %s" % str(album))
+            session.delete(album)
+            num_orphaned_albums += 1
+        else:
+            found_ids.add(album.id)
     session.flush()
 
     # Artists
@@ -36,29 +50,13 @@ def deleteOrphans(session):
                                         .first()
         any_album = session.query(Album).filter(Album.artist_id == artist.id) \
                                         .first()
-        if not any_track and not any_album:
+        if not any_track and (not any_album or not any_album.tracks):
             log.warn("Deleting artist: %s" % str(artist))
             session.delete(artist)
             num_orphaned_artists += 1
         else:
             found_ids.add(artist.id)
-
     session.flush()
-
-    # Albums
-    found_ids.clear()
-    for album in session.query(Album).all():
-        if album.id in found_ids:
-            continue
-
-        any_track = session.query(Track).filter(Track.album_id == album.id) \
-                                        .first()
-        if not any_track:
-            log.warn("Deleting album: %s" % str(album))
-            session.delete(album)
-            num_orphaned_albums += 1
-        else:
-            found_ids.add(album.id)
 
     return (num_orphaned_tracks, num_orphaned_artists, num_orphaned_albums)
 

@@ -15,11 +15,11 @@ from eyed3.utils import art
 from eyed3.plugins import LoaderPlugin
 from eyed3.utils.prompt import PromptExit
 from eyed3.main import main as eyed3_main
-from eyed3.core import (TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE,
-                        EP_TYPE)
+from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE, EP_TYPE
 from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
 
+from ...util import normalizeCountry
 from ...orm import (Track, Artist, Album, Meta, Image, Library,
                     VARIOUS_ARTISTS_ID, VARIOUS_ARTISTS_NAME, MAIN_LIB_NAME, NULL_LIB_ID)
 from ... import console
@@ -66,6 +66,10 @@ class SyncPlugin(LoaderPlugin):
         arg_parser.add_argument(
                 "--no-prompt", action="store_true", dest="no_prompt",
                 help="Skip files that require user input.")
+        arg_parser.add_argument(
+            "--speed", default="fast", choices=("fast", "normal"),
+            help="Sync speed. 'fast' will skips files whose timestamps have not changed, while "
+                 "'normal' scans all files all the time.")
 
         self.monitor_proc = None
 
@@ -101,13 +105,20 @@ class SyncPlugin(LoaderPlugin):
             for p in self.args.paths:
                 self._watchDir(p)
 
-    def _getArtist(self, session, name, resolved_artist):
+    def _getArtist(self, session, name, origin, resolved_artist):
+        origin_dict = {"origin_city": origin.city if origin else None,
+                       "origin_state": origin.state if origin else None,
+                       "origin_country": normalizeCountry(origin.country) if origin else None,
+                      }
         if name == VARIOUS_ARTISTS_NAME:
             artist_rows = [session.query(Artist).filter_by(name=VARIOUS_ARTISTS_NAME,
                                                            lib_id=NULL_LIB_ID).one()]
         else:
-            artist_rows = session.query(Artist).filter_by(name=name,
-                                                          lib_id=self._lib.id).all()
+            artist_rows = session.query(Artist)\
+                                 .filter_by(name=name,
+                                            lib_id=self._lib.id,
+                                            **origin_dict)\
+                                 .all()
 
         if artist_rows:
             if len(artist_rows) > 1 and resolved_artist:
@@ -122,8 +133,7 @@ class SyncPlugin(LoaderPlugin):
                                                   choices=artist_rows,
                                                   allow_create=True)
                 except PromptExit:
-                    log.warn("Duplicate artist requires user "
-                             "intervention to resolve.")
+                    log.warning("Duplicate artist requires user intervention to resolve.")
                     artist = None
                 else:
                     if artist not in artist_rows:
@@ -137,7 +147,7 @@ class SyncPlugin(LoaderPlugin):
                 artist = artist_rows[0]
         else:
             # New artist
-            artist = Artist(name=name, lib_id=self._lib.id)
+            artist = Artist(name=name, lib_id=self._lib.id, **origin_dict)
             session.add(artist)
             session.flush()
             pout(Fg.green("Adding artist") + ": " + name)
@@ -153,13 +163,12 @@ class SyncPlugin(LoaderPlugin):
         is_various = (album_type == VARIOUS_TYPE)
 
         if not info or not tag:
-            log.warn("File missing %s, skipping: %s" %
-                     ("audio" if not info else "tag/metadata", path))
-            return
+            log.warning(f"File missing {'audio' if not info else 'tag/metadata'}, skipping: {path}")
+            return None, None
         elif None in (tag.title, tag.artist):
-            log.warn("File missing required artist and/or title "
-                     "metadata, skipping: %s" % path)
-            return
+            log.warning("File missing required artist and/or title "
+                        "metadata, skipping: %s" % path)
+            return None, None
 
         # Used when a duplicate artist is resolved for the entire directory.
         resolved_artist = None
@@ -171,51 +180,66 @@ class SyncPlugin(LoaderPlugin):
         except NoResultFound:
             track = None
         else:
-            if datetime.fromtimestamp(getctime(path)) == track.ctime:
+            if (self.args.speed == "fast"
+                    and datetime.fromtimestamp(getctime(path)) == track.ctime):
                 # Track is in DB and the file is not modified.
-                return track.album
+                return track, track.album
 
         # Either adding the track (track == None)
         # or modifying (track != None)
 
-        artist, resolved_artist = self._getArtist(session, tag.artist, resolved_artist)
-        if tag.album_type != SINGLE_TYPE:
+        artist, resolved_artist = self._getArtist(session, tag.artist, tag.artist_origin,
+                                                  resolved_artist)
+        if album_type != SINGLE_TYPE:
             if tag.album_artist and tag.artist != tag.album_artist:
-                album_artist, resolved_album_artist = \
-                        self._getArtist(session, tag.album_artist,
-                                        resolved_album_artist)
+                album_artist, resolved_album_artist = self._getArtist(session, tag.album_artist,
+                                                                      tag.artist_origin,
+                                                                      resolved_album_artist)
             else:
                 album_artist = artist
 
             if artist is None:
                 # see PromptExit
-                return
+                return None, None
 
             album_artist_id = album_artist.id if not is_various \
                                               else VARIOUS_ARTISTS_ID
-            album = session.query(Album).filter_by(title=tag.album,
-                                                   lib_id=self._lib.id,
-                                                   artist_id=album_artist_id)\
-                                        .one_or_none()
             rel_date = tag.release_date
             rec_date = tag.recording_date
             or_date = tag.original_release_date
 
-            if album:
-                album.type = album_type
-                album.release_date = rel_date
-                album.original_release_date = or_date
-                album.recording_date = rec_date
-                pout(Fg.yellow("Updating album") + ": " + album.title)
-            elif tag.album:
+            # Original release date
+            if or_date:
+                album = session.query(Album).filter_by(lib_id=self._lib.id,
+                                                       artist_id=album_artist_id,
+                                                       title=tag.album,
+                                                       original_release_date=or_date).one_or_none()
+            # Release date
+            if not album and rel_date:
+                album = session.query(Album).filter_by(lib_id=self._lib.id,
+                                                       artist_id=album_artist_id,
+                                                       title=tag.album,
+                                                       release_date=rel_date).one_or_none()
+            # Recording date
+            if not album and rec_date:
+                album = session.query(Album).filter_by(lib_id=self._lib.id,
+                                                       artist_id=album_artist_id,
+                                                       title=tag.album,
+                                                       release_date=rel_date,
+                                                       recording_date=rec_date).one_or_none()
+            if album is None:
                 album = Album(title=tag.album, lib_id=self._lib.id,
                               artist_id=album_artist_id, type=album_type,
                               release_date=rel_date,
                               original_release_date=or_date,
                               recording_date=rec_date,
                               date_added=d_datetime)
+                pout(f"{Fg.green('Adding album')}: {album.title}")
                 session.add(album)
-                pout(Fg.green("Adding album") + ": " + album.title)
+            else:
+                if album.type != album_type:
+                    pout(Fg.yellow("Updating album") + ": " + album.title)
+                    album.type = album_type
 
             session.flush()
 
@@ -241,16 +265,15 @@ class SyncPlugin(LoaderPlugin):
 
         if album:
             # Tag images
+            img_type = None
             for img in tag.images:
                 for img_type in art.TO_ID3_ART_TYPES:
-                    if img.picture_type in \
-                            art.TO_ID3_ART_TYPES[img_type]:
+                    if img.picture_type in art.TO_ID3_ART_TYPES[img_type]:
                         break
                     img_type = None
 
                 if img_type is None:
-                    log.warn("Skipping unsupported image type: %s" %
-                             img.picture_type)
+                    log.warning(f"Skipping unsupported image type: {img.picture_type}")
                     continue
 
                 new_img = Image.fromTagFrame(img, img_type)
@@ -260,9 +283,9 @@ class SyncPlugin(LoaderPlugin):
                                     else album.artist,
                               session)
                 else:
-                    log.warn("Invalid image in tag")
+                    log.warning("Invalid image in tag")
 
-        return album
+        return track, album
 
     def _albumTypeHint(self, audio_files):
         types = collections.Counter()
@@ -282,28 +305,34 @@ class SyncPlugin(LoaderPlugin):
             return types.most_common()[0][0]
 
         if len(types) == 0:
-            artists = set()
-            album_artists = set()
-            albums = set()
+            artist_set = set()
+            album_artist_set = set()
+            albums = list()
             for tag in [f.tag for f in audio_files if f.tag]:
                 if tag.artist:
-                    artists.add(tag.artist)
-                if tag.album_artist:
-                    album_artists.add(tag.album_artist)
-                if tag.album:
-                    albums.add(tag.album)
+                    artist_set.add(tag.artist)
 
-            is_various = (len(artists) > 1
-                          and (len(album_artists) == 0 or album_artists == {VARIOUS_ARTISTS_NAME})
-                          and len(albums) == 1)
+                if tag.album_artist:
+                    album_artist_set.add(tag.album_artist)
+
+                if tag.album:
+                    albums.append(tag.album)
+
+            is_various = (
+                len(artist_set) > 1
+                and (len(album_artist_set) == 0 or album_artist_set == {VARIOUS_ARTISTS_NAME})
+                and len(albums) == len(audio_files)
+            )
+
             if is_various:
                 return VARIOUS_TYPE
+            elif len(albums) == len(audio_files):
+                return LP_TYPE if len(audio_files) > EP_MAX_SIZE_HINT else EP_TYPE
             else:
-                return EP_TYPE if len(audio_files) < EP_MAX_SIZE_HINT \
-                               else LP_TYPE
+                return SINGLE_TYPE
 
         if len(types) > 1:
-            log.warn("Inconsistent type hints: %s" % str(types.keys()))
+            log.warning("Inconsistent type hints: %s" % str(types.keys()))
             return None
 
     def handleDirectory(self, d, _):
@@ -325,8 +354,7 @@ class SyncPlugin(LoaderPlugin):
         session = self._db_session
         for audio_file in audio_files:
             try:
-                album = self._syncAudioFile(audio_file, album_type, d_datetime,
-                                            session)
+                track, album = self._syncAudioFile(audio_file, album_type, d_datetime, session)
             except Exception:
                 # TODO: log and skip????
                 raise
@@ -336,8 +364,7 @@ class SyncPlugin(LoaderPlugin):
             for img_file in image_files:
                 img_type = art.matchArtFile(img_file)
                 if img_type is None:
-                    log.warn("Skipping unrecognized image file: %s" %
-                             img_file)
+                    log.warning(f"Skipping unrecognized image file: {img_file}")
                     continue
 
                 new_img = Image.fromFile(img_file, img_type)
@@ -347,7 +374,7 @@ class SyncPlugin(LoaderPlugin):
                                              else album.artist,
                               session)
                 else:
-                    log.warn("Invalid image file: " + img_file)
+                    log.warning(f"Invalid image file: {img_file}")
 
         session.commit()
         if self.args.monitor:

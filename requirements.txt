@@ -9,7 +9,7 @@ psycopg2-binary==2.7.7
 pyfiglet==0.8.post1
 pyramid==1.10.2
 pyramid-chameleon==0.3
-pyramid-debugtoolbar==4.5
+pyramid-debugtoolbar==4.5.1
 pyramid-layout==1.0
 pyramid-tm==2.2.1
 SQLAlchemy==1.2.17
