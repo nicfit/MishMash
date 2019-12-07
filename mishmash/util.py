@@ -61,6 +61,7 @@ def commonDirectoryPrefix(*args):
 def mostCommonItem(lst):
     """Choose the most common item from the list, or the first item if all
     items are unique."""
+    # FIXME: Replace with collections.Counter
     # This elegant solution from: http://stackoverflow.com/a/1518632/1760218
     lst = [l for l in lst if l]
     if lst:
