@@ -1,5 +1,5 @@
 main:
-    - eyeD3>=0.9a0
+    - eyeD3>=0.9a2
     # If pinning nicfit.py be sure to also pin nicfit[cookiecutter] below
     - nicfit.py
     - SQLAlchemy
@@ -25,6 +25,7 @@ extra_web:
     - gunicorn
 
 test:
+    - tox
     - pytest
     - pytest-cov
     - pytest-runner
@@ -42,8 +43,7 @@ dev:
     #- git+https://github.com/nicfit/gitchangelog.git@nicfit.py
     - ipdb
     - pip-tools
-    - tox
     - twine
     - wheel
-    - pyaml>=4.2b1
+    - pyaml
     - pss

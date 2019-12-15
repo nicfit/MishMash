@@ -120,8 +120,8 @@ class Meta(Base, OrmObject):
 
 
 def getSortName(name):
-    from . import util
-    suffix, prefix = util.splitNameByPrefix(name)
+    from ..util import splitNameByPrefix
+    suffix, prefix = splitNameByPrefix(name)
     return "%s, %s" % (suffix, prefix) if prefix else name
 
 
@@ -143,8 +143,7 @@ class Artist(Base, OrmObject):
 
     # Columns
     id = sql.Column(sql.Integer, Sequence("artists_id_seq"), primary_key=True)
-    name = sql.Column(sql.Unicode(NAME_LIMIT), nullable=False,
-                      index=True)
+    name = sql.Column(sql.Unicode(NAME_LIMIT), nullable=False, index=True)
     sort_name = sql.Column(sql.Unicode(SORT_NAME_LIMIT), nullable=False)
     date_added = sql.Column(sql.DateTime(), nullable=False,
                             default=datetime.now)
@@ -194,7 +193,7 @@ class Artist(Base, OrmObject):
         return self.name.replace("/", "%2f")
 
     def origin(self, n=3, country_code="country_name", title_case=True):
-        from .util import normalizeCountry
+        from ..util import normalizeCountry
         origins = [o for o in [normalizeCountry(self.origin_country,
                                                 target=country_code,
                                                 title_case=title_case),
@@ -215,7 +214,7 @@ class Artist(Base, OrmObject):
 
     @orm.validates("origin_country")
     def _setOriginCountry(self, _, value):
-        from .util import normalizeCountry
+        from ..util import normalizeCountry
         if value is None:
             return None
         return normalizeCountry(value, target="iso3c", title_case=False)
@@ -524,15 +523,6 @@ class Library(Base, OrmObject):
         for lib in session.query(Class).filter(Class.id > NULL_LIB_ID).all():
             if not names or (lib.name in names):
                 yield lib
-
-
-TYPES = [Meta, Library, Tag, Artist, Album, Track, Image]
-TAGS = [artist_tags, album_tags, track_tags, artist_images, album_images]
-IMAGE_TABLES = [artist_images, album_images]
-TABLES = [T.__table__ for T in TYPES] + TAGS + IMAGE_TABLES
-"""All the table instances.  Order matters (esp. for postgresql). The
-tables are created in normal order, and dropped in reverse order."""
-ENUMS = [Image._types_enum, Album._types_enum]
 
 
 @event.listens_for(Engine, "connect")

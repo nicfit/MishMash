@@ -73,19 +73,19 @@ clean-patch:
 	find . -name '*.orig' -exec rm -f '{}' \;
 
 lint:
-	flake8 --builtins=_ $(SRC_DIRS)
+	tox -e lint
 
 test:
-	tox -e py-default
+	tox -e default
 
 test-all:
-	tox
+	tox --parallel=all
 
 coverage:
-	tox -e py-default,report
+	tox -e coverage
 
 coverage-view: coverage
-	${BROWSER} build/tests/coverage/index.html;\
+	${BROWSER} build/tests/coverage/index.html
 
 docs:
 	rm -f docs/mishmash.rst
@@ -109,7 +109,7 @@ pre-release: lint requirements test changelog
 	$(eval RELEASE_TAG = v${VERSION})
 	@echo "RELEASE_TAG: $(RELEASE_TAG)"
 	@echo "RELEASE_NAME: $(RELEASE_NAME)"
-	check-manifest
+	tox -e check-manifest
 	@if git tag -l | grep -E '^$(RELEASE_TAG)$$' > /dev/null; then \
         echo "Version tag '${RELEASE_TAG}' already exists!"; \
         false; \
@@ -125,8 +125,7 @@ pre-release: lint requirements test changelog
 	@git status -s -b
 
 requirements:
-	nicfit requirements
-	pip-compile -U requirements.txt -o ./requirements.txt
+	tox -e requirements
 
 changelog:
 	last=`git tag -l --sort=version:refname | grep '^v[0-9]' | tail -n1`;\
