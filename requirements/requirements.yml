@@ -1,6 +1,5 @@
 main:
-    - eyeD3>=0.9a0
-    # If pinning nicfit.py be sure to also pin nicfit[cookiecutter] below
+    - eyeD3>=0.9b0
     - nicfit.py
     - SQLAlchemy
     - inotify
