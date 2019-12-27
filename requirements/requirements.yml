@@ -7,8 +7,6 @@ main:
     - countrycode
     - pyfiglet
     - sqlalchemy-utils
-
-extra_postgres:
     - psycopg2-binary
 
 extra_web:
