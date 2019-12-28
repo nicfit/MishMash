@@ -1,7 +1,7 @@
 Sphinx==2.2.0
 babel==2.6.0
 check-manifest==0.37
-flake8==3.7.8
+flake8==3.7.9
 ipdb==0.12
 nicfit.py[cookiecutter]==0.8.5
 pip-tools==4.1.0

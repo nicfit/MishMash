@@ -1,6 +1,5 @@
 main:
-    - eyeD3>=0.9a2
-    # If pinning nicfit.py be sure to also pin nicfit[cookiecutter] below
+    - eyeD3>=0.9b0
     - nicfit.py
     - SQLAlchemy
     - inotify
@@ -8,8 +7,6 @@ main:
     - countrycode
     - pyfiglet
     - sqlalchemy-utils
-
-extra_postgres:
     - psycopg2-binary
 
 extra_web:

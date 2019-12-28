@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 MAINTAINER Travis Shirk <travis@pobox.com>
 EXPOSE 6229
 ENTRYPOINT ["mishmash"]
@@ -23,7 +23,7 @@ RUN addgroup -S mishmash &&\
     adduser -S -u 6229 -G mishmash -h ${HOME} mishmash &&\
     mkdir -p ${HOME}/etc ${HOME}/var ${HOME}/bin
 
-RUN pip --no-cache-dir install MishMash[web,postgres]==${VERSION}
+RUN pip --no-cache-dir install MishMash[web]==${VERSION}
 
 USER mishmash
 ENV PATH="${HOME}/bin:${PATH}"
