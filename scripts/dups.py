@@ -1,13 +1,9 @@
 #!/usr/bin/env python
-import sys
-import json
-from pathlib import Path
+import os
 from collections import Counter
-import sqlalchemy.exc
-from sqlalchemy import and_
 import mishmash.database
-from mishmash.orm import Track, Artist
-from PyInquirer import prompt, print_json
+from mishmash.orm import Artist
+from PyInquirer import prompt
 
 
 def sqlstr(s):
@@ -53,7 +49,7 @@ def merge(session, artists, artist_name):
     ...
 
 
-db_info = mishmash.database.init("postgresql://mishmash:P@r@gonB3lial@172.24.0.7/MishMash")
+db_info = mishmash.database.init(os.getenv("MISHMASH_DBURL"))
 session = db_info.SessionMaker()
 
 _checked = set()

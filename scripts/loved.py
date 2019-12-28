@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import json
 from pathlib import Path
@@ -87,7 +88,7 @@ def resolve(session, loved, tracks):
 
 
 infile = Path(sys.argv[1])
-db_info = mishmash.database.init("postgresql://mishmash:P@r@gonB3lial@172.24.0.7/MishMash")
+db_info = mishmash.database.init(os.getenv("MISHMASH_DBURL"))
 session = db_info.SessionMaker()
 
 num_loved, num_matches, num_found = 0, 0, 0
