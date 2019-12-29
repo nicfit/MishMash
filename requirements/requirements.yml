@@ -1,5 +1,5 @@
 main:
-    - eyeD3>=0.9b1
+    - eyeD3>=0.9b0
     - nicfit.py
     - SQLAlchemy
     - inotify
@@ -20,6 +20,9 @@ extra_web:
     - pyramid-debugtoolbar
     - gevent
     - gunicorn
+
+extra_tools:
+    - inquirer
 
 test:
     - tox

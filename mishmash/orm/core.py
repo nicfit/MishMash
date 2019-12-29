@@ -13,12 +13,12 @@ from sqlalchemy.types import TypeDecorator
 from sqlalchemy import orm, event, types, Sequence
 from sqlalchemy.ext.declarative import declarative_base
 
+import eyed3
 from eyed3.utils import art
 from eyed3.utils import guessMimetype
 from eyed3.core import Date as Eyed3Date
 from eyed3.core import ALBUM_TYPE_IDS, VARIOUS_TYPE, LIVE_TYPE
-from eyed3.id3 import (ID3_V1_0, ID3_V1_1, ID3_V2_2, ID3_V2_3, ID3_V2_4,
-                       versionToString)
+from eyed3.id3 import ID3_V1_0, ID3_V1_1, ID3_V2_2, ID3_V2_3, ID3_V2_4, versionToString
 
 VARIOUS_ARTISTS_ID = 1
 VARIOUS_ARTISTS_NAME = _("Various Artists")
@@ -388,8 +388,19 @@ class Track(Base, OrmObject):
         return self
 
     @orm.validates("title")
-    def _truncateTitle(self, key, value):
+    def _truncateTitle(self, _, value):
         return self._truncate(value, Track.TITLE_LIMIT)
+
+    def loadAudioFile(self, path_mapping=None):
+        path = self.path
+
+        path_mapping = path_mapping or {}
+        for fm, to in path_mapping.items():
+            if path.startswith(fm):
+                # Remap path
+                path = to + path[len(fm):]
+
+        return eyed3.load(path)
 
 
 class Tag(Base, OrmObject):

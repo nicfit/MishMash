@@ -52,7 +52,7 @@ def main(args):
 
     # Run command
     try:
-        retval = args.command_func(args, args.config) or 0
+        retval = args.command_func(args) or 0
     except (KeyboardInterrupt, PromptExit):
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
