@@ -93,9 +93,6 @@ def merge(session, artists: Counter, final_artist_name, final_origin, fix_tags, 
 
     # Update the other artist albums and tracks
     for artist in other_artists:
-        if artist.name.startswith("LIf"):
-            import pdb; pdb.set_trace()  # FIXME
-            pass  # FIXME
         with session.no_autoflush:
             # Albums
             for album in list(artist.albums):
@@ -132,7 +129,6 @@ def merge(session, artists: Counter, final_artist_name, final_origin, fix_tags, 
 
     if fix_tags:
         print(f"Checking {len(tag_files)} tag files...")
-        import pdb; pdb.set_trace()  # FIXME
         for track in tag_files:
             edits = []
 
