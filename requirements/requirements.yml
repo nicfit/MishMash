@@ -1,5 +1,5 @@
 main:
-    - eyeD3>=0.9b0
+    - eyeD3>=0.9b1
     - nicfit.py
     - SQLAlchemy
     - inotify
