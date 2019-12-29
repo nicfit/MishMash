@@ -7,4 +7,4 @@ pyramid_chameleon==0.3
 pyramid_tm==2.2.1
 transaction==2.4.0
 waitress==1.4.1
-zope.sqlalchemy==1.1
+zope.sqlalchemy==1.2
