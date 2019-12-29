@@ -4,7 +4,7 @@ check-manifest==0.37
 flake8==3.7.9
 ipdb==0.12
 nicfit.py[cookiecutter]==0.8.5
-pip-tools==4.1.0
+pip-tools==4.3.0
 pss==1.42
 pyaml>=4.2b1
 sphinx_rtd_theme==0.4.3
