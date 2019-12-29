@@ -47,5 +47,5 @@ venusian==1.2.0           # via pyramid
 waitress==1.4.1
 webob==1.8.5              # via pyramid
 zope.deprecation==4.4.0   # via pyramid
-zope.interface==4.6.0     # via pyramid, transaction, zope.sqlalchemy
+zope.interface==4.7.1     # via pyramid, transaction, zope.sqlalchemy
 zope.sqlalchemy==1.1
