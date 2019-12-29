@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import os
 import sys
 import json
 from pathlib import Path
 import sqlalchemy.exc
+import sqlalchemy.orm.exc
 import mishmash.database
-from mishmash.orm import Track, Artist, Album
+from mishmash.orm import Album
 from eyed3.core import *
 
 ALBUM_TYPE_ORDER = [LP_TYPE, EP_TYPE, SINGLE_TYPE, COMP_TYPE, VARIOUS_TYPE, LIVE_TYPE, DEMO_TYPE]
@@ -23,6 +23,7 @@ def chooseAlbum(albums):
     # 2: Prefer studio recordings (lp, ep, etc) over live, demos
     albums.sort(key=_typeKey)
 
+    print("CHOSE:", albums[0], "\nover\n", albums[1:])
     return albums[0]
 
 
@@ -74,12 +75,23 @@ def resolve(session, loved, tracks):
         return title_matches.pop()
     elif title_matches:
         # Bias sort album and pick head
+        # Tracks with album_id==None are skipped
         album = chooseAlbum([session.query(Album).filter(Album.id == t.album_id).one()
-                                for t in title_matches])
+                                for t in title_matches if t.album_id])
         for t in title_matches:
             if t.album_id == album.id:
                 return t
     else:
+        # No title matches.
+
+        # Startswith matches
+        prefix_matches = list([t for t in tracks
+                                    if t.title.lower().startswith(loved["track"].lower())])
+        if prefix_matches:
+            # FIXME: this choice got be made better
+            print("CHOSE:", prefix_matches[0], "\nover\n", prefix_matches[1:])
+            return prefix_matches[0]
+
         import pdb; pdb.set_trace()  # FIXME
         pass  # FIXME
         ...
@@ -93,13 +105,24 @@ session = db_info.SessionMaker()
 
 num_loved, num_matches, num_found = 0, 0, 0
 for line in infile.read_text().splitlines():
+    # FIXME
+    if "Deicide" in line:
+        #import pdb; pdb.set_trace()  # FIXME
+        pass  # FIXME
     loved = json.loads(line)
     num_loved += 1
+
+    if ((loved["track"][0], loved["track"][-1]) == ('"', '"')
+            or (loved["track"][0], loved["track"][-1]) == ("'", "'")):
+        # Removed quotes
+        loved["track"] = loved["track"][1:-1]
 
     try:
         tracks = queryTracks(session, loved)
     except sqlalchemy.exc.ProgrammingError as sql_err:
         print("FIXME: dup artist?")
+        #import pdb; pdb.set_trace()  # FIXME
+        pass  # FIXME
         session.close()
         session = db_info.SessionMaker()
         continue  # FIXME
@@ -116,14 +139,17 @@ for line in infile.read_text().splitlines():
             import pdb; pdb.set_trace()  # FIXME
             pass  # FIXME
 
-    if len(tracks) > 1:
+    if len(tracks) == 1:
+        track = tracks[0]
+    elif len(tracks) > 1:
         track = resolve(session, loved, tracks)
 
-    if track is None:
-        print("NOT FOUND:", loved)
-    else:
-        #print("FOUND:", tracks)
+    if track:
+        print("FOUND:", loved)
         num_found += 1
+    else:
+        print("NOT FOUND:", loved)
+
     # TODO: Tag the love in the DB
     # TODO: Tag the love in the file tag
 
