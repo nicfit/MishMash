@@ -10,7 +10,7 @@ blessings==1.7            # via inquirer
 chameleon==3.6.2          # via pyramid-chameleon
 countrycode==0.2
 deprecation==2.0.7        # via eyed3, nicfit.py
-eyed3==0.9b1
+eyed3==0.9
 filetype==1.0.5           # via eyed3
 gevent==1.4.0
 greenlet==0.4.15          # via gevent
