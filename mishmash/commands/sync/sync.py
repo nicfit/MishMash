@@ -48,7 +48,7 @@ class SyncPlugin(LoaderPlugin):
         super().__init__(arg_parser, cache_files=True, track_images=True)
 
         eyed3.main.setFileScannerOpts(
-            arg_parser, paths_metavar="PATH_OR_LIB",
+            arg_parser, default_recursive=True, paths_metavar="PATH_OR_LIB",
             paths_help="Files/directory paths, or individual music libraries. "
                        "No arguments will sync all configured libraries.")
 
@@ -72,15 +72,17 @@ class SyncPlugin(LoaderPlugin):
                  "'normal' scans all files all the time.")
 
         self.monitor_proc = None
+        self._num_added = 0
+        self._num_modified = 0
+        self._num_deleted = 0
+        self._db_session = None
+        self._lib = None
+        self.start_time = None
 
     def start(self, args, config):
         import eyed3.utils.prompt
 
         self._num_loaded = 0
-        self._num_added = 0
-        self._num_modified = 0
-        self._num_deleted = 0
-        self._db_session = None
 
         eyed3.utils.prompt.DISABLE_PROMPT = "raise" if args.no_prompt else None
 
@@ -287,7 +289,8 @@ class SyncPlugin(LoaderPlugin):
 
         return track, album
 
-    def _albumTypeHint(self, audio_files):
+    @staticmethod
+    def _albumTypeHint(audio_files):
         types = collections.Counter()
 
         # This directory of files can be:
@@ -485,8 +488,8 @@ class Sync(Command):
             for p in lib.paths:
                 args.paths.append(str(p) if isinstance(p, Path) else p)
 
-            pout("{}yncing library '{}': paths={}"
-                 .format("Force s" if args.force else "S", lib.name, lib.paths),
+            pout("{}yncing library '{}': paths={}".format("Force s" if args.force else "S",
+                                                          lib.name, lib.paths),
                  log=log)
 
             args.excludes = lib.excludes

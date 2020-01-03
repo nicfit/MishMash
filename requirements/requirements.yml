@@ -1,5 +1,5 @@
 main:
-    - eyeD3>=0.9b0
+    - eyeD3~=0.9
     - nicfit.py
     - SQLAlchemy
     - inotify
@@ -21,7 +21,11 @@ extra_web:
     - gevent
     - gunicorn
 
+extra_tools:
+    - inquirer
+
 test:
+    - tox
     - pytest
     - pytest-cov
     - pytest-runner
@@ -36,11 +40,9 @@ dev:
     - babel
     - check-manifest
     - flake8
-    #- git+https://github.com/nicfit/gitchangelog.git@nicfit.py
-    - ipdb
+    - git+https://github.com/nicfit/gitchangelog.git@nicfit.py
     - pip-tools
-    - tox
     - twine
     - wheel
-    - pyaml>=4.2b1
+    - pyaml
     - pss

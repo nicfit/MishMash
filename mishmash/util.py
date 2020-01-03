@@ -1,4 +1,5 @@
 import os
+import argparse
 from urllib.parse import urlparse
 from eyed3.utils import datePicker
 from countrycode.countrycode import countrycode
@@ -61,6 +62,7 @@ def commonDirectoryPrefix(*args):
 def mostCommonItem(lst):
     """Choose the most common item from the list, or the first item if all
     items are unique."""
+    # FIXME: Replace with collections.Counter
     # This elegant solution from: http://stackoverflow.com/a/1518632/1760218
     lst = [l for l in lst if l]
     if lst:
@@ -73,3 +75,23 @@ def safeDbUrl(db_url):
     """Obfuscates password from a database URL."""
     url = urlparse(db_url)
     return db_url.replace(url.password, "****") if url.password else db_url
+
+
+def addLibraryArguments(cli: argparse.ArgumentParser, nargs):
+    """Add library options (-L/--library) with specific `nargs`."""
+    from .orm import MAIN_LIB_NAME
+
+    if nargs is not None:
+        required = nargs in ("+", 1)
+        if nargs not in ("?", 1):
+            action, default, dest = ("append",
+                                     [] if not required else [MAIN_LIB_NAME],
+                                     "libs")
+        else:
+            action, default, dest = ("store",
+                                     None if required else MAIN_LIB_NAME,
+                                     "lib")
+
+        cli.add_argument("-L", "--library", dest=dest, required=required,
+                         action=action, metavar="LIB_NAME", default=default,
+                         help="Specify a library.")

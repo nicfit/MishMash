@@ -2,12 +2,10 @@ Sphinx==2.2.0
 babel==2.6.0
 check-manifest==0.37
 flake8==3.7.9
-ipdb==0.12
 nicfit.py[cookiecutter]==0.8.5
 pip-tools==4.1.0
 pss==1.42
-pyaml>=4.2b1
+pyaml
 sphinx_rtd_theme==0.4.3
-tox==3.14.0
 twine==1.12.1
 wheel==0.33.6
