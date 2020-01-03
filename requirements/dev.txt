@@ -5,7 +5,7 @@ flake8==3.7.9
 nicfit.py[cookiecutter]==0.8.5
 pip-tools==4.1.0
 pss==1.42
-pyaml
+pyaml==19.12.0
 sphinx_rtd_theme==0.4.3
 twine==1.12.1
 wheel==0.33.6
