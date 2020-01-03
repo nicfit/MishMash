@@ -13,24 +13,6 @@ from ..util import normalizeCountry, commonDirectoryPrefix, mostCommonItem
 
 
 @Command.register
-class Lint(Command):
-    NAME = "lint"
-    _library_arg_nargs = 1
-
-    def _run(self):
-        _checked = set()
-        for artist in session.query(Artist).all():
-            lower_name = artist.name.lower()
-            if lower_name in _checked:
-                continue
-            _checked.add(lower_name)
-
-            dup_artists = session.query(Artist).filter(Artist.name.ilike(artist.name)).all()
-            if len(dup_artists) > 1:
-                handleDupArtist(session, dup_artists)
-
-
-@Command.register
 class SplitArtists(Command):
     NAME = "split-artists"
     HELP = "Split a single artist name into N distinct artists."
