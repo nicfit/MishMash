@@ -44,5 +44,4 @@ dev:
     - pip-tools
     - twine
     - wheel
-    - pyaml
     - pss
