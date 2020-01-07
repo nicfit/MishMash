@@ -31,7 +31,7 @@ pyfiglet==0.8.post1
 pygments==2.5.2           # via pyramid-debugtoolbar
 pyparsing==2.4.6          # via packaging
 pyramid-chameleon==0.3
-pyramid-debugtoolbar==4.5.1
+pyramid-debugtoolbar==4.5.2
 pyramid-layout==1.0
 pyramid-mako==1.1.0       # via pyramid-debugtoolbar
 pyramid-tm==2.3
