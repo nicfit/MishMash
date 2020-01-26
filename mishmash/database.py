@@ -29,8 +29,7 @@ DatabaseInfo = namedtuple("DatabaseInfo", ["engine",
                                            "connection"])
 
 
-def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
-         scoped=False):
+def init(db_url, engine_args=None, session_args=None, trans_mgr=None, scoped=False):
     alembic_d = Path(__file__).parent
     alembic_cfg = alembic.config.Config(str(alembic_d / "alembic.ini"))
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
@@ -60,7 +59,6 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None,
         alembic.command.upgrade(alembic_cfg, "head")
 
     return DatabaseInfo(engine, SessionMaker, connection)
-
 
 def dropAll(url):
     drop_database(url)

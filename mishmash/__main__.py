@@ -52,7 +52,7 @@ def main(args):
 
     # Run command
     try:
-        retval = args.command_func(args, args.config) or 0
+        retval = args.command_func(args) or 0
     except (KeyboardInterrupt, PromptExit):
         # PromptExit raised when CTRL+D during prompt, or prompts disabled
         retval = 0
@@ -92,8 +92,7 @@ class MishMash(Application):
 
         ansi.init()
 
-        desc = "Database command line options (or config) are required by "\
-               "most sub commands."
+        desc = "Database command line options (or config) are required by most sub commands."
         subs = self.arg_parser.add_subparsers(title="Commands", dest="command",
                                               description=desc, required=False)
         Command.loadCommandMap(subparsers=subs)
@@ -108,10 +107,9 @@ class MishMash(Application):
 
     def _addArguments(self, parser):
         group = parser.add_argument_group(title="Settings and options")
-        group.add_argument("-D", "--database", dest="db_url", metavar="url",
-                default=None,
-                help="Database URL. This will override the URL from the config "
-                     "file be it the default of one passed with -c/--config.")
+        group.add_argument("-D", "--database", dest="db_url", metavar="url", default=None,
+                           help="Database URL. This will override the URL from the config "
+                                "file be it the default of one passed with -c/--config.")
 
 
 app = MishMash()

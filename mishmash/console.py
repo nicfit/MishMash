@@ -1,3 +1,4 @@
+""""""
 from nicfit.console.ansi import Fg
 from eyed3.utils.prompt import prompt, parseIntList
 from .orm import Artist
@@ -53,7 +54,6 @@ def selectArtist(heading, choices=None, multiselect=False, allow_create=True):
                     print(Fg.red("Artist entered is not unique, try again..."))
                     artist = None
 
-    assert(artist)
     return artist
 
 
@@ -78,3 +78,4 @@ def promptArtist(text, name=None, default_name=None, default_city=None,
         for o in origin:
             setattr(artist, o, origin[o])
     return artist
+
