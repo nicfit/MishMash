@@ -4,7 +4,7 @@ check-manifest==0.40
 flake8==3.7.9
 git+https://github.com/nicfit/gitchangelog.git@nicfit.py
 nicfit.py[cookiecutter]==0.8.5
-pip-tools==4.1.0
+pip-tools==4.4.0
 pss==1.42
 sphinx_rtd_theme==0.4.3
 twine==1.12.1
