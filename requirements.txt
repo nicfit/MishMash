@@ -41,7 +41,7 @@ python-editor==1.0.4      # via alembic, inquirer
 pyyaml==5.3               # via nicfit.py
 readchar==2.0.1           # via inquirer
 repoze.lru==0.7           # via pyramid-debugtoolbar
-six==1.13.0               # via blessings, packaging, python-dateutil, sqlalchemy-utils
+six==1.14.0               # via blessings, packaging, python-dateutil, sqlalchemy-utils
 sqlalchemy-utils==0.33.1
 sqlalchemy==1.3.12
 transaction==2.4.0
