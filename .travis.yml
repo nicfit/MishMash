@@ -3,7 +3,8 @@ language: python
 
 python:
   - "3.6"
-  - "3.7-dev"
+  - "3.7"
+  - "3.8"
 
 services:
     - docker
@@ -15,13 +16,15 @@ before_install:
     - sudo apt-get install -y lame
 
 install:
-    - pip install tox
-    - pip install coveralls
+    - pip install -U -r requirements.txt
+    - pip install -U -r requirements/test.txt
     - pip install -e .
+    - pip install tox-travis
+    - pip install coveralls
 
 # command to run tests
 script:
-    - tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | cut -d- -f1),report
+    - tox
 
 after_success:
   - coveralls
