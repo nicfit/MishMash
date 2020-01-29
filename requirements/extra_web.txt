@@ -1,10 +1,10 @@
 gevent==1.4.0
 gunicorn==20.0.0
 pyramid==1.10.4
-pyramid-debugtoolbar==4.5.1
+pyramid-debugtoolbar==4.6
 pyramid-layout==1.0
 pyramid_chameleon==0.3
 pyramid_tm==2.2.1
-transaction==2.4.0
+transaction==3.0.0
 waitress==1.4.2
 zope.sqlalchemy==1.1

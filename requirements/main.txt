@@ -4,6 +4,6 @@ countrycode==0.2
 eyeD3~=0.9
 inotify==0.2.10
 nicfit.py==0.8.5
-psycopg2-binary
+psycopg2-binary==2.8.4
 pyfiglet==0.8.post1
 sqlalchemy-utils==0.33.1
