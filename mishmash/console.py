@@ -78,4 +78,3 @@ def promptArtist(text, name=None, default_name=None, default_city=None,
         for o in origin:
             setattr(artist, o, origin[o])
     return artist
-

@@ -21,9 +21,6 @@ extra_web:
     - gevent
     - gunicorn
 
-extra_tools:
-    - inquirer
-
 test:
     - tox
     - pytest
