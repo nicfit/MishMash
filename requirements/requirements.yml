@@ -16,7 +16,7 @@ extra_web:
     - pyramid_tm
     - transaction
     - zope.sqlalchemy
-    - waitress
+    - waitress>=1.4.3
     - pyramid-debugtoolbar
     - gevent
     - gunicorn
