@@ -31,4 +31,3 @@ if MISHMASH_WEB:
                     if tmp_cfg.exists():
                         # Must clean only only once and multiple web workers are spawned
                         tmp_cfg.unlink()
-

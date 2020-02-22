@@ -56,8 +56,8 @@ else:
 
         (engine,
          SessionMaker,
-         connection) = database.init(app_config.db_url,engine_args=engine_args, scoped=True,
-                              trans_mgr=zope_tranaction_register)
+         connection) = database.init(app_config.db_url, engine_args=engine_args, scoped=True,
+                                     trans_mgr=zope_tranaction_register)
 
         pyra_config = _configure(main_settings, SessionMaker)
         return pyra_config.make_wsgi_app()
