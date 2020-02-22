@@ -45,11 +45,12 @@ def init(db_url, engine_args=None, session_args=None, trans_mgr=None, scoped=Fal
     connection = engine.connect()
 
     args = session_args or DEFAULT_SESSION_ARGS
-    if trans_mgr:
-        args.update({"extension": trans_mgr})
     SessionMaker = sessionmaker(bind=engine, **args)
     if scoped:
         SessionMaker = scoped_session(SessionMaker)
+
+    if trans_mgr:
+        trans_mgr(SessionMaker)
 
     for T in TYPES:
         T.metadata.bind = engine

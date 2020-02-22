@@ -5,7 +5,7 @@ except ImportError:
     MISHMASH_WEB = False
 else:
     from pyramid.config import Configurator
-    from zope.sqlalchemy import ZopeTransactionExtension
+    from zope.sqlalchemy import register as zope_tranaction_register
 
     from .. import database
     from ..config import Config
@@ -56,9 +56,8 @@ else:
 
         (engine,
          SessionMaker,
-         connection) = database.init(app_config.db_url,
-                                     engine_args=engine_args, scoped=True,
-                                     trans_mgr=ZopeTransactionExtension())
+         connection) = database.init(app_config.db_url,engine_args=engine_args, scoped=True,
+                              trans_mgr=zope_tranaction_register)
 
         pyra_config = _configure(main_settings, SessionMaker)
         return pyra_config.make_wsgi_app()

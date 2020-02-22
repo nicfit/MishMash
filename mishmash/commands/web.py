@@ -2,6 +2,7 @@ from ..web import MISHMASH_WEB
 
 if MISHMASH_WEB:
     import tempfile
+    from pathlib import Path
     from ..core import Command
     from pyramid.scripts.pserve import PServeCommand
 
@@ -18,8 +19,16 @@ if MISHMASH_WEB:
                 self.config["server:main"]["port"] = str(self.args.port)
 
             # pserve wants a file to open, so use the composed config.
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".ini") as config_file:
+
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False) as config_file:
                 self.config.write(config_file)
                 config_file.flush()
                 pserve = PServeCommand(["mishmash", config_file.name])
-                return pserve.run()
+                try:
+                    return pserve.run()
+                finally:
+                    tmp_cfg = Path(config_file.name)
+                    if tmp_cfg.exists():
+                        # Must clean only only once and multiple web workers are spawned
+                        tmp_cfg.unlink()
+
