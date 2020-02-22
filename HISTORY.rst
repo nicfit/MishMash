@@ -3,6 +3,20 @@ Release History
 
 .. :changelog:
 
+v0.3b15 (2020-02-21)
+------------------------
+
+Changes
+~~~~~~~
+- EyeD3 0.9 and recursion changes, orm pacakge, scripts, tox, reqs.
+- Bumped requirements (and force waitress>=1.4.3 security alert)
+- Postgresql default, 3.8 docker, etc.
+
+Fix
+~~~
+- Travis-ci.
+
+
 v0.3b14 (2019-03-07)
 ------------------------
 

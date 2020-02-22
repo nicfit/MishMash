@@ -115,7 +115,11 @@ pre-release: lint requirements test changelog
         false; \
     fi
 	IFS=$$'\n';\
-    for auth in `git authors --list | sed 's/.* <\(.*\)>/\1/'`; do \
+    for auth in `git authors --list | \
+			        grep -vi "nicfit@gmail.com" |\
+			        grep -vi "dependabot\[bot\]@users.noreply.github.com" |\
+			        grep -vi "pyup.io bot" |\
+			    `; do \
 		echo "Checking $$auth...";\
 		grep "$$auth" AUTHORS.rst || echo "* $$auth" >> AUTHORS.rst;\
 	done
@@ -133,7 +137,8 @@ changelog:
 		rm -f ${CHANGELOG}.new; \
 		if test -n "$$last"; then \
 			gitchangelog --author-format=email \
-			             --omit-author="travis@pobox.com" $${last}..HEAD |\
+			             --omit-author="travis@pobox.com" \
+			             ${last}..HEAD |\
 			  sed "s|^%%version%% .*|${CHANGELOG_HEADER}|" |\
 			  sed '/^.. :changelog:/ r/dev/stdin' ${CHANGELOG} \
 			 > ${CHANGELOG}.new; \

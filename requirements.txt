@@ -4,51 +4,51 @@
 #
 #    pip-compile --output-file=./requirements.txt requirements.txt
 #
-alembic==1.3.2
+alembic==1.3.2            # via -r requirements.txt (line 2)
 attrs==19.3.0             # via nicfit.py
 chameleon==3.6.2          # via pyramid-chameleon
-countrycode==0.2
+countrycode==0.2          # via -r requirements.txt (line 3)
 deprecation==2.0.7        # via eyed3, nicfit.py
-eyed3==0.9.2
+eyed3==0.9.2              # via -r requirements.txt (line 4)
 filetype==1.0.5           # via eyed3
-gevent==1.4.0
+gevent==1.4.0             # via -r requirements.txt (line 5)
 greenlet==0.4.15          # via gevent
-gunicorn==20.0.0
-hupper==1.9.1             # via pyramid
-inotify==0.2.10
+gunicorn==20.0.0          # via -r requirements.txt (line 6)
+hupper==1.10.1            # via pyramid
+inotify==0.2.10           # via -r requirements.txt (line 7)
 mako==1.1.1               # via alembic, pyramid-mako
 markupsafe==1.1.1         # via mako
-nicfit.py==0.8.5
+nicfit.py==0.8.5          # via -r requirements.txt (line 8)
 nose==1.3.7               # via inotify
 packaging==20.1           # via deprecation
 pastedeploy==2.1.0        # via plaster-pastedeploy
 plaster-pastedeploy==0.7  # via pyramid
 plaster==1.0              # via plaster-pastedeploy, pyramid
-psycopg2-binary==2.8.4
-pyfiglet==0.8.post1
+psycopg2-binary==2.8.4    # via -r requirements.txt (line 9)
+pyfiglet==0.8.post1       # via -r requirements.txt (line 10)
 pygments==2.5.2           # via pyramid-debugtoolbar
 pyparsing==2.4.6          # via packaging
-pyramid-chameleon==0.3
-pyramid-debugtoolbar==4.6
-pyramid-layout==1.0
+pyramid-chameleon==0.3    # via -r requirements.txt (line 14)
+pyramid-debugtoolbar==4.6  # via -r requirements.txt (line 12)
+pyramid-layout==1.0       # via -r requirements.txt (line 13)
 pyramid-mako==1.1.0       # via pyramid-debugtoolbar
-pyramid-tm==2.4
-pyramid==1.10.4
+pyramid-tm==2.4           # via -r requirements.txt (line 15)
+pyramid==1.10.4           # via -r requirements.txt (line 11), pyramid-chameleon, pyramid-debugtoolbar, pyramid-layout, pyramid-mako, pyramid-tm
 python-dateutil==2.8.1    # via alembic
 python-editor==1.0.4      # via alembic
 pyyaml==5.3               # via nicfit.py
 repoze.lru==0.7           # via pyramid-debugtoolbar
 six==1.14.0               # via packaging, python-dateutil, sqlalchemy-utils
-sqlalchemy-utils==0.33.1
-sqlalchemy==1.3.13
-transaction==3.0.0
+sqlalchemy-utils==0.33.1  # via -r requirements.txt (line 16)
+sqlalchemy==1.3.13        # via -r requirements.txt (line 1), alembic, sqlalchemy-utils, zope.sqlalchemy
+transaction==3.0.0        # via -r requirements.txt (line 17), pyramid-tm, zope.sqlalchemy
 translationstring==1.3    # via pyramid
 venusian==3.0.0           # via pyramid
-waitress==1.4.3
+waitress==1.4.3           # via -r requirements.txt (line 18)
 webob==1.8.6              # via pyramid
 zope.deprecation==4.4.0   # via pyramid
 zope.interface==4.7.1     # via pyramid, transaction, zope.sqlalchemy
-zope.sqlalchemy==1.1
+zope.sqlalchemy==1.1      # via -r requirements.txt (line 19)
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
