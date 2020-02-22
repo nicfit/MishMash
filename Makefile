@@ -141,7 +141,7 @@ changelog:
 		if test -n "$$last"; then \
 			gitchangelog --author-format=email \
 			             --omit-author="travis@pobox.com" \
-			             ${last}..HEAD |\
+			             $${last}..HEAD |\
 			  sed "s|^%%version%% .*|${CHANGELOG_HEADER}|" |\
 			  sed '/^.. :changelog:/ r/dev/stdin' ${CHANGELOG} \
 			 > ${CHANGELOG}.new; \
