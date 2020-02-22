@@ -101,6 +101,9 @@ clean-docs:
 	$(MAKE) -C docs clean
 	-rm README.html
 
+twine-check:
+	twine check `ls dist/* | grep -v _docs | grep -v '.md5'`
+
 pre-release: lint requirements test changelog
 	@# Keep docs off pre-release target list, else it is pruned during 'release' but
 	@# after a clean.
@@ -202,7 +205,7 @@ sdist: build
 	python setup.py bdist_egg
 	python setup.py bdist_wheel
 
-dist: clean gettext sdist docs
+dist: clean gettext sdist twine-check docs
 	cd docs/_build && \
 	    tar czvf ../../dist/${PROJECT_NAME}-${VERSION}_docs.tar.gz html
 	@# The cd dist keeps the dist/ prefix out of the md5sum files

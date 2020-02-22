@@ -108,7 +108,7 @@ v0.3b7 (2018-06-18)
 
 New
 ~~~
-- More multi-lib supoort (merge, split, info)
+- More multi-lib support (merge, split, info)
 
 Fix
 ~~~
