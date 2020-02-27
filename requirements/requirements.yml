@@ -19,7 +19,7 @@ extra_web:
     - waitress>=1.4.3
     - pyramid-debugtoolbar
     - gevent
-    - gunicorn
+    - gunicorn<20.0.0
 
 test:
     - tox

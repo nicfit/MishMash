@@ -27,4 +27,3 @@ RUN pip --no-cache-dir install MishMash[web]==${VERSION}
 
 USER mishmash
 ENV PATH="${HOME}/bin:${PATH}"
-RUN find ${HOME}
