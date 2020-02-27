@@ -358,9 +358,9 @@ class SyncPlugin(LoaderPlugin):
         for audio_file in audio_files:
             try:
                 track, album = self._syncAudioFile(audio_file, album_type, d_datetime, session)
-            except Exception:
-                # TODO: log and skip????
-                raise
+            except Exception as ex:
+                log.error(f"{audio_file.path} sync error: {ex}")
+                # Continue
 
         if album:
             # Directory images.
