@@ -1,5 +1,5 @@
 main:
-    - eyeD3~=0.9
+    - eyeD3
     - nicfit.py
     - SQLAlchemy
     - inotify
@@ -16,10 +16,10 @@ extra_web:
     - pyramid_tm
     - transaction
     - zope.sqlalchemy
-    - waitress>=1.4.3
+    - waitress
     - pyramid-debugtoolbar
     - gevent
-    - gunicorn<20.0.0
+    - gunicorn
 
 test:
     - tox
