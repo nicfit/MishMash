@@ -2,6 +2,8 @@ import uuid
 import shutil
 import tempfile
 import pytest
+import sqlalchemy_utils
+from uuid import uuid4
 from pathlib import Path
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
@@ -23,8 +25,9 @@ def database(request, pg_server):
         db_file.close()
         db_url = f"sqlite:///{db_file.name}"
     elif request.param == "postgresql":
-        db_url = "postgresql://{user}:{password}@{host}:{port}/{database}"\
-                 .format(**pg_server["params"])
+        db_url = "postgresql://{user}:{password}@{host}:{port}/{db}"\
+                 .format(db=str(uuid4()), **pg_server["params"])
+        sqlalchemy_utils.create_database(db_url)
     else:
         assert not("unhandled db: " + request.param)
         return
