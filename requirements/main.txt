@@ -1,8 +1,8 @@
 SQLAlchemy
 alembic
-countrycode
 eyeD3
 inotify
+iso3166
 nicfit.py
 psycopg2-binary
 pyfiglet

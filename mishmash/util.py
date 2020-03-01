@@ -2,7 +2,6 @@ import os
 import argparse
 from urllib.parse import urlparse
 from eyed3.utils import datePicker
-from countrycode.countrycode import countrycode
 
 NAME_PREFIXES = ["the ", "los ", "la ", "el "]
 
@@ -22,37 +21,34 @@ def sortByDate(things, prefer_recording_date=False):
     return sorted(things, key=_sortkey)
 
 
-def normalizeCountry(country_str, target="iso3c", title_case=False):
-    """Return a normalized name/code for country in ``country_str``.
-    The input can be a code or name, the ``target`` determines output value.
-    3 character ISO code is the default (iso3c), 'country_name', and 'iso2c'
-    are common also. See ``countrycode.countrycode`` for details and other
-    options. Raises ``ValueError`` if the country is unrecognized."""
+def normalizeCountry(country_str, target="iso3c"):
+    """Return a normalized name/code for country in `country_str`.
+    The input can be a code or name, the `target` determines output value.
+    3 character ISO code is the default (iso3c), or 'iso2c'; otherwise then formal name is returned.
+
+    Raises ``ValueError`` if the country is unrecognized.
+    """
+    from iso3166 import countries
+
     iso2 = "iso2c"
     iso3 = "iso3c"
-    raw = "country_name"
 
     if country_str is None:
         return ""
+    elif country_str.lower() == "united states":
+        country_str += " of america"
 
-    if len(country_str) == 2:
-        cc = countrycode(country_str.upper(), origin=iso2, target=target)
-        if not cc:
-            cc = countrycode(country_str, origin=raw, target=target)
-    elif len(country_str) == 3:
-        cc = countrycode(country_str.upper(), origin=iso3, target=target)
-        if not cc:
-            cc = countrycode(country_str, origin=raw, target=target)
+    try:
+        cc = countries.get(country_str)
+    except KeyError:
+        raise ValueError(f"Country not found: {country_str}")
     else:
-        cc = countrycode(country_str, origin=raw, target=target)
-
-    # Still need to validate because origin=raw will return whatever is
-    # input if not match is found.
-    cc = countrycode(cc, origin=target, target=target) if cc else None
-    if not cc:
-        raise ValueError("Country not found: %s" % (country_str))
-
-    return cc.title() if title_case else cc
+        if target == iso3:
+            return cc.alpha3
+        elif target == iso2:
+            return cc.alpha2
+        else:
+            return cc.name
 
 
 def commonDirectoryPrefix(*args):

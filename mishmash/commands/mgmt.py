@@ -103,8 +103,7 @@ class SplitArtists(Command):
             print("Enter %s%d%s for %s from %s%s%s" %
                   (Style.BRIGHT, i + 1, Style.RESET_BRIGHT,
                   a.name,
-                  Style.BRIGHT, a.origin(country_code="iso3c",
-                                         title_case=False),
+                  Style.BRIGHT, a.origin(country_code="iso3c"),
                   Style.RESET_BRIGHT))
 
         # prompt for correct artists

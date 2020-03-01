@@ -194,11 +194,10 @@ class Artist(Base, OrmObject):
 
     def origin(self, n=3, country_code="country_name", title_case=True):
         from ..util import normalizeCountry
-        origins = [o for o in [normalizeCountry(self.origin_country,
-                                                target=country_code,
-                                                title_case=title_case),
-                               self.origin_state,
-                               self.origin_city]
+        origins = [o.title() if title_case else o for o in [normalizeCountry(self.origin_country,
+                                                                             target=country_code),
+                                                            self.origin_state,
+                                                            self.origin_city]
                      if o]
         origins = origins[:n]
         origins.reverse()
@@ -217,7 +216,7 @@ class Artist(Base, OrmObject):
         from ..util import normalizeCountry
         if value is None:
             return None
-        return normalizeCountry(value, target="iso3c", title_case=False)
+        return normalizeCountry(value, target="iso3c")
 
     @orm.validates("origin_city", "origin_state")
     def _truncateOrigins(self, key, value):
