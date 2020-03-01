@@ -16,8 +16,7 @@ from .orm import TYPES
 from .orm import Artist, Track, Album, Tag
 from .util import safeDbUrl
 
-DEFAULT_ENGINE_ARGS = {"convert_unicode": True,
-                       "encoding": "utf8",
+DEFAULT_ENGINE_ARGS = {"encoding": "utf8",
                        "echo": False,
                       }
 DEFAULT_SESSION_ARGS = {
