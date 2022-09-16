@@ -32,7 +32,7 @@ inotify==0.2.10
     # via -r requirements.txt
 iso3166==1.0.1
     # via -r requirements.txt
-mako==1.1.4
+mako==1.2.2
     # via
     #   alembic
     #   pyramid-mako
