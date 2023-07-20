@@ -56,7 +56,7 @@ psycopg2-binary==2.8.4
     # via -r requirements.txt
 pyfiglet==0.8.post1
     # via -r requirements.txt
-pygments==2.8.1
+pygments==2.15.0
     # via pyramid-debugtoolbar
 pyparsing==2.4.7
     # via packaging
