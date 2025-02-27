@@ -18,6 +18,10 @@ from eyed3.main import main as eyed3_main
 from eyed3.core import TXXX_ALBUM_TYPE, VARIOUS_TYPE, LP_TYPE, SINGLE_TYPE, EP_TYPE
 from nicfit.console.ansi import Fg
 from nicfit.console import pout, perr
+import warnings
+
+warnings.filterwarnings("ignore", module="eyed3")
+
 
 from ...util import normalizeCountry
 from ...orm import (Track, Artist, Album, Meta, Image, Library,

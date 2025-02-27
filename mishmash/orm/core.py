@@ -12,7 +12,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy import orm, event, types, Sequence
 from sqlalchemy.ext.declarative import declarative_base
+import warnings
+from sqlalchemy.exc import SAWarning
 
+warnings.filterwarnings("ignore", category=SAWarning)
 import eyed3
 from eyed3.utils import art
 from eyed3.utils import guessMimetype
@@ -156,15 +159,15 @@ class Artist(Base, OrmObject):
                         nullable=False, index=True)
 
     # Relations
-    albums = orm.relation("Album", cascade="all")
+    albums = orm.relationship("Album", cascade="all")
     """all albums by the artist"""
-    tracks = orm.relation("Track", cascade="all")
+    tracks = orm.relationship("Track", cascade="all")
     """all tracks by the artist"""
-    tags = orm.relation("Tag", secondary=artist_tags)
+    tags = orm.relationship("Tag", secondary=artist_tags)
     """one-to-many (artist->tag) and many-to-one (tag->artist)"""
-    images = orm.relation("Image", secondary=artist_images, cascade="all")
+    images = orm.relationship("Image", secondary=artist_images, cascade="all")
     """one-to-many artist images."""
-    library = orm.relation("Library")
+    library = orm.relationship("Library")
 
     def getAlbumsByType(self, album_type):
         if album_type == VARIOUS_TYPE:
@@ -287,13 +290,13 @@ class Album(Base, OrmObject):
                         nullable=False, index=True)
 
     # Relations
-    artist = orm.relation("Artist")
-    tracks = orm.relation("Track", order_by="Track.track_num",
+    artist = orm.relationship("Artist")
+    tracks = orm.relationship("Track", order_by="Track.track_num",
                           cascade="all")
-    tags = orm.relation("Tag", secondary=album_tags)
-    images = orm.relation("Image", secondary=album_images, cascade="all")
+    tags = orm.relationship("Tag", secondary=album_tags)
+    images = orm.relationship("Image", secondary=album_images, cascade="all")
     """one-to-many album images."""
-    library = orm.relation("Library")
+    library = orm.relationship("Library")
 
     def getBestDate(self):
         from eyed3.utils import datePicker
@@ -349,10 +352,10 @@ class Track(Base, OrmObject):
                         nullable=False, index=True)
 
     # Relations
-    artist = orm.relation("Artist")
-    album = orm.relation("Album")
-    tags = orm.relation("Tag", secondary=track_tags)
-    library = orm.relation("Library")
+    artist = orm.relationship("Artist")
+    album = orm.relationship("Album")
+    tags = orm.relationship("Tag", secondary=track_tags)
+    library = orm.relationship("Library")
 
     # XXX: test-only
     _mp3_file = None
@@ -419,7 +422,7 @@ class Tag(Base, OrmObject):
                         nullable=False, index=True)
 
     # Relations
-    library = orm.relation("Library")
+    library = orm.relationship("Library")
 
     @orm.validates("name")
     def _truncateName(self, key, value):

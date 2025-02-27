@@ -25,13 +25,13 @@ else:
 
         config.add_route('all_artists', '/artists')
         config.add_route('all_albums', '/albums')
-        config.add_route('artist', '/artist/{id:\d+}')  # noqa: W605
-        config.add_route('images.covers', '/images/covers/{id:\d+|default}')  # noqa: W605
-        config.add_route('images.artist', '/images/artist/{id:\d+|default}')  # noqa: W605
+        config.add_route('artist', '/artist/{id:+}')  # noqa: W605
+        config.add_route('images.covers', '/images/covers/{id:+|default}')  # noqa: W605
+        config.add_route('images.artist', '/images/artist/{id:+|default}')  # noqa: W605
         config.add_route('home', '/')
         config.add_route('search', '/search')
         config.add_route('new_music', '/new')
-        config.add_route('album', '/album/{id:\d+}')  # noqa: W605
+        config.add_route('album', '/album/{id:+}')  # noqa: W605
 
         config.scan(".panels")
         config.scan(".layouts")
