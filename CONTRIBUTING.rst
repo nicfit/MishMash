@@ -63,13 +63,14 @@ local development.
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/MishMash.git
+    $ cd MishMash/
 
 3. Install your local copy into a virtualenv. Assuming you have
    virtualenvwrapper installed, this is how you set up your fork for local
    development::
 
     $ mkvirtualenv mishmash
-    $ cd mishmash/
+    $ pip install -r requirements.txt
     $ python setup.py develop
 
 4. Create a branch for local development::

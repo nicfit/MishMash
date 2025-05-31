@@ -26,7 +26,6 @@ test:
     - pytest
     - pytest-cov
     - pytest-runner
-    #- git+https://github.com/nicfit/pytest-postgres.git
     - faker
     - factory-boy
 
@@ -37,7 +36,6 @@ dev:
     - babel
     - check-manifest
     - flake8
-    - git+https://github.com/nicfit/gitchangelog.git@nicfit.py
     - pip-tools
     - twine
     - wheel
